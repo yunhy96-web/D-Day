@@ -13,8 +13,16 @@ repositories {
 }
 
 dependencies {
+    //스프링 mvc 활용하여 restful 웹 서비스를 개발할 때 필요한 의존성
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    //스프링 애플리케이션을 테스트 하기 위해 필요한 의존성
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    //스프링 데이터 JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'com.h2database:h2'
+    compileOnly 'org.projectlombok:lombok'
+
+    annotationProcessor 'org.projectlombok:lombok'
 }
 
 test {
