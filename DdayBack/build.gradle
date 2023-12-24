@@ -19,9 +19,15 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     //스프링 데이터 JPA
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    //implementation 'org.springframework.boot:spring-boot-starter-security'
+    //implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     runtimeOnly 'com.h2database:h2'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.json:json:20210307' // 최신 버전으로 업데이트 가능
+    implementation 'org.postgresql:postgresql:42.6.0'
+    //implementation 'io.jsonwebtoken:jjwt:0.9.1'
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
 
 }
 

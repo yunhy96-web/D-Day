@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Table(name="articles")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 public class Article {
