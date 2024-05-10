@@ -18,7 +18,7 @@ public class BlogApiController {
 
     private final BlogService blogService;
 
-    //글 등록
+    //글 등록 //커밋 테스트용
     @PostMapping("/api/articles")
     public ResponseEntity<Article> addArticle(@RequestBody AddArticleRequest request){
         Article savedArticle = blogService.save(request);
