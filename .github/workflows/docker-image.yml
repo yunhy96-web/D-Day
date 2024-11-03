@@ -30,7 +30,7 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -f DdayBack/Dockerfile -t yunhy96/dday:latest .
+          docker build -f DdayBack/Dockerfile -t yunhy96/dday:latest DdayBack
           docker push yunhy96/dday:latest
 
       - name: Deploy to server
