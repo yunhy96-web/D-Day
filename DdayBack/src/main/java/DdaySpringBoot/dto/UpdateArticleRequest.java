@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-//git 추가용
+//git 추가용 배포테스트
 public class UpdateArticleRequest {
     private String title;
     private String content;
