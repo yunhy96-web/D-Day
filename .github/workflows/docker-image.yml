@@ -1,18 +1,34 @@
-name: Docker Image CI
+name: CI/CD Deploy to Server
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main  # main 브랜치에 push될 때 워크플로 시작 , 만약 main & develope 브렌치에서 감지하고 싶을 경우 develope 추가.
 
 jobs:
-
-  build:
-
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin # 해당 정보는 여기 직접 작성하면 보안에 취약 따라서 깃허브 시크릿에 작성
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t yunhy96/dday:latest .
+          docker push yunhy96/dday:latest
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.SSH_HOST }} #ec2 public IPv4 DNS
+          username: ${{ secrets.SSH_USERNAME }} #ubuntu
+          key: ${{ secrets.SSH_KEY }} #pem key vim파일로 열어보기
+          script: |
+            sudo docker pull yunhy96/dday:latest
+            sudo docker stop dday-app || true
+            sudo docker rm dday-app || true
+            sudo docker run -d --name dday-app -p 8080:8080 yunhy96/dday:latest
