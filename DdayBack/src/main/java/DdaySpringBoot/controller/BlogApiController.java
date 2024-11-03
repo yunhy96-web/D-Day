@@ -34,7 +34,7 @@ public class BlogApiController {
         return ResponseEntity.ok()
                 .body(articles);
     }
-    //id 기반으로 하나 조회
+    //id 기반으로 하나 조회 test
     @GetMapping("/api/articles/{id}")
     public ResponseEntity<Article> findArticle(@PathVariable long id){
         try {
