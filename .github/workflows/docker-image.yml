@@ -18,9 +18,10 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -f .github/workflows/docker-image.yml -t yunhy96/dday:latest .
+          docker build -f DdayBack/Dockerfile -t yunhy96/dday:latest .
           docker push yunhy96/dday:latest
-
+      
+      
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.8
         with:
