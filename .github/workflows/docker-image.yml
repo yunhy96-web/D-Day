@@ -23,6 +23,7 @@ jobs:
         run: |
           cd DdayBack
           ./gradlew clean build
+          ls build/libs  # 빌드 후 JAR 파일 확인
 
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
