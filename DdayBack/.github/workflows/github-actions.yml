@@ -22,13 +22,13 @@ jobs:
           docker push yunhy96/dday:latest
 
       - name: Deploy to server
-        uses: appleboy/ssh-action@v0.1.4
+        uses: appleboy/ssh-action@v0.1.8
         with:
           host: ${{ secrets.SSH_HOST }} #ec2 public IPv4 DNS
           username: ${{ secrets.SSH_USERNAME }} #ubuntu
           key: ${{ secrets.SSH_KEY }} #pem key vim파일로 열어보기
           script: |
-            docker pull yunhy96/dday:latest
-            docker stop dday-app || true
-            docker rm dday-app || true
-            docker run -d --name dday-app -p 8080:8080 yunhy96/dday:latest
+            sudo docker pull yunhy96/dday:latest
+            sudo docker stop dday-app || true
+            sudo docker rm dday-app || true
+            sudo docker run -d --name dday-app -p 8080:8080 yunhy96/dday:latest
