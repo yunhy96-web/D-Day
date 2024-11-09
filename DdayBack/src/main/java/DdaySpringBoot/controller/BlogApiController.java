@@ -22,6 +22,7 @@ public class BlogApiController {
     @PostMapping("/api/articles")
     public ResponseEntity<Article> addArticle(@RequestBody AddArticleRequest request){
         Article savedArticle = blogService.save(request);
+        int a = 0;
         return ResponseEntity.status(HttpStatus.CREATED).body(savedArticle);
     }
     //전체 조회 여기에 id도 출력해줘야 나중에 클릭시 id 조회 가능.
