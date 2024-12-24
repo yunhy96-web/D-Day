@@ -21,7 +21,7 @@ public class BlogApiController {
     //글 등록 //커밋 테스트용
     @PostMapping("/api/articles")
     public ResponseEntity<Article> addArticle(@RequestBody AddArticleRequest request){
-        Article savedArticle = blogService.save(request);//커밋용
+        Article savedArticle = blogService.save(request);//커밋용2
         int a = 0;
         return ResponseEntity.status(HttpStatus.CREATED).body(savedArticle);
     }
