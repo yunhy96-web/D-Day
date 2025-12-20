@@ -8,9 +8,9 @@ spring:
     database: postgresql
   datasource:
     #    url: jdbc:h2:mem:testdb
-    url: jdbc:postgresql://database-1.ceftnxqn28g8.ap-northeast-2.rds.amazonaws.com/postgres
-    username: postgres
-    password: postgres2023!
+    url: jdbc:postgresql://localhost:5432/sideproject_db
+    username: sideproject
+    password: 20251220!
     driver-class-name: org.postgresql.Driver
   #  h2:
   #    console:
