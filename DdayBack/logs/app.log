@@ -1,0 +1,28 @@
+2025-12-21 10:48:28.128 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.1.Final
+2025-12-21 10:48:28.140 [main] INFO  DdaySpringBoot.DDayApplication - Starting DDayApplication using Java 17.0.17 with PID 8812 (/Users/huiyeongyun/project/D-Day/DdayBack/out/production/classes started by huiyeongyun in /Users/huiyeongyun/project/D-Day/DdayBack)
+2025-12-21 10:48:28.140 [main] DEBUG DdaySpringBoot.DDayApplication - Running with Spring Boot v3.2.0, Spring v6.1.1
+2025-12-21 10:48:28.140 [main] INFO  DdaySpringBoot.DDayApplication - The following 1 profile is active: "local"
+2025-12-21 10:48:28.395 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-12-21 10:48:28.414 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 17 ms. Found 2 JPA repository interfaces.
+2025-12-21 10:48:28.578 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-12-21 10:48:28.581 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2025-12-21 10:48:28.581 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-12-21 10:48:28.581 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-12-21 10:48:28.599 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-12-21 10:48:28.599 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 447 ms
+2025-12-21 10:48:28.643 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-12-21 10:48:28.665 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.3.1.Final
+2025-12-21 10:48:28.677 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-12-21 10:48:28.744 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-12-21 10:48:28.752 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-12-21 10:48:28.994 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@3f45dfec
+2025-12-21 10:48:28.994 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-12-21 10:48:29.014 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-12-21 10:48:29.312 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-12-21 10:48:29.313 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-12-21 10:48:29.424 [main] DEBUG D.config.jwt.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2025-12-21 10:48:29.491 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-12-21 10:48:29.577 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@628b9af5, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@137db13f, org.springframework.security.web.context.SecurityContextHolderFilter@4778c085, org.springframework.security.web.header.HeaderWriterFilter@1737834, org.springframework.web.filter.CorsFilter@2a3c3a04, org.springframework.security.web.authentication.logout.LogoutFilter@63024843, DdaySpringBoot.config.jwt.JwtAuthenticationFilter@e21d73, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@20331c8e, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@1a13b5c1, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@78ca8258, org.springframework.security.web.session.SessionManagementFilter@2e93f91d, org.springframework.security.web.access.ExceptionTranslationFilter@3ad80206, org.springframework.security.web.access.intercept.AuthorizationFilter@624268ab]
+2025-12-21 10:48:29.659 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2025-12-21 10:48:29.667 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path ''
+2025-12-21 10:48:29.671 [main] INFO  DdaySpringBoot.DDayApplication - Started DDayApplication in 1.711 seconds (process running for 1.936)

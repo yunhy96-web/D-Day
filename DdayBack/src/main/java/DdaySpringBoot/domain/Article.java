@@ -10,41 +10,45 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Getter
-@Table(name="articles")
+@Table(name = "articles")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 public class Article {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) //기본키 1씩 자동 증가
-    @Column(name = "id", updatable = false)
-    private Long id;
 
-    @Column(name = "title" , nullable = false)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "no", updatable = false)
+    private Long no;
+
+    @Column(name = "uuid", nullable = false, unique = true, updatable = false)
+    private String uuid;
+
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "content" , nullable = false)
+    @Column(name = "content", nullable = false)
     private String content;
 
     @CreatedDate
-    @Column(name="created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Builder //빌더패턴으로 객체 생성
-    public Article(String title, String content, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    @Builder
+    public Article(String title, String content) {
+        this.uuid = UUID.randomUUID().toString();
         this.title = title;
         this.content = content;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
     }
 
-    public void update(String title, String content){
+    public void update(String title, String content) {
         this.title = title;
         this.content = content;
     }

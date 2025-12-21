@@ -1,26 +1,24 @@
 package DdaySpringBoot.dto;
 
 import DdaySpringBoot.domain.Article;
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @NoArgsConstructor
-@AllArgsConstructor
 @Getter
 public class AddArticleRequest {
+
+    @NotBlank(message = "제목은 필수입니다")
     private String title;
+
+    @NotBlank(message = "내용은 필수입니다")
     private String content;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    public Article toEntity(){
+
+    public Article toEntity() {
         return Article.builder()
                 .title(title)
                 .content(content)
-                .createdAt(createdAt)
-                .updatedAt(updatedAt)
                 .build();
     }
 }
