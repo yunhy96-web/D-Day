@@ -1,0 +1,35 @@
+diff --git a/node_modules/react-native-web/dist/exports/StyleSheet/compiler/index.js b/node_modules/react-native-web/dist/exports/StyleSheet/compiler/index.js
+index b1b01e6..588587c 100644
+--- a/node_modules/react-native-web/dist/exports/StyleSheet/compiler/index.js
++++ b/node_modules/react-native-web/dist/exports/StyleSheet/compiler/index.js
+@@ -250,6 +250,10 @@ export function inline(originalStyle, isRTL) {
+     if (!Object.prototype.hasOwnProperty.call(style, originalProp) || originalValue == null) {
+       return "continue";
+     }
++    // Skip numeric keys to prevent React 19 CSS error
++    if (!isNaN(Number(originalProp))) {
++      return "continue";
++    }
+ 
+     // BiDi flip values
+     if (PROPERTIES_VALUE.indexOf(originalProp) > -1) {
+diff --git a/node_modules/react-native-web/dist/exports/StyleSheet/index.js b/node_modules/react-native-web/dist/exports/StyleSheet/index.js
+index 891994c..9789f72 100644
+--- a/node_modules/react-native-web/dist/exports/StyleSheet/index.js
++++ b/node_modules/react-native-web/dist/exports/StyleSheet/index.js
+@@ -138,7 +138,14 @@ function flatten() {
+     var style = flatArray[i];
+     if (style != null && typeof style === 'object') {
+       // $FlowFixMe
+-      Object.assign(result, style);
++      // Filter out numeric keys to prevent React 19 CSS error
++      var filtered = {};
++      for (var key in style) {
++        if (Object.prototype.hasOwnProperty.call(style, key) && isNaN(Number(key))) {
++          filtered[key] = style[key];
++        }
++      }
++      Object.assign(result, filtered);
+     }
+   }
+   return result;

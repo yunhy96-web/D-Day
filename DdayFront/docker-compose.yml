@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      args:
+        # 백엔드 API 주소
+        EXPO_PUBLIC_API_URL: ${EXPO_PUBLIC_API_URL:-http://43.202.89.12:8080}
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
