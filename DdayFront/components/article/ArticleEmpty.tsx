@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts';
-import { typography, spacing } from '@/styles';
+import { spacing, borderRadius } from '@/styles';
 
 interface ArticleEmptyProps {
   onAdd?: () => void;
@@ -13,20 +13,22 @@ export function ArticleEmpty({ onAdd }: ArticleEmptyProps) {
 
   return (
     <View style={styles.container}>
-      <Ionicons name="document-text-outline" size={64} color={colors.gray300} />
-      <Text style={[styles.title, { color: colors.textSecondary }]}>
-        No articles yet
+      <View style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
+        <Ionicons name="chatbubbles-outline" size={48} color={colors.primary} />
+      </View>
+      <Text style={[styles.title, { color: colors.textPrimary }]}>
+        No posts yet
       </Text>
-      <Text style={[styles.description, { color: colors.textTertiary }]}>
-        Create your first article to get started
+      <Text style={[styles.description, { color: colors.textSecondary }]}>
+        Be the first to share something with the community!
       </Text>
       {onAdd && (
         <TouchableOpacity
           style={[styles.addButton, { backgroundColor: colors.primary }]}
           onPress={onAdd}
         >
-          <Ionicons name="add" size={20} color="#FFFFFF" />
-          <Text style={styles.addButtonText}>Create Article</Text>
+          <Ionicons name="create-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.addButtonText}>Write a Post</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -40,26 +42,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing[8],
   },
+  iconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing[5],
+  },
   title: {
-    ...typography.h3,
-    marginTop: spacing[4],
+    fontSize: 20,
+    fontWeight: '700',
     marginBottom: spacing[2],
   },
   description: {
-    ...typography.body,
+    fontSize: 15,
     textAlign: 'center',
+    lineHeight: 22,
     marginBottom: spacing[6],
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: spacing[3],
-    paddingHorizontal: spacing[5],
-    borderRadius: 8,
+    paddingHorizontal: spacing[6],
+    borderRadius: borderRadius.full,
+    gap: spacing[2],
   },
   addButtonText: {
     color: '#FFFFFF',
-    ...typography.button,
-    marginLeft: spacing[2],
+    fontSize: 15,
+    fontWeight: '600',
   },
 });

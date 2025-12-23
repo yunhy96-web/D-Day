@@ -43,3 +43,5 @@ bin/
 
 ### Application Secrets ###
 application-dev.yml
+application-local.yml
+src/main/resources/application-local.yml

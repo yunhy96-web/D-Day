@@ -1,32 +1,27 @@
 import React from 'react';
-import { View, Text, StyleSheet, Alert, Switch, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Button, Card } from '@/components';
 import { useAuth, useTheme } from '@/contexts';
-import { typography, spacing, layout, borderRadius } from '@/styles';
+import { confirm } from '@/utils/alert';
+import { spacing, layout, borderRadius, shadows } from '@/styles';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   const { colors, isDark, themeMode, setThemeMode } = useTheme();
   const { user, logout } = useAuth();
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/(auth)/login');
-          },
-        },
-      ]
-    );
+  const handleLogout = async () => {
+    const confirmed = await confirm({
+      title: 'Logout',
+      message: 'Are you sure you want to logout?',
+      confirmText: 'Logout',
+    });
+
+    if (confirmed) {
+      await logout();
+      router.replace('/(auth)/login');
+    }
   };
 
   const handleThemeChange = (mode: 'light' | 'dark' | 'system') => {
@@ -39,84 +34,100 @@ export default function ProfileScreen() {
     { key: 'system', label: 'System', icon: 'phone-portrait-outline' },
   ] as const;
 
+  const getInitial = () => {
+    if (user?.nickname) return user.nickname.charAt(0).toUpperCase();
+    if (user?.email) return user.email.charAt(0).toUpperCase();
+    return 'U';
+  };
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.backgroundSecondary }]}
     >
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.textPrimary }]}>Profile</Text>
-
-        <Card style={styles.profileCard}>
-          <View style={styles.avatarContainer}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
+          {/* Profile Header */}
+          <View style={[styles.profileCard, { backgroundColor: colors.background }, !isDark && shadows.md]}>
             <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-              <Text style={styles.avatarText}>
-                {user?.email?.charAt(0).toUpperCase() || 'U'}
+              <Text style={styles.avatarText}>{getInitial()}</Text>
+            </View>
+            <View style={styles.profileInfo}>
+              <Text style={[styles.nickname, { color: colors.textPrimary }]}>
+                {user?.nickname || 'User'}
+              </Text>
+              <Text style={[styles.email, { color: colors.textSecondary }]}>
+                {user?.email || ''}
               </Text>
             </View>
           </View>
-          <Text style={[styles.email, { color: colors.textPrimary }]}>
-            {user?.email || 'User'}
-          </Text>
-        </Card>
 
-        {/* Theme Settings */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-            Theme
-          </Text>
-          <Card style={styles.themeCard}>
-            {themeOptions.map((option) => (
-              <TouchableOpacity
-                key={option.key}
-                style={[
-                  styles.themeOption,
-                  themeMode === option.key && {
-                    backgroundColor: colors.primary + '15',
-                  },
-                ]}
-                onPress={() => handleThemeChange(option.key)}
-              >
-                <View style={styles.themeOptionLeft}>
-                  <Ionicons
-                    name={option.icon as any}
-                    size={22}
-                    color={themeMode === option.key ? colors.primary : colors.textSecondary}
-                  />
-                  <Text
-                    style={[
-                      styles.themeOptionText,
-                      {
-                        color:
-                          themeMode === option.key
-                            ? colors.primary
-                            : colors.textPrimary,
-                      },
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
-                </View>
-                {themeMode === option.key && (
-                  <Ionicons name="checkmark" size={22} color={colors.primary} />
-                )}
-              </TouchableOpacity>
-            ))}
-          </Card>
-        </View>
+          {/* Theme Settings */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+              Appearance
+            </Text>
+            <View style={[styles.themeCard, { backgroundColor: colors.background }, !isDark && shadows.sm]}>
+              {themeOptions.map((option, index) => (
+                <TouchableOpacity
+                  key={option.key}
+                  style={[
+                    styles.themeOption,
+                    themeMode === option.key && {
+                      backgroundColor: colors.primary + '12',
+                    },
+                    index < themeOptions.length - 1 && {
+                      borderBottomWidth: 1,
+                      borderBottomColor: isDark ? colors.gray200 : colors.gray100,
+                    },
+                  ]}
+                  onPress={() => handleThemeChange(option.key)}
+                >
+                  <View style={styles.themeOptionLeft}>
+                    <View style={[
+                      styles.iconContainer,
+                      { backgroundColor: themeMode === option.key ? colors.primary + '20' : (isDark ? colors.gray200 : colors.gray100) }
+                    ]}>
+                      <Ionicons
+                        name={option.icon as any}
+                        size={18}
+                        color={themeMode === option.key ? colors.primary : colors.textSecondary}
+                      />
+                    </View>
+                    <Text
+                      style={[
+                        styles.themeOptionText,
+                        {
+                          color: themeMode === option.key ? colors.primary : colors.textPrimary,
+                          fontWeight: themeMode === option.key ? '600' : '400',
+                        },
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </View>
+                  {themeMode === option.key && (
+                    <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
 
-        {/* Account */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-            Account
-          </Text>
-          <Button
-            title="Logout"
-            variant="outline"
-            onPress={handleLogout}
-            fullWidth
-          />
+          {/* Account */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+              Account
+            </Text>
+            <TouchableOpacity
+              style={[styles.logoutButton, { backgroundColor: colors.error + '12' }]}
+              onPress={handleLogout}
+            >
+              <Ionicons name="log-out-outline" size={20} color={colors.error} />
+              <Text style={[styles.logoutText, { color: colors.error }]}>Logout</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -125,46 +136,56 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  content: {
     padding: layout.screenPadding,
   },
-  title: {
-    ...typography.h2,
-    marginBottom: spacing[6],
-  },
   profileCard: {
+    flexDirection: 'row',
     alignItems: 'center',
-    padding: spacing[6],
+    padding: spacing[5],
+    borderRadius: borderRadius.xl,
     marginBottom: spacing[6],
-  },
-  avatarContainer: {
-    marginBottom: spacing[4],
+    gap: spacing[4],
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
-    ...typography.h1,
+    fontSize: 28,
+    fontWeight: '700',
     color: '#FFFFFF',
   },
+  profileInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  nickname: {
+    fontSize: 22,
+    fontWeight: '700',
+  },
   email: {
-    ...typography.body,
+    fontSize: 14,
   },
   section: {
     marginBottom: spacing[6],
   },
   sectionTitle: {
-    ...typography.label,
+    fontSize: 13,
+    fontWeight: '600',
     marginBottom: spacing[3],
+    marginLeft: spacing[1],
     textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   themeCard: {
-    padding: 0,
+    borderRadius: borderRadius.xl,
     overflow: 'hidden',
   },
   themeOption: {
@@ -172,15 +193,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: spacing[4],
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   themeOptionLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[3],
   },
+  iconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   themeOptionText: {
-    ...typography.body,
+    fontSize: 15,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing[4],
+    borderRadius: borderRadius.xl,
+    gap: spacing[2],
+  },
+  logoutText: {
+    fontSize: 15,
+    fontWeight: '600',
   },
 });

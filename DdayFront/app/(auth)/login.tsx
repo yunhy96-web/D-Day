@@ -6,12 +6,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
+  TouchableOpacity,
 } from 'react-native';
 import { Link, router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { Button, Input } from '@/components';
 import { useAuth, useTheme } from '@/contexts';
-import { typography, spacing, layout } from '@/styles';
+import { showAlert } from '@/utils/alert';
+import { spacing, layout, borderRadius } from '@/styles';
 
 export default function LoginScreen() {
   const { colors } = useTheme();
@@ -46,9 +48,9 @@ export default function LoginScreen() {
       await login({ email, password });
       router.replace('/(tabs)');
     } catch (error: any) {
-      Alert.alert(
+      showAlert(
         'Login Failed',
-        error.response?.data?.message || 'Please check your email and password'
+        error.response?.data?.message || error.message || 'Please check your email and password'
       );
     } finally {
       setIsLoading(false);
@@ -63,11 +65,16 @@ export default function LoginScreen() {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
+        {/* Logo/Welcome Section */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>Login</Text>
+          <View style={[styles.logoContainer, { backgroundColor: colors.primary + '15' }]}>
+            <Ionicons name="chatbubbles" size={40} color={colors.primary} />
+          </View>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>Welcome Back!</Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Welcome back to Articles
+            Sign in to continue to Community
           </Text>
         </View>
 
@@ -95,7 +102,7 @@ export default function LoginScreen() {
           />
 
           <Button
-            title="Login"
+            title="Sign In"
             onPress={handleLogin}
             loading={isLoading}
             fullWidth
@@ -108,7 +115,9 @@ export default function LoginScreen() {
             Don't have an account?
           </Text>
           <Link href="/(auth)/signup" asChild>
-            <Text style={[styles.signupLink, { color: colors.primary }]}>Sign Up</Text>
+            <TouchableOpacity>
+              <Text style={[styles.signupLink, { color: colors.primary }]}>Sign Up</Text>
+            </TouchableOpacity>
           </Link>
         </View>
       </ScrollView>
@@ -126,32 +135,44 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   header: {
-    marginBottom: spacing[8],
+    alignItems: 'center',
+    marginBottom: spacing[10],
+  },
+  logoContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing[5],
   },
   title: {
-    ...typography.h1,
+    fontSize: 28,
+    fontWeight: '800',
     marginBottom: spacing[2],
   },
   subtitle: {
-    ...typography.body,
+    fontSize: 15,
+    textAlign: 'center',
   },
   form: {
     marginBottom: spacing[8],
   },
   loginButton: {
     marginTop: spacing[4],
+    borderRadius: borderRadius.xl,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    gap: spacing[1],
   },
   footerText: {
-    ...typography.body,
-    marginRight: spacing[2],
+    fontSize: 14,
   },
   signupLink: {
-    ...typography.body,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

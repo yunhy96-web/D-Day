@@ -12,12 +12,17 @@ import { LoginRequest, SignUpRequest } from '../types/api';
 
 interface User {
   email: string;
+  nickname: string;
+  timezone: string;
+  userId: number | null;
+  role: string | null;
 }
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  timezone: string | null;
   login: (data: LoginRequest) => Promise<void>;
   signUp: (data: SignUpRequest) => Promise<void>;
   logout: () => Promise<void>;
@@ -50,10 +55,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const checkAuthStatus = async () => {
     try {
       const token = await storage.getAccessToken();
+      const savedEmail = await storage.getEmail();
+      const savedTimezone = await storage.getTimezone();
+      const savedNickname = await storage.getNickname();
+      const savedUserId = await storage.getUserId();
+      const savedRole = await storage.getRole();
       if (token) {
-        // TODO: 서버에서 유저 정보 가져오기 API가 있다면 호출
-        // 지금은 토큰이 있으면 로그인된 것으로 간주
-        setUser({ email: '' });
+        setUser({
+          email: savedEmail || '',
+          nickname: savedNickname || '',
+          timezone: savedTimezone || 'UTC',
+          userId: savedUserId,
+          role: savedRole,
+        });
       }
     } catch (error) {
       console.error('Auth check failed:', error);
@@ -65,7 +79,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (data: LoginRequest) => {
     const response = await authService.login(data);
     if (response.data) {
-      setUser({ email: data.email });
+      const timezone = response.data.timezone || 'UTC';
+      const nickname = response.data.nickname || '';
+      const userId = response.data.userId ?? null;
+      const role = response.data.role || 'USER';
+      await storage.setEmail(data.email);
+      await storage.setTimezone(timezone);
+      await storage.setNickname(nickname);
+      if (userId !== null) {
+        await storage.setUserId(userId);
+      }
+      await storage.setRole(role);
+      setUser({ email: data.email, nickname, timezone, userId, role });
     }
   };
 
@@ -86,6 +111,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         user,
         isLoading,
         isAuthenticated: !!user,
+        timezone: user?.timezone || null,
         login,
         signUp,
         logout,

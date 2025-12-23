@@ -2,11 +2,16 @@ import { useState, useCallback } from 'react';
 import { articleService } from '../services';
 import { Article, AddArticleRequest, UpdateArticleRequest } from '../types/api';
 
+interface ArticleFilters {
+  articleType?: string;
+  topic?: string;
+}
+
 interface UseArticlesReturn {
   articles: Article[];
   isLoading: boolean;
   error: string | null;
-  fetchArticles: () => Promise<void>;
+  fetchArticles: (filters?: ArticleFilters) => Promise<void>;
   createArticle: (data: AddArticleRequest) => Promise<Article | null>;
   updateArticle: (uuid: string, data: UpdateArticleRequest) => Promise<Article | null>;
   deleteArticle: (uuid: string) => Promise<boolean>;
@@ -18,16 +23,16 @@ export function useArticles(): UseArticlesReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchArticles = useCallback(async () => {
+  const fetchArticles = useCallback(async (filters?: ArticleFilters) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await articleService.getAll();
+      const response = await articleService.getAll(filters);
       if (response.data) {
         setArticles(response.data);
       }
     } catch (err) {
-      setError('Failed to load articles.');
+      setError('Failed to load posts.');
       console.error('Fetch articles error:', err);
     } finally {
       setIsLoading(false);
