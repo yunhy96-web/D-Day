@@ -14,7 +14,7 @@ import {
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useArticles, useCommonCodes } from '@/hooks';
-import { useTheme, useAuth } from '@/contexts';
+import { useTheme } from '@/contexts';
 import { showAlert } from '@/utils/alert';
 import { spacing, layout, borderRadius, shadows } from '@/styles';
 import { CommonCode } from '@/types/api';
@@ -32,9 +32,11 @@ const getTypeIcon = (code: string): keyof typeof Ionicons.glyphMap => {
   return iconMap[code] || 'folder-outline';
 };
 
+// 관리자 전용 article type 코드 (백엔드와 동일하게 유지)
+const ADMIN_ONLY_ARTICLE_TYPES = ['SECRET', 'NOTICE'];
+
 export default function AddArticleScreen() {
   const { colors, isDark } = useTheme();
-  const { user } = useAuth();
   const { createArticle } = useArticles();
   const { articleTypes, articleTopics } = useCommonCodes();
   const [selectedArticleType, setSelectedArticleType] = useState<CommonCode | null>(null);
@@ -46,8 +48,10 @@ export default function AddArticleScreen() {
   const [articleTypeModalVisible, setArticleTypeModalVisible] = useState(false);
   const [topicModalVisible, setTopicModalVisible] = useState(false);
 
-  // Check if user can select article type (DEV or ADMIN only)
-  const canSelectArticleType = user?.role === 'DEV' || user?.role === 'ADMIN';
+  // 백엔드에서 관리자 전용 타입(SECRET, NOTICE)을 반환하면 관리자 권한이 있는 것
+  const canSelectArticleType = articleTypes.some(type =>
+    ADMIN_ONLY_ARTICLE_TYPES.includes(type.code)
+  );
 
   const validate = () => {
     const newErrors: { articleType?: string; topic?: string; title?: string; content?: string } = {};

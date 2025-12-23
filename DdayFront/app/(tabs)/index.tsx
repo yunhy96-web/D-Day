@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useMemo } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -33,15 +33,6 @@ export default function HomeScreen() {
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [topicModalOpen, setTopicModalOpen] = useState(false);
-
-  // Filter out SECRET type for regular users (only DEV/ADMIN can see SECRET)
-  const filteredArticleTypes = useMemo(() => {
-    const isAdmin = user?.role === 'DEV' || user?.role === 'ADMIN';
-    if (isAdmin) {
-      return articleTypes;
-    }
-    return articleTypes.filter((type) => type.code !== 'SECRET');
-  }, [articleTypes, user?.role]);
 
   // 화면이 focus될 때마다 새로고침
   useFocusEffect(
@@ -150,12 +141,6 @@ export default function HomeScreen() {
     return topic?.label || selectedTopic;
   };
 
-  const getSelectedTypeName = () => {
-    if (!selectedArticleType) return 'All';
-    const type = articleTypes.find((t) => t.code === selectedArticleType);
-    return type?.label || selectedArticleType;
-  };
-
   if (isLoading && articles.length === 0) {
     return <Loading fullScreen text="Loading posts..." />;
   }
@@ -186,17 +171,6 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.headerBottom}>
-          {/* Type Filter Button (shows current selection from sidebar) */}
-          <TouchableOpacity
-            onPress={() => setSidebarOpen(true)}
-            style={[styles.typeButton, { backgroundColor: isDark ? colors.gray200 : colors.gray100 }]}
-          >
-            <Ionicons name="apps-outline" size={16} color={colors.primary} />
-            <Text style={[styles.typeText, { color: colors.textPrimary }]} numberOfLines={1}>
-              {getSelectedTypeName()}
-            </Text>
-          </TouchableOpacity>
-
           {/* Topic Filter Dropdown */}
           <TouchableOpacity
             onPress={() => setTopicModalOpen(true)}
@@ -257,7 +231,7 @@ export default function HomeScreen() {
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        articleTypes={filteredArticleTypes}
+        articleTypes={articleTypes}
         selectedType={selectedArticleType}
         onSelectType={handleArticleTypeChange}
       />
@@ -370,18 +344,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '800',
-  },
-  typeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[2],
-    borderRadius: borderRadius.full,
-    gap: spacing[1],
-  },
-  typeText: {
-    fontSize: 13,
-    fontWeight: '500',
   },
   topicButton: {
     flex: 1,

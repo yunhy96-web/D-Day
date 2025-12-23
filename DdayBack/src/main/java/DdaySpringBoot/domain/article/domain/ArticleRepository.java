@@ -15,4 +15,9 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     List<Article> findByArticleTypeAndTopicOrderByCreatedAtDesc(String articleType, String topic);
 
     List<Article> findAllByOrderByCreatedAtDesc();
+
+    // 권한 기반 조회용
+    List<Article> findByArticleTypeInOrderByCreatedAtDesc(List<String> articleTypes);
+
+    List<Article> findByArticleTypeInAndTopicOrderByCreatedAtDesc(List<String> articleTypes, String topic);
 }
