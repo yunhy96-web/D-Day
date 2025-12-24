@@ -54,23 +54,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const checkAuthStatus = async () => {
     try {
-      const token = await storage.getAccessToken();
+      const accessToken = await storage.getAccessToken();
+      const refreshToken = await storage.getRefreshToken();
+
+      // accessToken과 refreshToken 둘 다 있어야 로그인 상태로 인정
+      if (!accessToken || !refreshToken) {
+        // 토큰이 불완전하면 모두 정리
+        if (accessToken || refreshToken) {
+          console.log('Incomplete tokens found, clearing...');
+          await storage.clearTokens();
+        }
+        setIsLoading(false);
+        return;
+      }
+
       const savedEmail = await storage.getEmail();
       const savedTimezone = await storage.getTimezone();
       const savedNickname = await storage.getNickname();
       const savedUserId = await storage.getUserId();
       const savedRole = await storage.getRole();
-      if (token) {
-        setUser({
-          email: savedEmail || '',
-          nickname: savedNickname || '',
-          timezone: savedTimezone || 'UTC',
-          userId: savedUserId,
-          role: savedRole,
-        });
-      }
+
+      setUser({
+        email: savedEmail || '',
+        nickname: savedNickname || '',
+        timezone: savedTimezone || 'UTC',
+        userId: savedUserId,
+        role: savedRole,
+      });
     } catch (error) {
       console.error('Auth check failed:', error);
+      // 에러 발생 시 토큰 정리
+      await storage.clearTokens();
     } finally {
       setIsLoading(false);
     }

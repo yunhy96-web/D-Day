@@ -5,6 +5,7 @@ import { Article, AddArticleRequest, UpdateArticleRequest } from '../types/api';
 interface ArticleFilters {
   articleType?: string;
   topic?: string;
+  keyword?: string;
 }
 
 interface UseArticlesReturn {

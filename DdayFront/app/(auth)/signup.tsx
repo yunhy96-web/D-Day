@@ -23,7 +23,7 @@ const TIMEZONE_OPTIONS = [
 ];
 
 export default function SignUpScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const { signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -190,7 +190,7 @@ export default function SignUpScreen() {
             activeOpacity={1}
             onPress={() => setShowTimezoneModal(false)}
           >
-            <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+            <View style={[styles.modalContent, { backgroundColor: isDark ? colors.gray100 : colors.background }]}>
               <View style={[styles.modalHandle, { backgroundColor: colors.gray300 }]} />
               <View style={styles.modalHeader}>
                 <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>

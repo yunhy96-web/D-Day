@@ -131,7 +131,7 @@ export default function AddArticleScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.backgroundSecondary }]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
@@ -142,7 +142,7 @@ export default function AddArticleScreen() {
       >
         {/* Article Type Selection (DEV/ADMIN only) */}
         {canSelectArticleType && (
-          <View style={[styles.inputCard, { backgroundColor: colors.background }, !isDark && shadows.sm]}>
+          <View style={[styles.inputCard, { backgroundColor: isDark ? colors.gray100 : colors.background }, !isDark && shadows.sm]}>
             <View style={styles.labelRow}>
               <Text style={[styles.label, { color: colors.textSecondary }]}>Article Type</Text>
               <View style={[styles.adminBadge, { backgroundColor: colors.warning + '20' }]}>
@@ -188,7 +188,7 @@ export default function AddArticleScreen() {
         )}
 
         {/* Topic Selection */}
-        <View style={[styles.inputCard, { backgroundColor: colors.background }, !isDark && shadows.sm]}>
+        <View style={[styles.inputCard, { backgroundColor: isDark ? colors.gray100 : colors.background }, !isDark && shadows.sm]}>
           <Text style={[styles.label, { color: colors.textSecondary }]}>Topic</Text>
           <TouchableOpacity
             style={[
@@ -219,7 +219,7 @@ export default function AddArticleScreen() {
         </View>
 
         {/* Title Input */}
-        <View style={[styles.inputCard, { backgroundColor: colors.background }, !isDark && shadows.sm]}>
+        <View style={[styles.inputCard, { backgroundColor: isDark ? colors.gray100 : colors.background }, !isDark && shadows.sm]}>
           <Text style={[styles.label, { color: colors.textSecondary }]}>Title</Text>
           <TextInput
             style={[
@@ -239,7 +239,7 @@ export default function AddArticleScreen() {
         </View>
 
         {/* Content Input */}
-        <View style={[styles.inputCard, { backgroundColor: colors.background }, !isDark && shadows.sm]}>
+        <View style={[styles.inputCard, { backgroundColor: isDark ? colors.gray100 : colors.background }, !isDark && shadows.sm]}>
           <Text style={[styles.label, { color: colors.textSecondary }]}>Content</Text>
           <TextInput
             style={[
@@ -269,7 +269,7 @@ export default function AddArticleScreen() {
       </ScrollView>
 
       {/* Action Buttons */}
-      <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+      <View style={[styles.footer, { backgroundColor: isDark ? colors.gray100 : colors.background, borderTopColor: colors.border }]}>
         <TouchableOpacity
           style={[styles.cancelButton, { borderColor: colors.border }]}
           onPress={() => router.back()}
@@ -300,7 +300,7 @@ export default function AddArticleScreen() {
         onRequestClose={() => setTopicModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+          <View style={[styles.modalContent, { backgroundColor: isDark ? colors.gray100 : colors.background }]}>
             <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Select Topic</Text>
               <TouchableOpacity
@@ -329,7 +329,7 @@ export default function AddArticleScreen() {
         onRequestClose={() => setArticleTypeModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+          <View style={[styles.modalContent, { backgroundColor: isDark ? colors.gray100 : colors.background }]}>
             <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Select Article Type</Text>
               <TouchableOpacity

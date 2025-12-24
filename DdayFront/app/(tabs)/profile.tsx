@@ -42,12 +42,24 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.backgroundSecondary }]}
+      style={[styles.container, { backgroundColor: colors.background }]}
     >
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={[styles.backButton, { backgroundColor: isDark ? colors.gray200 : colors.gray100 }]}
+        >
+          <Ionicons name="arrow-back" size={20} color={colors.textPrimary} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Profile</Text>
+        <View style={styles.headerSpacer} />
+      </View>
+
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          {/* Profile Header */}
-          <View style={[styles.profileCard, { backgroundColor: colors.background }, !isDark && shadows.md]}>
+          {/* Profile Card */}
+          <View style={[styles.profileCard, { backgroundColor: isDark ? colors.gray100 : colors.background }, !isDark && shadows.md]}>
             <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
               <Text style={styles.avatarText}>{getInitial()}</Text>
             </View>
@@ -66,7 +78,7 @@ export default function ProfileScreen() {
             <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
               Appearance
             </Text>
-            <View style={[styles.themeCard, { backgroundColor: colors.background }, !isDark && shadows.sm]}>
+            <View style={[styles.themeCard, { backgroundColor: isDark ? colors.gray100 : colors.background }, !isDark && shadows.sm]}>
               {themeOptions.map((option, index) => (
                 <TouchableOpacity
                   key={option.key}
@@ -135,6 +147,27 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: layout.screenPadding,
+    paddingVertical: spacing[3],
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  headerSpacer: {
+    width: 40,
   },
   scrollView: {
     flex: 1,

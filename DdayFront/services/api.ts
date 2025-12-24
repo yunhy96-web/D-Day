@@ -91,7 +91,12 @@ api.interceptors.response.use(
       try {
         const refreshToken = await storage.getRefreshToken();
         if (!refreshToken) {
-          throw new Error('No refresh token');
+          // refresh token이 없으면 조용히 로그인 화면으로 리다이렉트
+          console.log('No refresh token found, redirecting to login...');
+          processQueue(new Error('No refresh token'), null);
+          await storage.clearTokens(true); // emit event to redirect to login
+          isRefreshing = false;
+          return Promise.reject(new Error('Session expired'));
         }
 
         const response = await api.post<ApiResponse<TokenResponse>>(

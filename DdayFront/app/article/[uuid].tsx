@@ -137,11 +137,11 @@ export default function ArticleDetailScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.backgroundSecondary }]}
-      edges={['bottom']}
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['top', 'bottom']}
     >
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.background }]}>
+      <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={[styles.backButton, { backgroundColor: isDark ? colors.gray200 : colors.gray100 }]}
@@ -184,7 +184,7 @@ export default function ArticleDetailScreen() {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={true}
         refreshControl={
           <RefreshControl
             refreshing={isLoading}
@@ -194,7 +194,7 @@ export default function ArticleDetailScreen() {
         }
       >
         {/* Author Card */}
-        <View style={[styles.authorCard, { backgroundColor: colors.background }, !isDark && shadows.sm]}>
+        <View style={[styles.authorCard, { backgroundColor: isDark ? colors.gray100 : colors.background }, !isDark && shadows.sm]}>
           <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
             <Text style={styles.avatarText}>{getInitial(article.authorNickname)}</Text>
           </View>
@@ -215,7 +215,7 @@ export default function ArticleDetailScreen() {
         </View>
 
         {/* Content Card */}
-        <View style={[styles.contentCard, { backgroundColor: colors.background }, !isDark && shadows.sm]}>
+        <View style={[styles.contentCard, { backgroundColor: isDark ? colors.gray100 : colors.background }, !isDark && shadows.sm]}>
           <Text style={[styles.title, { color: colors.textPrimary }]}>
             {getTitle()}
           </Text>

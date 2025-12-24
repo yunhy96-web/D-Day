@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,10 @@ import {
   Modal,
   Pressable,
   ActivityIndicator,
+  TextInput,
+  Keyboard,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { confirm, showAlert } from '@/utils/alert';
@@ -30,26 +34,53 @@ export default function HomeScreen() {
   const { articles, isLoading, isLoadingMore, error, hasMore, fetchArticles, loadMore, deleteArticle } = useArticles();
   const { articleTypes, articleTopics } = useCommonCodes();
   const [selectedLang, setSelectedLang] = useState<Language>('original');
-  const [selectedArticleType, setSelectedArticleType] = useState<string | null>(null);
+  const [selectedArticleType, setSelectedArticleType] = useState<string | null>('NORMAL');
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [topicModalOpen, setTopicModalOpen] = useState(false);
+  const [searchVisible, setSearchVisible] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [activeKeyword, setActiveKeyword] = useState<string | null>(null);
 
-  // 화면이 focus될 때마다 새로고침
+  // 스크롤 위치 저장용
+  const flatListRef = useRef<FlatList>(null);
+  const scrollOffset = useRef(0);
+  const shouldRestoreScroll = useRef(false);
+
+  // 화면이 focus될 때 스크롤 위치 복원 또는 새로고침
   useFocusEffect(
     useCallback(() => {
-      fetchArticles({
-        articleType: selectedArticleType || undefined,
-        topic: selectedTopic || undefined,
-      });
-    }, [fetchArticles, selectedArticleType, selectedTopic])
+      if (shouldRestoreScroll.current) {
+        // 글 상세에서 돌아온 경우 스크롤 위치 복원
+        shouldRestoreScroll.current = false;
+        setTimeout(() => {
+          flatListRef.current?.scrollToOffset({
+            offset: scrollOffset.current,
+            animated: false,
+          });
+        }, 100);
+      } else {
+        // 처음 진입 또는 필터 변경 시 새로고침
+        fetchArticles({
+          articleType: selectedArticleType || undefined,
+          topic: selectedTopic || undefined,
+          keyword: activeKeyword || undefined,
+        });
+      }
+    }, [fetchArticles, selectedArticleType, selectedTopic, activeKeyword])
   );
+
+  // 스크롤 위치 추적
+  const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    scrollOffset.current = event.nativeEvent.contentOffset.y;
+  }, []);
 
   const handleArticleTypeChange = (articleType: string | null) => {
     setSelectedArticleType(articleType);
     fetchArticles({
       articleType: articleType || undefined,
       topic: selectedTopic || undefined,
+      keyword: activeKeyword || undefined,
     });
   };
 
@@ -59,6 +90,28 @@ export default function HomeScreen() {
     fetchArticles({
       articleType: selectedArticleType || undefined,
       topic: topic || undefined,
+      keyword: activeKeyword || undefined,
+    });
+  };
+
+  const handleSearch = () => {
+    const keyword = searchText.trim();
+    setActiveKeyword(keyword || null);
+    Keyboard.dismiss();
+    fetchArticles({
+      articleType: selectedArticleType || undefined,
+      topic: selectedTopic || undefined,
+      keyword: keyword || undefined,
+    });
+  };
+
+  const handleClearSearch = () => {
+    setSearchText('');
+    setActiveKeyword(null);
+    setSearchVisible(false);
+    fetchArticles({
+      articleType: selectedArticleType || undefined,
+      topic: selectedTopic || undefined,
     });
   };
 
@@ -82,8 +135,9 @@ export default function HomeScreen() {
     fetchArticles({
       articleType: selectedArticleType || undefined,
       topic: selectedTopic || undefined,
+      keyword: activeKeyword || undefined,
     });
-  }, [fetchArticles, selectedArticleType, selectedTopic]);
+  }, [fetchArticles, selectedArticleType, selectedTopic, activeKeyword]);
 
   const handleAddPress = () => {
     router.push('/article/add');
@@ -94,6 +148,7 @@ export default function HomeScreen() {
   };
 
   const handleCardPress = (article: Article) => {
+    shouldRestoreScroll.current = true;
     router.push(`/article/${article.uuid}`);
   };
 
@@ -148,10 +203,10 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.backgroundSecondary }]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['top']}
     >
-      <View style={[styles.header, { backgroundColor: colors.background }]}>
+      <View style={styles.header}>
         <View style={styles.headerTop}>
           {/* Menu Button */}
           <TouchableOpacity
@@ -164,6 +219,21 @@ export default function HomeScreen() {
           <Text style={[styles.title, { color: colors.textPrimary }]}>Community</Text>
 
           <View style={styles.headerRight}>
+            {/* Search Button */}
+            <TouchableOpacity
+              onPress={() => setSearchVisible(!searchVisible)}
+              style={[
+                styles.refreshButton,
+                { backgroundColor: searchVisible || activeKeyword ? colors.primary + '20' : (isDark ? colors.gray200 : colors.gray100) }
+              ]}
+            >
+              <Ionicons
+                name="search"
+                size={20}
+                color={searchVisible || activeKeyword ? colors.primary : colors.textPrimary}
+              />
+            </TouchableOpacity>
+
             {/* Refresh Button */}
             <TouchableOpacity
               onPress={handleRefresh}
@@ -186,6 +256,48 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Search Bar */}
+        {searchVisible && (
+          <View style={styles.searchContainer}>
+            <View style={[styles.searchInputWrapper, { backgroundColor: isDark ? colors.gray200 : colors.gray100 }]}>
+              <Ionicons name="search" size={18} color={colors.textTertiary} />
+              <TextInput
+                style={[styles.searchInput, { color: colors.textPrimary }]}
+                placeholder="Search by title..."
+                placeholderTextColor={colors.textTertiary}
+                value={searchText}
+                onChangeText={setSearchText}
+                onSubmitEditing={handleSearch}
+                returnKeyType="search"
+                autoFocus
+              />
+              {searchText.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchText('')}>
+                  <Ionicons name="close-circle" size={18} color={colors.textTertiary} />
+                </TouchableOpacity>
+              )}
+            </View>
+            <TouchableOpacity
+              onPress={handleSearch}
+              style={[styles.searchButton, { backgroundColor: colors.primary }]}
+            >
+              <Text style={styles.searchButtonText}>Search</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Active Search Indicator */}
+        {activeKeyword && (
+          <View style={styles.activeSearchContainer}>
+            <Text style={[styles.activeSearchText, { color: colors.textSecondary }]}>
+              Searching: "{activeKeyword}"
+            </Text>
+            <TouchableOpacity onPress={handleClearSearch}>
+              <Ionicons name="close-circle" size={18} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+        )}
 
         <View style={styles.headerBottom}>
           {/* Topic Filter Dropdown */}
@@ -213,6 +325,9 @@ export default function HomeScreen() {
         </View>
       </View>
 
+      {/* Divider between header and content */}
+      <View style={[styles.headerDivider, { backgroundColor: colors.border }]} />
+
       {error && (
         <View
           style={[
@@ -229,9 +344,11 @@ export default function HomeScreen() {
         <ArticleEmpty onAdd={handleAddPress} />
       ) : (
         <FlatList
+          ref={flatListRef}
           data={articles}
           renderItem={renderItem}
           keyExtractor={(item) => item.uuid}
+          style={{ backgroundColor: colors.background }}
           contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl
@@ -240,7 +357,9 @@ export default function HomeScreen() {
               tintColor={colors.primary}
             />
           }
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={true}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
           onEndReached={() => {
             if (hasMore && !isLoadingMore) {
               loadMore();
@@ -277,7 +396,7 @@ export default function HomeScreen() {
           style={styles.modalOverlay}
           onPress={() => setTopicModalOpen(false)}
         >
-          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+          <View style={[styles.modalContent, { backgroundColor: isDark ? colors.gray100 : colors.background }]}>
             <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Select Topic</Text>
 
             {/* All Topics Option */}
@@ -340,6 +459,15 @@ export default function HomeScreen() {
           </View>
         </Pressable>
       </Modal>
+
+      {/* Floating Add Button */}
+      <TouchableOpacity
+        onPress={handleAddPress}
+        style={[styles.floatingButton, { backgroundColor: colors.primary }]}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="add" size={28} color="#FFFFFF" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -352,6 +480,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: layout.screenPadding,
     paddingTop: spacing[4],
     paddingBottom: spacing[3],
+  },
+  headerDivider: {
+    height: 1,
+    marginHorizontal: layout.screenPadding,
   },
   headerTop: {
     flexDirection: 'row',
@@ -481,5 +613,64 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     fontWeight: '500',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+    marginBottom: spacing[3],
+  },
+  searchInputWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing[3],
+    paddingVertical: spacing[2],
+    borderRadius: borderRadius.full,
+    gap: spacing[2],
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16, // 16px 미만이면 모바일에서 자동 확대됨
+    paddingVertical: spacing[1],
+  },
+  searchButton: {
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[2] + 2,
+    borderRadius: borderRadius.full,
+  },
+  searchButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  activeSearchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing[3],
+    paddingVertical: spacing[2],
+    marginBottom: spacing[2],
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    borderRadius: borderRadius.lg,
+  },
+  activeSearchText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  floatingButton: {
+    position: 'absolute',
+    right: spacing[4],
+    bottom: spacing[6],
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });

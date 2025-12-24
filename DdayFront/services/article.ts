@@ -11,12 +11,13 @@ import {
 interface ArticleFilters {
   articleType?: string;
   topic?: string;
+  keyword?: string;
   page?: number;
   size?: number;
 }
 
 export const articleService = {
-  // 게시글 목록 조회 (타입/주제별 필터링 가능, 페이지네이션 지원)
+  // 게시글 목록 조회 (타입/주제별 필터링, 키워드 검색, 페이지네이션 지원)
   async getAll(filters?: ArticleFilters): Promise<ApiResponse<PageResponse<Article>>> {
     const params = new URLSearchParams();
     if (filters?.articleType) {
@@ -24,6 +25,9 @@ export const articleService = {
     }
     if (filters?.topic) {
       params.append('topic', filters.topic);
+    }
+    if (filters?.keyword) {
+      params.append('keyword', filters.keyword);
     }
     params.append('page', String(filters?.page ?? 0));
     params.append('size', String(filters?.size ?? 20));

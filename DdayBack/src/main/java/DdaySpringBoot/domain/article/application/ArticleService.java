@@ -142,4 +142,26 @@ public class ArticleService implements ArticleServiceInterface {
     public Page<Article> findByArticleTypeAndTopicPaged(String articleType, String topic, Pageable pageable) {
         return articleRepository.findByArticleTypeAndTopicAndIsDeletedFalse(articleType, topic, pageable);
     }
+
+    @Override
+    public Page<Article> searchByKeyword(String userRole, String articleType, String topic, String keyword, Pageable pageable) {
+        // articleType이 지정된 경우
+        if (articleType != null && !articleType.isEmpty()) {
+            if (topic != null && !topic.isEmpty()) {
+                return articleRepository.findByArticleTypeAndTopicAndTitleContainingAndIsDeletedFalse(articleType, topic, keyword, pageable);
+            }
+            return articleRepository.findByArticleTypeAndTitleContainingAndIsDeletedFalse(articleType, keyword, pageable);
+        }
+
+        // articleType이 없는 경우 - 권한 기반 검색
+        List<String> readableTypes = permissionService.getReadableArticleTypes(userRole);
+        if (readableTypes.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        if (topic != null && !topic.isEmpty()) {
+            return articleRepository.findByArticleTypeInAndTopicAndTitleContainingAndIsDeletedFalse(readableTypes, topic, keyword, pageable);
+        }
+        return articleRepository.findByArticleTypeInAndTitleContainingAndIsDeletedFalse(readableTypes, keyword, pageable);
+    }
 }

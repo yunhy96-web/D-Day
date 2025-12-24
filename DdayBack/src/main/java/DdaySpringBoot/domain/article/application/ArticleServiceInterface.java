@@ -39,4 +39,7 @@ public interface ArticleServiceInterface {
     Page<Article> findByArticleTypePaged(String articleType, Pageable pageable);
 
     Page<Article> findByArticleTypeAndTopicPaged(String articleType, String topic, Pageable pageable);
+
+    // 검색 지원 메서드
+    Page<Article> searchByKeyword(String userRole, String articleType, String topic, String keyword, Pageable pageable);
 }

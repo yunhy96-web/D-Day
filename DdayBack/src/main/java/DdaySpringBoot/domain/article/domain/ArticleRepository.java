@@ -33,6 +33,15 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
     Page<Article> findByArticleTypeAndTopicAndIsDeletedFalse(String articleType, String topic, Pageable pageable);
 
+    // 검색 지원 메서드 (LIKE 검색)
+    Page<Article> findByArticleTypeInAndTitleContainingAndIsDeletedFalse(List<String> articleTypes, String keyword, Pageable pageable);
+
+    Page<Article> findByArticleTypeInAndTopicAndTitleContainingAndIsDeletedFalse(List<String> articleTypes, String topic, String keyword, Pageable pageable);
+
+    Page<Article> findByArticleTypeAndTitleContainingAndIsDeletedFalse(String articleType, String keyword, Pageable pageable);
+
+    Page<Article> findByArticleTypeAndTopicAndTitleContainingAndIsDeletedFalse(String articleType, String topic, String keyword, Pageable pageable);
+
     // 크롤링 중복 체크용 (삭제 여부 상관없이 source_id만 체크)
     boolean existsBySourceId(String sourceId);
 }

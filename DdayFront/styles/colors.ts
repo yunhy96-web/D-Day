@@ -58,12 +58,12 @@ export const darkColors: typeof colors = {
   secondaryDark: '#3634A3',
 
   // Grayscale (반전)
-  white: '#000000',
-  gray50: '#1C1C1E',
-  gray100: '#2C2C2E',
-  gray200: '#3A3A3C',
-  gray300: '#48484A',
-  gray400: '#636366',
+  white: '#0D0D0D',
+  gray50: '#1A1A1A',
+  gray100: '#252525',
+  gray200: '#333333',
+  gray300: '#444444',
+  gray400: '#666666',
   gray500: '#8E8E93',
   gray600: '#AEAEB2',
   gray700: '#C7C7CC',
@@ -78,17 +78,17 @@ export const darkColors: typeof colors = {
   info: '#64D2FF',
 
   // Background
-  background: '#000000',
-  backgroundSecondary: '#1C1C1E',
+  background: '#121212',
+  backgroundSecondary: '#1A1A1A',
 
   // Text
   textPrimary: '#FFFFFF',
-  textSecondary: '#8E8E93',
-  textTertiary: '#636366',
+  textSecondary: '#A0A0A0',
+  textTertiary: '#6B6B6B',
   textInverse: '#000000',
 
   // Border
-  border: '#38383A',
+  border: '#2A2A2A',
   borderFocused: '#818CF8',
 };
 

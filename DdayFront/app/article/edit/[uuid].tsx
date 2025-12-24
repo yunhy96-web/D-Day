@@ -97,7 +97,7 @@ export default function EditArticleScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.backgroundSecondary }]}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
@@ -107,7 +107,7 @@ export default function EditArticleScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Title Input */}
-        <View style={[styles.inputCard, { backgroundColor: colors.background }, !isDark && shadows.sm]}>
+        <View style={[styles.inputCard, { backgroundColor: isDark ? colors.gray100 : colors.background }, !isDark && shadows.sm]}>
           <Text style={[styles.label, { color: colors.textSecondary }]}>Title</Text>
           <TextInput
             style={[
@@ -127,7 +127,7 @@ export default function EditArticleScreen() {
         </View>
 
         {/* Content Input */}
-        <View style={[styles.inputCard, { backgroundColor: colors.background }, !isDark && shadows.sm]}>
+        <View style={[styles.inputCard, { backgroundColor: isDark ? colors.gray100 : colors.background }, !isDark && shadows.sm]}>
           <Text style={[styles.label, { color: colors.textSecondary }]}>Content</Text>
           <TextInput
             style={[
@@ -157,7 +157,7 @@ export default function EditArticleScreen() {
       </ScrollView>
 
       {/* Save Button */}
-      <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+      <View style={[styles.footer, { backgroundColor: isDark ? colors.gray100 : colors.background, borderTopColor: colors.border }]}>
         <TouchableOpacity
           style={[styles.saveButton, { backgroundColor: colors.primary }]}
           onPress={handleSave}

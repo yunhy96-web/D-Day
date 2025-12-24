@@ -51,12 +51,13 @@ public class ArticleController {
                 .body(ApiResponse.success("게시글 등록 성공", new ArticleResponse(savedArticle, user.getNickname(), user.getTimezone())));
     }
 
-    @Operation(summary = "전체 게시글 조회 (타입/주제별 필터링 가능, 권한에 따라 접근 가능한 타입만 조회, 페이지네이션 지원)")
+    @Operation(summary = "전체 게시글 조회 (타입/주제별 필터링, 키워드 검색, 페이지네이션 지원)")
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<ArticleResponse>>> findAllArticles(
             @AuthenticationPrincipal User user,
             @RequestParam(required = false) String articleType,
             @RequestParam(required = false) String topic,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         String userRole = user.getRole().name();
@@ -67,8 +68,16 @@ public class ArticleController {
 
         Page<Article> articlePage;
 
+        // 키워드 검색이 있는 경우
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            // articleType 권한 체크
+            if (articleType != null && !articleType.isEmpty() && !permissionService.canRead(userRole, articleType)) {
+                throw new AuthException(ErrorCode.ACCESS_DENIED, "해당 게시글 타입에 대한 접근 권한이 없습니다");
+            }
+            articlePage = articleService.searchByKeyword(userRole, articleType, topic, keyword.trim(), pageable);
+        }
         // articleType이 지정되었고 해당 타입에 대한 읽기 권한이 있는 경우만 필터링
-        if (articleType != null && !articleType.isEmpty()) {
+        else if (articleType != null && !articleType.isEmpty()) {
             if (!permissionService.canRead(userRole, articleType)) {
                 throw new AuthException(ErrorCode.ACCESS_DENIED, "해당 게시글 타입에 대한 접근 권한이 없습니다");
             }
