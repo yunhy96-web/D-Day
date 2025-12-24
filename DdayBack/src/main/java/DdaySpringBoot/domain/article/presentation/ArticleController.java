@@ -11,10 +11,15 @@ import DdaySpringBoot.domain.user.domain.UserRepository;
 import DdaySpringBoot.global.exception.AuthException;
 import DdaySpringBoot.global.exception.ErrorCode;
 import DdaySpringBoot.global.response.ApiResponse;
+import DdaySpringBoot.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -46,14 +51,21 @@ public class ArticleController {
                 .body(ApiResponse.success("게시글 등록 성공", new ArticleResponse(savedArticle, user.getNickname(), user.getTimezone())));
     }
 
-    @Operation(summary = "전체 게시글 조회 (타입/주제별 필터링 가능, 권한에 따라 접근 가능한 타입만 조회)")
+    @Operation(summary = "전체 게시글 조회 (타입/주제별 필터링 가능, 권한에 따라 접근 가능한 타입만 조회, 페이지네이션 지원)")
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ArticleResponse>>> findAllArticles(
+    public ResponseEntity<ApiResponse<PageResponse<ArticleResponse>>> findAllArticles(
             @AuthenticationPrincipal User user,
             @RequestParam(required = false) String articleType,
-            @RequestParam(required = false) String topic) {
+            @RequestParam(required = false) String topic,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
         String userRole = user.getRole().name();
-        List<Article> articles;
+
+        // 페이지 크기 제한 (최대 50)
+        size = Math.min(size, 50);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<Article> articlePage;
 
         // articleType이 지정되었고 해당 타입에 대한 읽기 권한이 있는 경우만 필터링
         if (articleType != null && !articleType.isEmpty()) {
@@ -61,18 +73,18 @@ public class ArticleController {
                 throw new AuthException(ErrorCode.ACCESS_DENIED, "해당 게시글 타입에 대한 접근 권한이 없습니다");
             }
             if (topic != null && !topic.isEmpty()) {
-                articles = articleService.findByArticleTypeAndTopic(articleType, topic);
+                articlePage = articleService.findByArticleTypeAndTopicPaged(articleType, topic, pageable);
             } else {
-                articles = articleService.findByArticleType(articleType);
+                articlePage = articleService.findByArticleTypePaged(articleType, pageable);
             }
         } else if (topic != null && !topic.isEmpty()) {
-            articles = articleService.findByTopicAndRole(topic, userRole);
+            articlePage = articleService.findByTopicAndRolePaged(topic, userRole, pageable);
         } else {
-            articles = articleService.findAllByRole(userRole);
+            articlePage = articleService.findAllByRolePaged(userRole, pageable);
         }
 
         // 작성자 ID 목록 추출
-        Set<Long> authorIds = articles.stream()
+        Set<Long> authorIds = articlePage.getContent().stream()
                 .map(Article::getCreatedBy)
                 .filter(id -> id != null)
                 .collect(Collectors.toSet());
@@ -81,7 +93,7 @@ public class ArticleController {
         Map<Long, String> authorNicknameMap = userRepository.findAllById(authorIds).stream()
                 .collect(Collectors.toMap(User::getNo, User::getNickname));
 
-        List<ArticleResponse> responses = articles.stream()
+        List<ArticleResponse> responses = articlePage.getContent().stream()
                 .map(article -> {
                     String nickname = article.getCreatedBy() != null
                             ? authorNicknameMap.getOrDefault(article.getCreatedBy(), "Unknown")
@@ -90,7 +102,7 @@ public class ArticleController {
                 })
                 .toList();
 
-        return ResponseEntity.ok(ApiResponse.success(responses));
+        return ResponseEntity.ok(ApiResponse.success(PageResponse.from(articlePage, responses)));
     }
 
     @Operation(summary = "주제별 게시글 조회 (권한에 따라 접근 가능한 타입만 조회)")

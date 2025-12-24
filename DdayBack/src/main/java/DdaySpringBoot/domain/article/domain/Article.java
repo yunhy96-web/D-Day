@@ -14,7 +14,12 @@ import java.util.UUID;
 
 @Entity
 @Getter
-@Table(name = "articles")
+@Table(name = "articles", indexes = {
+        @Index(name = "idx_article_type_created_at", columnList = "article_type, created_at DESC"),
+        @Index(name = "idx_topic_created_at", columnList = "topic, created_at DESC"),
+        @Index(name = "idx_is_deleted_created_at", columnList = "is_deleted, created_at DESC"),
+        @Index(name = "idx_created_at", columnList = "created_at DESC")
+})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 public class Article {
@@ -63,6 +68,12 @@ public class Article {
     @Column(name = "updated_by")
     private Long updatedBy;
 
+    @Column(name = "source_id", length = 100)
+    private String sourceId;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -72,7 +83,7 @@ public class Article {
     private LocalDateTime updatedAt;
 
     @Builder
-    public Article(String topic, String articleType, String title, String content, Long createdBy) {
+    public Article(String topic, String articleType, String title, String content, Long createdBy, String sourceId) {
         this.uuid = UUID.randomUUID().toString();
         this.topic = topic;
         this.articleType = articleType != null ? articleType : "NORMAL";
@@ -80,6 +91,7 @@ public class Article {
         this.content = content;
         this.createdBy = createdBy;
         this.updatedBy = createdBy;
+        this.sourceId = sourceId;
     }
 
     public void update(String topic, String articleType, String title, String content, Long updatedBy) {
@@ -112,5 +124,13 @@ public class Article {
 
     public boolean isSecret() {
         return "SECRET".equals(this.articleType);
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
+
+    public void restore() {
+        this.isDeleted = false;
     }
 }

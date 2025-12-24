@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { articleService } from '../services';
 import { Article, AddArticleRequest, UpdateArticleRequest } from '../types/api';
 
@@ -10,26 +10,38 @@ interface ArticleFilters {
 interface UseArticlesReturn {
   articles: Article[];
   isLoading: boolean;
+  isLoadingMore: boolean;
   error: string | null;
+  hasMore: boolean;
   fetchArticles: (filters?: ArticleFilters) => Promise<void>;
+  loadMore: () => Promise<void>;
   createArticle: (data: AddArticleRequest) => Promise<Article | null>;
   updateArticle: (uuid: string, data: UpdateArticleRequest) => Promise<Article | null>;
   deleteArticle: (uuid: string) => Promise<boolean>;
   getArticle: (uuid: string) => Promise<Article | null>;
 }
 
+const PAGE_SIZE = 20;
+
 export function useArticles(): UseArticlesReturn {
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const currentPage = useRef(0);
+  const currentFilters = useRef<ArticleFilters | undefined>(undefined);
 
   const fetchArticles = useCallback(async (filters?: ArticleFilters) => {
     setIsLoading(true);
     setError(null);
+    currentPage.current = 0;
+    currentFilters.current = filters;
     try {
-      const response = await articleService.getAll(filters);
+      const response = await articleService.getAll({ ...filters, page: 0, size: PAGE_SIZE });
       if (response.data) {
-        setArticles(response.data);
+        setArticles(response.data.content);
+        setHasMore(response.data.hasNext);
       }
     } catch (err) {
       setError('Failed to load posts.');
@@ -38,6 +50,29 @@ export function useArticles(): UseArticlesReturn {
       setIsLoading(false);
     }
   }, []);
+
+  const loadMore = useCallback(async () => {
+    if (isLoadingMore || !hasMore) return;
+
+    setIsLoadingMore(true);
+    try {
+      const nextPage = currentPage.current + 1;
+      const response = await articleService.getAll({
+        ...currentFilters.current,
+        page: nextPage,
+        size: PAGE_SIZE,
+      });
+      if (response.data) {
+        setArticles((prev) => [...prev, ...response.data!.content]);
+        setHasMore(response.data.hasNext);
+        currentPage.current = nextPage;
+      }
+    } catch (err) {
+      console.error('Load more articles error:', err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [isLoadingMore, hasMore]);
 
   const createArticle = useCallback(async (data: AddArticleRequest): Promise<Article | null> => {
     setIsLoading(true);
@@ -118,8 +153,11 @@ export function useArticles(): UseArticlesReturn {
   return {
     articles,
     isLoading,
+    isLoadingMore,
     error,
+    hasMore,
     fetchArticles,
+    loadMore,
     createArticle,
     updateArticle,
     deleteArticle,

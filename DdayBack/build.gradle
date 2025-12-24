@@ -44,6 +44,9 @@ dependencies {
 
     // WebClient for OpenAI API
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // Jsoup for web crawling
+    implementation 'org.jsoup:jsoup:1.17.2'
 }
 
 test {

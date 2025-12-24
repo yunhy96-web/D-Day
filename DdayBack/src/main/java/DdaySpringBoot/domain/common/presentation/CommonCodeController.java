@@ -2,6 +2,7 @@ package DdaySpringBoot.domain.common.presentation;
 
 import DdaySpringBoot.domain.common.application.CommonCodeService;
 import DdaySpringBoot.domain.common.dto.CommonCodeResponse;
+import DdaySpringBoot.domain.permission.application.PermissionService;
 import DdaySpringBoot.domain.user.domain.User;
 import DdaySpringBoot.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,9 +22,7 @@ import java.util.Set;
 public class CommonCodeController {
 
     private final CommonCodeService commonCodeService;
-
-    // 관리자 권한이 필요한 article type 코드들
-    private static final Set<String> ADMIN_ONLY_ARTICLE_TYPES = Set.of("SECRET", "NOTICE");
+    private final PermissionService permissionService;
 
     @Operation(summary = "그룹별 공통코드 조회")
     @GetMapping("/{groupCode}")
@@ -54,12 +53,13 @@ public class CommonCodeController {
             @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "en") String lang) {
 
-        boolean isAdmin = user != null &&
-                ("DEV".equals(user.getRole().name()) || "ADMIN".equals(user.getRole().name()));
+        // role_article_permissions 테이블에서 해당 권한이 읽을 수 있는 타입 목록 조회
+        String userRole = user.getRole().name();
+        Set<String> readableTypes = Set.copyOf(permissionService.getReadableArticleTypes(userRole));
 
         List<CommonCodeResponse> codes = commonCodeService.getCodesByGroup("ARTICLE_TYPE")
                 .stream()
-                .filter(code -> isAdmin || !ADMIN_ONLY_ARTICLE_TYPES.contains(code.getCode()))
+                .filter(code -> readableTypes.contains(code.getCode()))
                 .map(code -> new CommonCodeResponse(code, lang))
                 .toList();
 

@@ -1,9 +1,9 @@
 // 앱 컬러 팔레트
 export const colors = {
-  // Primary
-  primary: '#007AFF',
-  primaryLight: '#4DA3FF',
-  primaryDark: '#0055CC',
+  // Primary (Indigo)
+  primary: '#6366F1',
+  primaryLight: '#818CF8',
+  primaryDark: '#4F46E5',
 
   // Secondary
   secondary: '#5856D6',
@@ -42,15 +42,15 @@ export const colors = {
 
   // Border
   border: '#E5E7EB',
-  borderFocused: '#007AFF',
+  borderFocused: '#6366F1',
 };
 
 // 다크모드 컬러
 export const darkColors: typeof colors = {
-  // Primary (동일)
-  primary: '#0A84FF',
-  primaryLight: '#4DA3FF',
-  primaryDark: '#0055CC',
+  // Primary (Indigo - 다크모드용 밝은 버전)
+  primary: '#818CF8',
+  primaryLight: '#A5B4FC',
+  primaryDark: '#6366F1',
 
   // Secondary (동일)
   secondary: '#5E5CE6',
@@ -89,7 +89,7 @@ export const darkColors: typeof colors = {
 
   // Border
   border: '#38383A',
-  borderFocused: '#0A84FF',
+  borderFocused: '#818CF8',
 };
 
 export type ThemeColors = typeof colors;

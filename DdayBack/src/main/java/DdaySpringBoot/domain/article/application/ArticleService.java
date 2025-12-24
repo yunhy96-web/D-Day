@@ -11,6 +11,8 @@ import DdaySpringBoot.global.exception.EntityNotFoundException;
 import DdaySpringBoot.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,27 +41,27 @@ public class ArticleService implements ArticleServiceInterface {
 
     @Override
     public List<Article> findAll() {
-        return articleRepository.findAllByOrderByCreatedAtDesc();
+        return articleRepository.findByIsDeletedFalseOrderByCreatedAtDesc();
     }
 
     @Override
     public List<Article> findByTopic(String topic) {
-        return articleRepository.findByTopicOrderByCreatedAtDesc(topic);
+        return articleRepository.findByTopicAndIsDeletedFalseOrderByCreatedAtDesc(topic);
     }
 
     @Override
     public List<Article> findByArticleType(String articleType) {
-        return articleRepository.findByArticleTypeOrderByCreatedAtDesc(articleType);
+        return articleRepository.findByArticleTypeAndIsDeletedFalseOrderByCreatedAtDesc(articleType);
     }
 
     @Override
     public List<Article> findByArticleTypeAndTopic(String articleType, String topic) {
-        return articleRepository.findByArticleTypeAndTopicOrderByCreatedAtDesc(articleType, topic);
+        return articleRepository.findByArticleTypeAndTopicAndIsDeletedFalseOrderByCreatedAtDesc(articleType, topic);
     }
 
     @Override
     public Article findByUuid(String uuid) {
-        return articleRepository.findByUuid(uuid)
+        return articleRepository.findByUuidAndIsDeletedFalse(uuid)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.ARTICLE_NOT_FOUND));
     }
 
@@ -68,7 +70,9 @@ public class ArticleService implements ArticleServiceInterface {
     public void delete(String uuid, Long userNo, String userRole) {
         Article article = findByUuid(uuid);
         validateOwnership(article, userNo, userRole);
-        articleRepository.delete(article);
+        // 소프트 딜리트
+        article.delete();
+        articleRepository.save(article);
     }
 
     @Override
@@ -99,7 +103,7 @@ public class ArticleService implements ArticleServiceInterface {
         if (readableTypes.isEmpty()) {
             return List.of();
         }
-        return articleRepository.findByArticleTypeInOrderByCreatedAtDesc(readableTypes);
+        return articleRepository.findByArticleTypeInAndIsDeletedFalseOrderByCreatedAtDesc(readableTypes);
     }
 
     @Override
@@ -108,6 +112,34 @@ public class ArticleService implements ArticleServiceInterface {
         if (readableTypes.isEmpty()) {
             return List.of();
         }
-        return articleRepository.findByArticleTypeInAndTopicOrderByCreatedAtDesc(readableTypes, topic);
+        return articleRepository.findByArticleTypeInAndTopicAndIsDeletedFalseOrderByCreatedAtDesc(readableTypes, topic);
+    }
+
+    @Override
+    public Page<Article> findAllByRolePaged(String userRole, Pageable pageable) {
+        List<String> readableTypes = permissionService.getReadableArticleTypes(userRole);
+        if (readableTypes.isEmpty()) {
+            return Page.empty(pageable);
+        }
+        return articleRepository.findByArticleTypeInAndIsDeletedFalse(readableTypes, pageable);
+    }
+
+    @Override
+    public Page<Article> findByTopicAndRolePaged(String topic, String userRole, Pageable pageable) {
+        List<String> readableTypes = permissionService.getReadableArticleTypes(userRole);
+        if (readableTypes.isEmpty()) {
+            return Page.empty(pageable);
+        }
+        return articleRepository.findByArticleTypeInAndTopicAndIsDeletedFalse(readableTypes, topic, pageable);
+    }
+
+    @Override
+    public Page<Article> findByArticleTypePaged(String articleType, Pageable pageable) {
+        return articleRepository.findByArticleTypeAndIsDeletedFalse(articleType, pageable);
+    }
+
+    @Override
+    public Page<Article> findByArticleTypeAndTopicPaged(String articleType, String topic, Pageable pageable) {
+        return articleRepository.findByArticleTypeAndTopicAndIsDeletedFalse(articleType, topic, pageable);
     }
 }

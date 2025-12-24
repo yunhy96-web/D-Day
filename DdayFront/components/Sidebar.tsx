@@ -115,47 +115,6 @@ export function Sidebar({ isOpen, onClose, articleTypes, selectedType, onSelectT
 
           {/* Article Types List */}
           <ScrollView style={styles.typeList} showsVerticalScrollIndicator={false}>
-            {/* All Types */}
-            <TouchableOpacity
-              style={[
-                styles.typeItem,
-                selectedType === null && { backgroundColor: colors.primary + '15' },
-              ]}
-              onPress={() => handleSelectType(null)}
-            >
-              <View
-                style={[
-                  styles.typeIcon,
-                  {
-                    backgroundColor: selectedType === null ? colors.primary + '20' : (isDark ? colors.gray200 : colors.gray100),
-                  },
-                ]}
-              >
-                <Ionicons
-                  name="apps-outline"
-                  size={20}
-                  color={selectedType === null ? colors.primary : colors.textSecondary}
-                />
-              </View>
-              <Text
-                style={[
-                  styles.typeName,
-                  {
-                    color: selectedType === null ? colors.primary : colors.textPrimary,
-                    fontWeight: selectedType === null ? '600' : '400',
-                  },
-                ]}
-              >
-                All
-              </Text>
-              {selectedType === null && (
-                <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
-              )}
-            </TouchableOpacity>
-
-            {/* Divider */}
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
-
             {/* Type Items */}
             {articleTypes.map((type) => {
               const isSelected = selectedType === type.code;
@@ -269,10 +228,5 @@ const styles = StyleSheet.create({
   typeName: {
     flex: 1,
     fontSize: 15,
-  },
-  divider: {
-    height: 1,
-    marginVertical: spacing[3],
-    marginHorizontal: spacing[2],
   },
 });

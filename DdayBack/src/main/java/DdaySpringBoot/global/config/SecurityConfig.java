@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 인증 없이 접근 가능
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/admin/schedulers/**").permitAll()  // 스케줄러 관리 (개발용)
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         // 나머지는 인증 필요

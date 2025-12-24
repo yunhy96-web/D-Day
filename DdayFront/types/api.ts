@@ -5,6 +5,17 @@ export interface ApiResponse<T> {
   data?: T;
 }
 
+// 페이지네이션 응답 타입
+export interface PageResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
 // 인증 관련 타입
 export interface SignUpRequest {
   email: string;

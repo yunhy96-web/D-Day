@@ -1,23 +1,38 @@
 package DdaySpringBoot.domain.article.domain;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface ArticleRepository extends JpaRepository<Article, Long> {
-    Optional<Article> findByUuid(String uuid);
+    // 삭제되지 않은 게시글만 조회
+    Optional<Article> findByUuidAndIsDeletedFalse(String uuid);
 
-    List<Article> findByTopicOrderByCreatedAtDesc(String topic);
+    List<Article> findByTopicAndIsDeletedFalseOrderByCreatedAtDesc(String topic);
 
-    List<Article> findByArticleTypeOrderByCreatedAtDesc(String articleType);
+    List<Article> findByArticleTypeAndIsDeletedFalseOrderByCreatedAtDesc(String articleType);
 
-    List<Article> findByArticleTypeAndTopicOrderByCreatedAtDesc(String articleType, String topic);
+    List<Article> findByArticleTypeAndTopicAndIsDeletedFalseOrderByCreatedAtDesc(String articleType, String topic);
 
-    List<Article> findAllByOrderByCreatedAtDesc();
+    List<Article> findByIsDeletedFalseOrderByCreatedAtDesc();
 
-    // 권한 기반 조회용
-    List<Article> findByArticleTypeInOrderByCreatedAtDesc(List<String> articleTypes);
+    // 권한 기반 조회용 (삭제되지 않은 것만)
+    List<Article> findByArticleTypeInAndIsDeletedFalseOrderByCreatedAtDesc(List<String> articleTypes);
 
-    List<Article> findByArticleTypeInAndTopicOrderByCreatedAtDesc(List<String> articleTypes, String topic);
+    List<Article> findByArticleTypeInAndTopicAndIsDeletedFalseOrderByCreatedAtDesc(List<String> articleTypes, String topic);
+
+    // 페이지네이션 지원 메서드
+    Page<Article> findByArticleTypeInAndIsDeletedFalse(List<String> articleTypes, Pageable pageable);
+
+    Page<Article> findByArticleTypeInAndTopicAndIsDeletedFalse(List<String> articleTypes, String topic, Pageable pageable);
+
+    Page<Article> findByArticleTypeAndIsDeletedFalse(String articleType, Pageable pageable);
+
+    Page<Article> findByArticleTypeAndTopicAndIsDeletedFalse(String articleType, String topic, Pageable pageable);
+
+    // 크롤링 중복 체크용 (삭제 여부 상관없이 source_id만 체크)
+    boolean existsBySourceId(String sourceId);
 }

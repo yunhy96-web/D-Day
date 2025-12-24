@@ -3,6 +3,8 @@ package DdaySpringBoot.domain.article.application;
 import DdaySpringBoot.domain.article.domain.Article;
 import DdaySpringBoot.domain.article.dto.AddArticleRequest;
 import DdaySpringBoot.domain.article.dto.UpdateArticleRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -28,4 +30,13 @@ public interface ArticleServiceInterface {
     List<Article> findAllByRole(String userRole);
 
     List<Article> findByTopicAndRole(String topic, String userRole);
+
+    // 페이지네이션 지원 메서드
+    Page<Article> findAllByRolePaged(String userRole, Pageable pageable);
+
+    Page<Article> findByTopicAndRolePaged(String topic, String userRole, Pageable pageable);
+
+    Page<Article> findByArticleTypePaged(String articleType, Pageable pageable);
+
+    Page<Article> findByArticleTypeAndTopicPaged(String articleType, String topic, Pageable pageable);
 }

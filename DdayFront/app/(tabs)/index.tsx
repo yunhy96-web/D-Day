@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Modal,
   Pressable,
+  ActivityIndicator,
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { confirm, showAlert } from '@/utils/alert';
@@ -26,7 +27,7 @@ type Language = 'original' | 'ko' | 'th';
 export default function HomeScreen() {
   const { colors, isDark } = useTheme();
   const { user } = useAuth();
-  const { articles, isLoading, error, fetchArticles, deleteArticle } = useArticles();
+  const { articles, isLoading, isLoadingMore, error, hasMore, fetchArticles, loadMore, deleteArticle } = useArticles();
   const { articleTypes, articleTopics } = useCommonCodes();
   const [selectedLang, setSelectedLang] = useState<Language>('original');
   const [selectedArticleType, setSelectedArticleType] = useState<string | null>(null);
@@ -162,12 +163,28 @@ export default function HomeScreen() {
 
           <Text style={[styles.title, { color: colors.textPrimary }]}>Community</Text>
 
-          <TouchableOpacity
-            onPress={handleProfilePress}
-            style={[styles.profileButton, { backgroundColor: colors.primary }]}
-          >
-            <Text style={styles.profileInitial}>{getInitial()}</Text>
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            {/* Refresh Button */}
+            <TouchableOpacity
+              onPress={handleRefresh}
+              style={[styles.refreshButton, { backgroundColor: isDark ? colors.gray200 : colors.gray100 }]}
+              disabled={isLoading}
+            >
+              <Ionicons
+                name="refresh"
+                size={20}
+                color={isLoading ? colors.textTertiary : colors.textPrimary}
+              />
+            </TouchableOpacity>
+
+            {/* Profile Button */}
+            <TouchableOpacity
+              onPress={handleProfilePress}
+              style={[styles.profileButton, { backgroundColor: colors.primary }]}
+            >
+              <Text style={styles.profileInitial}>{getInitial()}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.headerBottom}>
@@ -224,6 +241,19 @@ export default function HomeScreen() {
             />
           }
           showsVerticalScrollIndicator={false}
+          onEndReached={() => {
+            if (hasMore && !isLoadingMore) {
+              loadMore();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isLoadingMore ? (
+              <View style={styles.loadingMore}>
+                <ActivityIndicator size="small" color={colors.primary} />
+              </View>
+            ) : null
+          }
         />
       )}
 
@@ -329,7 +359,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing[3],
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+  },
   menuButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  refreshButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -385,6 +427,10 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: layout.screenPadding,
+  },
+  loadingMore: {
+    paddingVertical: spacing[4],
+    alignItems: 'center',
   },
   errorContainer: {
     flexDirection: 'row',
