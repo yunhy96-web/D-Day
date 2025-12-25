@@ -14,37 +14,35 @@ repositories {
 }
 
 dependencies {
-    //스프링 mvc 활용하여 restful 웹 서비스를 개발할 때 필요한 의존성
+    // 스프링 웹 (스케줄러 관리 API용)
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    //스프링 애플리케이션을 테스트 하기 위해 필요한 의존성
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    //스프링 데이터 JPA
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    // Spring Security
+    // 스프링 시큐리티
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    //implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    // 테스트
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // 스프링 데이터 JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    // PostgreSQL
+    implementation 'org.postgresql:postgresql:42.6.0'
+
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Swagger (스케줄러 관리 API용)
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+
+    // Jsoup for web crawling
+    implementation 'org.jsoup:jsoup:1.17.2'
 
     // JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
-
-    runtimeOnly 'com.h2database:h2'
-    compileOnly 'org.projectlombok:lombok:1.18.30'
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
-    implementation 'org.json:json:20210307'
-    implementation 'org.postgresql:postgresql:42.6.0'
-    implementation 'javax.xml.bind:jaxb-api:2.3.1'
-
-    // Validation
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-
-    // Swagger (springdoc-openapi)
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
-
-    // WebClient for OpenAI API
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-
 }
 
 test {

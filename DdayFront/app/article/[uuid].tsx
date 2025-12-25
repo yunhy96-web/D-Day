@@ -140,46 +140,38 @@ export default function ArticleDetailScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['top', 'bottom']}
     >
-      {/* Header */}
+      {/* Header - 블라인드 스타일 */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
-          style={[styles.backButton, { backgroundColor: isDark ? colors.gray200 : colors.gray100 }]}
+          style={styles.headerIconButton}
         >
-          <Ionicons name="arrow-back" size={20} color={colors.textPrimary} />
+          <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
 
-        <View style={styles.headerActions}>
+        <View style={styles.headerRight}>
           {article.translationStatus === 'COMPLETED' && (
             <TouchableOpacity
               onPress={toggleLanguage}
-              style={[styles.langButton, { backgroundColor: isDark ? colors.gray200 : colors.gray100 }]}
+              style={styles.headerIconButton}
             >
-              <Ionicons name="language" size={16} color={colors.primary} />
-              <Text style={[styles.langText, { color: colors.textPrimary }]}>
-                {getLanguageLabel()}
-              </Text>
+              <Ionicons name="language" size={22} color={colors.textPrimary} />
             </TouchableOpacity>
           )}
-
-          {canModify() && (
-            <>
-              <TouchableOpacity
-                onPress={handleEdit}
-                style={[styles.actionButton, { backgroundColor: colors.primary + '15' }]}
-              >
-                <Ionicons name="pencil" size={18} color={colors.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleDelete}
-                style={[styles.actionButton, { backgroundColor: colors.error + '15' }]}
-              >
-                <Ionicons name="trash" size={18} color={colors.error} />
-              </TouchableOpacity>
-            </>
-          )}
+          <TouchableOpacity style={styles.headerIconButton}>
+            <Ionicons name="share-outline" size={22} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.headerIconButton}>
+            <Ionicons name="bookmark-outline" size={22} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.headerIconButton}>
+            <Ionicons name="ellipsis-horizontal" size={22} color={colors.textPrimary} />
+          </TouchableOpacity>
         </View>
       </View>
+
+      {/* Header Divider */}
+      <View style={[styles.headerDivider, { backgroundColor: colors.border }]} />
 
       <ScrollView
         style={styles.scrollView}
@@ -193,33 +185,59 @@ export default function ArticleDetailScreen() {
           />
         }
       >
-        {/* Author Card */}
-        <View style={[styles.authorCard, { backgroundColor: isDark ? colors.gray100 : colors.background }, !isDark && shadows.sm]}>
-          <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-            <Text style={styles.avatarText}>{getInitial(article.authorNickname)}</Text>
-          </View>
-          <View style={styles.authorInfo}>
-            <Text style={[styles.authorName, { color: colors.textPrimary }]}>
-              {article.authorNickname || 'Anonymous'}
-            </Text>
-            <Text style={[styles.date, { color: colors.textTertiary }]}>
-              {formatDate(article.createdAt)}
-            </Text>
-          </View>
-          {article.translationStatus === 'COMPLETED' && (
-            <View style={[styles.badge, { backgroundColor: colors.success + '20' }]}>
-              <Ionicons name="checkmark-circle" size={14} color={colors.success} />
-              <Text style={[styles.badgeText, { color: colors.success }]}>Translated</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Content Card */}
-        <View style={[styles.contentCard, { backgroundColor: isDark ? colors.gray100 : colors.background }, !isDark && shadows.sm]}>
+        {/* Article Card - 제목, 작성자, 수정/삭제 통합 */}
+        <View style={[styles.articleCard, { backgroundColor: isDark ? colors.gray100 : colors.background }, !isDark && shadows.sm]}>
+          {/* 제목 */}
           <Text style={[styles.title, { color: colors.textPrimary }]}>
             {getTitle()}
           </Text>
+
+          {/* 작성자 정보 + 수정/삭제 버튼 */}
+          <View style={styles.metaRow}>
+            <View style={styles.authorSection}>
+              <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+                <Text style={styles.avatarText}>{getInitial(article.authorNickname)}</Text>
+              </View>
+              <View style={styles.authorInfo}>
+                <View style={styles.authorNameRow}>
+                  <Text style={[styles.authorName, { color: colors.textPrimary }]}>
+                    {article.authorNickname || 'Anonymous'}
+                  </Text>
+                  {article.translationStatus === 'COMPLETED' && (
+                    <View style={[styles.badge, { backgroundColor: colors.success + '20' }]}>
+                      <Ionicons name="checkmark-circle" size={12} color={colors.success} />
+                      <Text style={[styles.badgeText, { color: colors.success }]}>Translated</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={[styles.date, { color: colors.textTertiary }]}>
+                  {formatDate(article.createdAt)}
+                </Text>
+              </View>
+            </View>
+
+            {canModify() && (
+              <View style={styles.actionButtons}>
+                <TouchableOpacity
+                  onPress={handleEdit}
+                  style={[styles.actionButton, { backgroundColor: colors.primary + '15' }]}
+                >
+                  <Ionicons name="pencil" size={16} color={colors.primary} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleDelete}
+                  style={[styles.actionButton, { backgroundColor: colors.error + '15' }]}
+                >
+                  <Ionicons name="trash" size={16} color={colors.error} />
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+
+          {/* 구분선 */}
           <View style={[styles.divider, { backgroundColor: isDark ? colors.gray200 : colors.gray100 }]} />
+
+          {/* 본문 */}
           <Text style={[styles.content, { color: colors.textSecondary }]}>
             {getContent()}
           </Text>
@@ -253,39 +271,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: layout.screenPadding,
-    paddingVertical: spacing[3],
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[2],
-  },
-  langButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing[3],
+    paddingHorizontal: spacing[2],
     paddingVertical: spacing[2],
-    borderRadius: borderRadius.full,
-    gap: spacing[1],
   },
-  langText: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  actionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  headerIconButton: {
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerDivider: {
+    height: 1,
   },
   scrollView: {
     flex: 1,
@@ -294,23 +294,38 @@ const styles = StyleSheet.create({
     padding: layout.screenPadding,
     paddingBottom: spacing[10],
   },
-  authorCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing[4],
+  articleCard: {
+    padding: spacing[5],
     borderRadius: borderRadius.xl,
     marginBottom: spacing[4],
   },
+  title: {
+    fontSize: 22,
+    fontWeight: '700',
+    lineHeight: 30,
+    marginBottom: spacing[4],
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing[4],
+  },
+  authorSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   authorInfo: {
@@ -318,35 +333,41 @@ const styles = StyleSheet.create({
     marginLeft: spacing[3],
     gap: 2,
   },
+  authorNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
+  },
   authorName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
   date: {
-    fontSize: 13,
+    fontSize: 12,
   },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 2,
     paddingHorizontal: spacing[2],
-    paddingVertical: 6,
+    paddingVertical: 2,
     borderRadius: borderRadius.full,
   },
   badgeText: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '600',
   },
-  contentCard: {
-    padding: spacing[5],
-    borderRadius: borderRadius.xl,
-    marginBottom: spacing[4],
+  actionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[2],
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    lineHeight: 32,
-    marginBottom: spacing[4],
+  actionButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   divider: {
     height: 1,

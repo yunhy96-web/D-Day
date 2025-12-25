@@ -1,0 +1,123 @@
+-- Articles 테이블
+DROP TABLE IF EXISTS articles CASCADE;
+CREATE TABLE articles (
+    no BIGSERIAL PRIMARY KEY,
+    uuid VARCHAR(36) NOT NULL UNIQUE,
+    topic VARCHAR(50),
+    article_type VARCHAR(20) DEFAULT 'NORMAL',
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    original_lang VARCHAR(10),
+    title_ko VARCHAR(255),
+    content_ko TEXT,
+    title_th VARCHAR(255),
+    content_th TEXT,
+    translation_status VARCHAR(20) DEFAULT 'PENDING',
+    created_by BIGINT,
+    updated_by BIGINT,
+    source_id VARCHAR(100),
+    is_deleted BOOLEAN DEFAULT false,
+    created_at TIMESTAMP(6),
+    updated_at TIMESTAMP(6)
+);
+
+CREATE INDEX idx_articles_uuid ON articles(uuid);
+CREATE INDEX idx_articles_topic ON articles(topic);
+CREATE INDEX idx_articles_article_type ON articles(article_type);
+CREATE INDEX idx_articles_source_id ON articles(source_id);
+
+-- Users 테이블
+DROP TABLE IF EXISTS users CASCADE;
+CREATE TABLE users (
+    no BIGSERIAL PRIMARY KEY,
+    uuid VARCHAR(36) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    nickname VARCHAR(255) NOT NULL,
+    password VARCHAR(255),
+    role VARCHAR(255) CHECK (role IN ('USER', 'ADMIN', 'DEV')),
+    timezone VARCHAR(255),
+    refresh_token VARCHAR(255),
+    created_at TIMESTAMP(6),
+    updated_at TIMESTAMP(6)
+);
+
+CREATE INDEX idx_users_uuid ON users(uuid);
+
+-- Common Codes 테이블 (공통코드)
+DROP TABLE IF EXISTS common_codes CASCADE;
+CREATE TABLE common_codes (
+    no BIGSERIAL PRIMARY KEY,
+    uuid VARCHAR(36) NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+    group_code VARCHAR(50) NOT NULL,
+    code VARCHAR(50) NOT NULL,
+    label_ko VARCHAR(100) NOT NULL,
+    label_en VARCHAR(100) NOT NULL,
+    label_th VARCHAR(100) NOT NULL,
+    sort_order INT,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(group_code, code)
+);
+
+CREATE INDEX idx_common_codes_group ON common_codes(group_code);
+
+-- 공통코드 초기 데이터
+INSERT INTO common_codes (group_code, code, label_ko, label_en, label_th, sort_order) VALUES
+('ARTICLE_TOPIC', 'GENERAL', '일반', 'General', 'ทั่วไป', 1),
+('ARTICLE_TOPIC', 'TECH', '기술', 'Technology', 'เทคโนโลยี', 2),
+('ARTICLE_TOPIC', 'LIFE', '일상', 'Life', 'ชีวิต', 3),
+('ARTICLE_TOPIC', 'TRAVEL', '여행', 'Travel', 'การท่องเที่ยว', 4),
+('ARTICLE_TOPIC', 'FOOD', '음식', 'Food', 'อาหาร', 5),
+('ARTICLE_TOPIC', 'CULTURE', '문화', 'Culture', 'วัฒนธรรม', 6),
+('ARTICLE_TOPIC', 'ADULT', '성인', 'Adult', 'ผู้ใหญ่', 7),
+('ARTICLE_TYPE', 'NORMAL', '일반글', 'Normal', 'ทั่วไป', 1),
+('ARTICLE_TYPE', 'SECRET', '비밀글', 'Secret', 'ลับ', 2),
+('ARTICLE_TYPE', 'CRAWLED', '크롤링', 'Crawled', 'รวบรวม', 3);
+
+-- Role Article Permissions 테이블 (권한별 게시글 타입 접근 권한)
+DROP TABLE IF EXISTS role_article_permissions CASCADE;
+CREATE TABLE role_article_permissions (
+    no BIGSERIAL PRIMARY KEY,
+    uuid VARCHAR(36) NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+    role VARCHAR(20) NOT NULL,
+    article_type VARCHAR(20) NOT NULL,
+    can_read BOOLEAN DEFAULT true,
+    can_write BOOLEAN DEFAULT true,
+    created_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(role, article_type)
+);
+
+-- 권한 초기 데이터
+INSERT INTO role_article_permissions (role, article_type, can_read, can_write) VALUES
+('DEV', 'NORMAL', true, true),
+('DEV', 'SECRET', true, true),
+('DEV', 'CRAWLED', true, true),
+('ADMIN', 'NORMAL', true, true),
+('ADMIN', 'SECRET', true, true),
+('ADMIN', 'CRAWLED', true, true),
+('USER', 'NORMAL', true, true),
+('USER', 'SECRET', false, false),
+('USER', 'CRAWLED', true, false);
+
+-- Scheduler Configs 테이블 (스케줄러 설정 관리)
+DROP TABLE IF EXISTS scheduler_configs CASCADE;
+CREATE TABLE scheduler_configs (
+    no BIGSERIAL PRIMARY KEY,
+    uuid VARCHAR(36) NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+    scheduler_id VARCHAR(50) NOT NULL UNIQUE,
+    scheduler_name VARCHAR(100) NOT NULL,
+    cron_expression VARCHAR(50),
+    fixed_rate_ms BIGINT,
+    is_enabled BOOLEAN DEFAULT true,
+    last_run_at TIMESTAMP(6),
+    next_run_at TIMESTAMP(6),
+    last_crawled_page INT DEFAULT 1,
+    created_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 스케줄러 초기 데이터
+INSERT INTO scheduler_configs (scheduler_id, scheduler_name, fixed_rate_ms, is_enabled, last_crawled_page) VALUES
+('CRAWLER_HOTSSUL', '핫썰 크롤러', 600000, true, 1);

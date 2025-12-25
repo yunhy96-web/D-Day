@@ -1,0 +1,22 @@
+server:
+  port: 8081
+
+spring:
+  profiles:
+    active: local  # 기본값: local
+  jpa:
+    hibernate:
+      format_sql: true
+      use_sql_comments: true
+      ddl-auto: none
+    show-sql: false  # logback에서 SQL 로깅 처리
+    database: postgresql
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  sql:
+    init:
+      mode: never
+  jackson:
+    time-zone: UTC

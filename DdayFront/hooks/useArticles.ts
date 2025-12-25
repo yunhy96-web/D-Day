@@ -64,7 +64,14 @@ export function useArticles(): UseArticlesReturn {
         size: PAGE_SIZE,
       });
       if (response.data) {
-        setArticles((prev) => [...prev, ...response.data!.content]);
+        // 중복 제거: 기존 uuid와 겹치지 않는 새 글만 추가
+        setArticles((prev) => {
+          const existingUuids = new Set(prev.map((a) => a.uuid));
+          const newArticles = response.data!.content.filter(
+            (a) => !existingUuids.has(a.uuid)
+          );
+          return [...prev, ...newArticles];
+        });
         setHasMore(response.data.hasNext);
         currentPage.current = nextPage;
       }
@@ -81,7 +88,13 @@ export function useArticles(): UseArticlesReturn {
     try {
       const response = await articleService.create(data);
       if (response.data) {
-        setArticles((prev) => [response.data!, ...prev]);
+        // 중복 방지: 같은 uuid가 없을 때만 추가
+        setArticles((prev) => {
+          if (prev.some((a) => a.uuid === response.data!.uuid)) {
+            return prev;
+          }
+          return [response.data!, ...prev];
+        });
         return response.data;
       }
       return null;
