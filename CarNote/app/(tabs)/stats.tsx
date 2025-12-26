@@ -126,6 +126,30 @@ export default function StatsScreen() {
     return months;
   }, [carRecords]);
 
+  // 월별 누적 주행거리 추이 (라인 차트 데이터)
+  const monthlyMileageData = useMemo(() => {
+    const now = new Date();
+    const months: { month: string; mileage: number }[] = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthLabel = `${date.getMonth() + 1}월`;
+      const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+      // 해당 월 말까지의 기록 중 가장 높은 주행거리
+      const maxMileage = carRecords
+        .filter(r => {
+          const recordDate = new Date(r.date);
+          return recordDate <= monthEnd && r.mileage;
+        })
+        .reduce((max, r) => Math.max(max, r.mileage || 0), 0);
+
+      months.push({ month: monthLabel, mileage: maxMileage });
+    }
+
+    return months;
+  }, [carRecords]);
+
   // 차량별 통계
   const carStats = useMemo(() => {
     return cars.map(car => {
@@ -327,10 +351,21 @@ export default function StatsScreen() {
             <GlassCard>
               <View style={styles.chartHeader}>
                 <Ionicons name="analytics-outline" size={22} color={colors.primary} />
-                <Text style={styles.chartTitle}>월별 정비 비용 추이</Text>
+                <Text style={styles.chartTitle}>월별 정비 비용</Text>
               </View>
               <LineChart data={monthlyData} />
             </GlassCard>
+
+            {/* 월별 누적 주행거리 추이 라인 차트 */}
+            {monthlyMileageData.some(d => d.mileage > 0) && (
+              <GlassCard>
+                <View style={styles.chartHeader}>
+                  <Ionicons name="speedometer-outline" size={22} color={colors.success} />
+                  <Text style={styles.chartTitle}>월별 누적 주행거리</Text>
+                </View>
+                <MileageLineChart data={monthlyMileageData} />
+              </GlassCard>
+            )}
 
             {/* 차량별 상세 비교 */}
             {cars.length > 1 && (
@@ -575,6 +610,122 @@ function LineChart({ data }: { data: { month: string; cost: number }[] }) {
             r={5}
             fill={colors.primary}
           />
+        ))}
+
+        {/* X축 라벨 */}
+        {points.map((p, i) => (
+          <SvgText
+            key={i}
+            x={p.x}
+            y={chartHeight - 10}
+            fontSize={11}
+            fill="rgba(0,0,0,0.5)"
+            textAnchor="middle"
+          >
+            {p.month}
+          </SvgText>
+        ))}
+      </Svg>
+    </View>
+  );
+}
+
+// 주행거리 라인 차트 컴포넌트
+function MileageLineChart({ data }: { data: { month: string; mileage: number }[] }) {
+  const chartWidth = SCREEN_WIDTH - layout.screenPadding * 2 - spacing[8];
+  const chartHeight = 200;
+  const paddingLeft = 70;
+  const paddingRight = 20;
+  const paddingTop = 20;
+  const paddingBottom = 40;
+
+  const graphWidth = chartWidth - paddingLeft - paddingRight;
+  const graphHeight = chartHeight - paddingTop - paddingBottom;
+
+  const maxMileage = Math.max(...data.map(d => d.mileage), 1);
+  const minMileage = Math.min(...data.filter(d => d.mileage > 0).map(d => d.mileage), maxMileage);
+
+  // 범위 계산 (최소값과 최대값 사이)
+  const range = maxMileage - minMileage;
+  const padding = range * 0.1 || 1000; // 10% 여유 또는 최소 1000
+  const chartMin = Math.max(0, Math.floor((minMileage - padding) / 1000) * 1000);
+  const chartMax = Math.ceil((maxMileage + padding) / 1000) * 1000;
+  const chartRange = chartMax - chartMin || 1;
+
+  const points = data.map((d, index) => {
+    const x = paddingLeft + (index / (data.length - 1)) * graphWidth;
+    const y = d.mileage > 0
+      ? paddingTop + graphHeight - ((d.mileage - chartMin) / chartRange) * graphHeight
+      : paddingTop + graphHeight;
+    return { x, y, ...d };
+  });
+
+  // 라인 패스 (주행거리가 있는 포인트만 연결)
+  const validPoints = points.filter(p => p.mileage > 0);
+  const linePath = validPoints
+    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
+    .join(' ');
+
+  // Y축 라벨
+  const yLabels = [chartMin, (chartMin + chartMax) / 2, chartMax];
+
+  return (
+    <View style={styles.lineChartContainer}>
+      <Svg width={chartWidth} height={chartHeight}>
+        {/* 그리드 라인 */}
+        {yLabels.map((val, i) => {
+          const y = paddingTop + graphHeight - ((val - chartMin) / chartRange) * graphHeight;
+          return (
+            <Line
+              key={i}
+              x1={paddingLeft}
+              y1={y}
+              x2={chartWidth - paddingRight}
+              y2={y}
+              stroke="rgba(0,0,0,0.1)"
+              strokeWidth={1}
+            />
+          );
+        })}
+
+        {/* Y축 라벨 */}
+        {yLabels.map((val, i) => {
+          const y = paddingTop + graphHeight - ((val - chartMin) / chartRange) * graphHeight;
+          return (
+            <SvgText
+              key={i}
+              x={paddingLeft - 8}
+              y={y + 4}
+              fontSize={10}
+              fill="rgba(0,0,0,0.5)"
+              textAnchor="end"
+            >
+              {val.toLocaleString()}
+            </SvgText>
+          );
+        })}
+
+        {/* 라인 */}
+        {validPoints.length > 1 && (
+          <Path
+            d={linePath}
+            stroke={colors.success}
+            strokeWidth={2}
+            fill="none"
+          />
+        )}
+
+        {/* 포인트 */}
+        {points.map((p, i) => (
+          p.mileage > 0 && (
+            <Circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r={5}
+              fill={colors.success}
+            />
+          )
         ))}
 
         {/* X축 라벨 */}
