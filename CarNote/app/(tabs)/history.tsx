@@ -452,16 +452,14 @@ function CalendarView({
                   ]}>
                     {day}
                   </Text>
-                  {hasRecords && (
-                    <View style={styles.recordDots}>
-                      {recordsByDate[dateKey].slice(0, 3).map((record, idx) => (
-                        <View
-                          key={idx}
-                          style={[styles.recordDot, { backgroundColor: getCategoryColor(record.category) }]}
-                        />
-                      ))}
-                    </View>
-                  )}
+                  <View style={styles.recordDotsContainer}>
+                    {hasRecords && recordsByDate[dateKey].slice(0, 3).map((record, idx) => (
+                      <View
+                        key={idx}
+                        style={[styles.recordDot, { backgroundColor: getCategoryColor(record.category) }]}
+                      />
+                    ))}
+                  </View>
                 </TouchableOpacity>
               );
             })}
@@ -791,10 +789,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fff',
   },
-  recordDots: {
+  recordDotsContainer: {
     flexDirection: 'row',
     gap: 3,
     marginTop: 2,
+    height: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   recordDot: {
     width: 5,
