@@ -5,17 +5,18 @@ import { useRouter } from 'expo-router';
 import { CarHeader, InfoCard } from '@/components/home';
 import { SectionHeader, EmptyState } from '@/components/common';
 import { colors, spacing, layout } from '@/styles';
+import { useCar } from '@/contexts';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { selectedCar, cars } = useCar();
 
-  // TODO: Replace with actual data
-  const car = {
-    name: '내 차',
-    mileage: 0,
-  };
+  // 선택된 차량이 있으면 해당 정보, 없으면 기본값
+  const carName = selectedCar?.name || (cars.length > 0 ? '차량을 선택하세요' : '차량을 추가하세요');
+  const carMileage = selectedCar?.mileage || 0;
 
   const nextMaintenanceDate = null;
+  const lastMaintenance = null; // TODO: 최근 정비 기록에서 가져오기 (예: "엔진오일 · 3일 전")
   const monthlyExpense = 0;
 
   const goToAdd = () => {
@@ -31,9 +32,9 @@ export default function HomeScreen() {
       >
         {/* Car Header */}
         <CarHeader
-          carName={car.name}
-          mileage={car.mileage}
-          onCarSelect={() => {}}
+          carName={carName}
+          mileage={carMileage}
+          onCarSelect={() => router.push('/settings')}
           onMaintenancePress={goToAdd}
         />
 
@@ -42,8 +43,14 @@ export default function HomeScreen() {
           <InfoCard
             icon="calendar-outline"
             iconColor={colors.iconBlue}
-            label="다음 정비일"
+            label="다가오는 일정"
             value={nextMaintenanceDate || '예정 없음'}
+          />
+          <InfoCard
+            icon="construct-outline"
+            iconColor={colors.success}
+            label="마지막 정비"
+            value={lastMaintenance || '기록 없음'}
           />
           <InfoCard
             icon="cash-outline"
