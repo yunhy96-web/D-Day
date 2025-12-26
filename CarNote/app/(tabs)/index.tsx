@@ -200,7 +200,7 @@ export default function HomeScreen() {
         </View>
 
         {/* Recent Maintenance */}
-        <SectionHeader title="최근 기록" />
+        <SectionHeader title="최근 기록 (최대 3개)" />
 
         {recentRecords.length === 0 ? (
           <EmptyState
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   recordCost: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.primary,
+    color: 'rgba(0,0,0,0.7)',
   },
   addRecordCard: {
     borderRadius: 16,

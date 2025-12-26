@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[4],
     paddingVertical: spacing[2],
     borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
   categoryChipActive: {
     backgroundColor: colors.primary,
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   categoryChipText: {
     fontSize: 14,
     fontWeight: '600',
-    color: 'rgba(0,0,0,0.5)',
+    color: 'rgba(255,255,255,0.7)',
   },
   categoryChipTextActive: {
     color: colors.background,
@@ -427,6 +427,6 @@ const styles = StyleSheet.create({
   cardCost: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.primary,
+    color: 'rgba(0,0,0,0.7)',
   },
 });
