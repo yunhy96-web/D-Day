@@ -308,6 +308,12 @@ export default function StatsScreen() {
                 value={`${stats.totalCount}회`}
               />
               <StatCard
+                icon="calendar-outline"
+                iconColor={colors.iconBlue}
+                label="이번 달 정비 횟수"
+                value={`${stats.thisMonthCount}회`}
+              />
+              <StatCard
                 icon="cash-outline"
                 iconColor={colors.iconGold}
                 label="총 지출 비용"
@@ -318,12 +324,6 @@ export default function StatsScreen() {
                 iconColor={colors.success}
                 label="평균 비용"
                 value={`${stats.avgCost.toLocaleString()}원`}
-              />
-              <StatCard
-                icon="calendar-outline"
-                iconColor={colors.iconBlue}
-                label="이번 달 정비"
-                value={`${stats.thisMonthCount}회`}
               />
             </View>
 
@@ -336,13 +336,20 @@ export default function StatsScreen() {
                 </View>
                 <PieChart data={typeData} totalCost={stats.totalCost} />
                 <View style={styles.legendContainer}>
-                  {typeData.map((item, index) => (
-                    <View key={index} style={styles.legendItem}>
-                      <View style={[styles.legendDot, { backgroundColor: item.color }]} />
-                      <Text style={styles.legendLabel} numberOfLines={1}>{item.type}</Text>
-                      <Text style={styles.legendValue}>{item.cost.toLocaleString()}원</Text>
-                    </View>
-                  ))}
+                  {typeData.map((item, index) => {
+                    const percentage = stats.totalCost > 0
+                      ? ((item.cost / stats.totalCost) * 100).toFixed(1)
+                      : '0.0';
+                    return (
+                      <View key={index} style={styles.legendItem}>
+                        <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+                        <Text style={styles.legendLabel} numberOfLines={1}>{item.type}</Text>
+                        <Text style={styles.legendValue}>
+                          {item.cost.toLocaleString()}원 ({percentage}%)
+                        </Text>
+                      </View>
+                    );
+                  })}
                 </View>
               </GlassCard>
             )}
@@ -528,6 +535,16 @@ function PieChart({ data, totalCost }: { data: { type: string; cost: number; col
   );
 }
 
+// 금액 포맷 함수 (만원 단위)
+const formatCostLabel = (val: number): string => {
+  if (val === 0) return '0';
+  if (val >= 10000) {
+    const man = val / 10000;
+    return man % 1 === 0 ? `${man.toFixed(0)}만` : `${man.toFixed(1)}만`;
+  }
+  return val.toLocaleString();
+};
+
 // 라인 차트 컴포넌트
 function LineChart({ data }: { data: { month: string; cost: number }[] }) {
   const chartWidth = SCREEN_WIDTH - layout.screenPadding * 2 - spacing[8];
@@ -541,7 +558,15 @@ function LineChart({ data }: { data: { month: string; cost: number }[] }) {
   const graphHeight = chartHeight - paddingTop - paddingBottom;
 
   const maxCost = Math.max(...data.map(d => d.cost), 1);
-  const roundedMax = Math.ceil(maxCost / 100000) * 100000 || 100000;
+  // 적절한 단위로 반올림 (1만, 5만, 10만, 50만, 100만 등)
+  let roundedMax: number;
+  if (maxCost <= 50000) {
+    roundedMax = Math.ceil(maxCost / 10000) * 10000 || 10000;
+  } else if (maxCost <= 500000) {
+    roundedMax = Math.ceil(maxCost / 50000) * 50000;
+  } else {
+    roundedMax = Math.ceil(maxCost / 100000) * 100000;
+  }
 
   const points = data.map((d, index) => {
     const x = paddingLeft + (index / (data.length - 1)) * graphWidth;
@@ -588,7 +613,7 @@ function LineChart({ data }: { data: { month: string; cost: number }[] }) {
               fill="rgba(0,0,0,0.5)"
               textAnchor="end"
             >
-              {val >= 1000 ? `${(val / 1000).toLocaleString()}` : val}
+              {formatCostLabel(val)}
             </SvgText>
           );
         })}
