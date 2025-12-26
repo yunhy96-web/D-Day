@@ -12,6 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, layout } from '@/styles';
@@ -23,6 +24,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 export default function SettingsScreen() {
+  const router = useRouter();
   const { cars, addCar, updateCar, deleteCar } = useCar();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingCar, setEditingCar] = useState<Car | null>(null);
@@ -85,7 +87,11 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.push('/')} style={styles.backButton}>
+          <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
+        </TouchableOpacity>
         <Text style={styles.title}>설정</Text>
+        <View style={styles.headerSpacer} />
       </View>
 
       <ScrollView
@@ -172,7 +178,7 @@ export default function SettingsScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="예: 아반떼, K5, 테슬라 모델3"
-                placeholderTextColor="rgba(0,0,0,0.3)"
+                placeholderTextColor="rgba(255,255,255,0.4)"
                 value={carName}
                 onChangeText={setCarName}
               />
@@ -183,7 +189,7 @@ export default function SettingsScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="예: 12가 3456"
-                placeholderTextColor="rgba(0,0,0,0.3)"
+                placeholderTextColor="rgba(255,255,255,0.4)"
                 value={plateNumber}
                 onChangeText={setPlateNumber}
               />
@@ -195,7 +201,7 @@ export default function SettingsScreen() {
                 <TextInput
                   style={[styles.input, styles.inputFlex]}
                   placeholder="0"
-                  placeholderTextColor="rgba(0,0,0,0.3)"
+                  placeholderTextColor="rgba(255,255,255,0.4)"
                   value={mileage}
                   onChangeText={setMileage}
                   keyboardType="numeric"
@@ -228,12 +234,24 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    paddingHorizontal: layout.screenPadding,
-    paddingVertical: spacing[4],
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing[2],
+    paddingVertical: spacing[3],
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerSpacer: {
+    width: 44,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '600',
     color: colors.textPrimary,
   },
   scrollView: {

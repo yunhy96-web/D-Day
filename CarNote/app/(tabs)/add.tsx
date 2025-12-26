@@ -12,6 +12,7 @@ import {
   UIManager,
   Modal,
 } from 'react-native';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 // Android에서 LayoutAnimation 활성화
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -21,7 +22,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, layout } from '@/styles';
-import { useCar } from '@/contexts';
+import { useCar, useRecord, RecordCategory } from '@/contexts';
+import { useRouter } from 'expo-router';
 
 const CATEGORIES = {
   정비: ['엔진오일', '타이어', '브레이크', '에어필터', '배터리', '냉각수'],
@@ -39,17 +41,37 @@ const getSelectedCategory = (type: string): '정비' | '주유' | '기타' | nul
 };
 
 export default function AddScreen() {
+  const router = useRouter();
   const { cars, selectedCar, selectCar } = useCar();
+  const { addRecord } = useRecord();
   const [maintenanceType, setMaintenanceType] = useState('');
   const [cost, setCost] = useState('');
   const [mileage, setMileage] = useState('');
   const [location, setLocation] = useState('');
   const [fuelAmount, setFuelAmount] = useState('');
   const [memo, setMemo] = useState('');
-  const [date] = useState(new Date());
-  const [carModalVisible, setCarModalVisible] = useState(false);
+  const [date, setDate] = useState(new Date());
+  const [carDropdownOpen, setCarDropdownOpen] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [datePickerExpanded, setDatePickerExpanded] = useState(false);
+
+  // 날짜 제한: 오늘 기준 앞뒤로 1년
+  const today = new Date();
+  const minDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+  const maxDate = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
 
   const selectedCategory = getSelectedCategory(maintenanceType);
+
+  // 폼 초기화
+  const resetForm = () => {
+    setMaintenanceType('');
+    setCost('');
+    setMileage('');
+    setLocation('');
+    setFuelAmount('');
+    setMemo('');
+    setDate(new Date());
+  };
 
   // 카테고리 선택 시 애니메이션과 함께 상태 변경
   const handleCategorySelect = useCallback((type: string) => {
@@ -64,8 +86,32 @@ export default function AddScreen() {
   }, []);
 
   const handleSave = () => {
-    // TODO: Save to SQLite
-    console.log('Save maintenance record');
+    // 필수 검증: 차량과 카테고리 선택 필요
+    if (!selectedCar) {
+      alert('차량을 선택해주세요');
+      return;
+    }
+    if (!maintenanceType) {
+      alert('카테고리를 선택해주세요');
+      return;
+    }
+
+    // 기록 저장
+    addRecord({
+      carId: selectedCar.id,
+      category: selectedCategory as RecordCategory,
+      type: maintenanceType,
+      date: date,
+      cost: cost ? Number(cost) : undefined,
+      mileage: mileage ? Number(mileage) : undefined,
+      location: location || undefined,
+      fuelAmount: fuelAmount ? Number(fuelAmount) : undefined,
+      memo: memo || undefined,
+    });
+
+    // 폼 초기화 및 홈으로 이동
+    resetForm();
+    router.push('/');
   };
 
   const formatDate = (d: Date) => {
@@ -76,6 +122,63 @@ export default function AddScreen() {
     });
   };
 
+  // 날짜 변경 핸들러
+  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+      setDatePickerExpanded(false);
+    }
+    if (selectedDate) {
+      setDate(selectedDate);
+    }
+  };
+
+  // 날짜 선택기 토글
+  const toggleDatePicker = useCallback(() => {
+    LayoutAnimation.configureNext(
+      LayoutAnimation.create(
+        300,
+        LayoutAnimation.Types.easeInEaseOut,
+        LayoutAnimation.Properties.opacity
+      )
+    );
+    setDatePickerExpanded(!datePickerExpanded);
+  }, [datePickerExpanded]);
+
+  // 짧은 날짜 포맷
+  const formatShortDate = (d: Date) => {
+    return d.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  // 차량 드롭다운 토글
+  const toggleCarDropdown = useCallback(() => {
+    LayoutAnimation.configureNext(
+      LayoutAnimation.create(
+        250,
+        LayoutAnimation.Types.easeInEaseOut,
+        LayoutAnimation.Properties.opacity
+      )
+    );
+    setCarDropdownOpen(!carDropdownOpen);
+  }, [carDropdownOpen]);
+
+  // 차량 선택 핸들러
+  const handleCarSelect = (carId: string) => {
+    selectCar(carId);
+    LayoutAnimation.configureNext(
+      LayoutAnimation.create(
+        250,
+        LayoutAnimation.Types.easeInEaseOut,
+        LayoutAnimation.Properties.opacity
+      )
+    );
+    setCarDropdownOpen(false);
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <KeyboardAvoidingView
@@ -84,6 +187,9 @@ export default function AddScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.push('/')} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
           <Text style={styles.headerTitle}>기록 추가</Text>
           <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
             <Text style={styles.saveButtonText}>저장</Text>
@@ -98,21 +204,84 @@ export default function AddScreen() {
           {/* 정비 날짜 */}
           <GlassCard>
             <CardHeader icon="calendar-outline" iconColor={colors.iconBlue} title="날짜" />
-            <TouchableOpacity style={styles.dateSelector}>
-              <Text style={styles.dateText}>{formatDate(date)}</Text>
-              <Ionicons name="chevron-forward" size={18} color="rgba(0,0,0,0.3)" />
+            <TouchableOpacity
+              style={styles.dateSelector}
+              onPress={() => Platform.OS === 'android' ? setShowDatePicker(true) : setDatePickerExpanded(true)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.dateLabelText}>날짜</Text>
+              <View style={styles.dateValueContainer}>
+                <Text style={styles.dateValueText}>{formatShortDate(date)}</Text>
+                <Ionicons name="calendar" size={16} color={colors.primary} />
+              </View>
             </TouchableOpacity>
           </GlassCard>
+
+          {/* Android: 시스템 다이얼로그 */}
+          {Platform.OS === 'android' && showDatePicker && (
+            <DateTimePicker
+              value={date}
+              mode="date"
+              display="default"
+              onChange={onDateChange}
+              minimumDate={minDate}
+              maximumDate={maxDate}
+            />
+          )}
 
           {/* 차량 선택 */}
           <GlassCard>
             <CardHeader icon="car-sport" iconColor={colors.primary} title="차량 선택" />
-            <TouchableOpacity style={styles.selector} onPress={() => setCarModalVisible(true)}>
+            <TouchableOpacity style={styles.selector} onPress={toggleCarDropdown}>
               <Text style={styles.selectorText}>
                 {selectedCar ? selectedCar.name : (cars.length > 0 ? '차량을 선택하세요' : '차량을 추가하세요')}
               </Text>
-              <Ionicons name="chevron-expand-outline" size={18} color="rgba(0,0,0,0.3)" />
+              <Ionicons
+                name={carDropdownOpen ? "chevron-up" : "chevron-down"}
+                size={18}
+                color={colors.primary}
+              />
             </TouchableOpacity>
+
+            {/* 차량 드롭다운 목록 */}
+            {carDropdownOpen && (
+              <View style={styles.carDropdownList}>
+                {cars.length === 0 ? (
+                  <View style={styles.carDropdownEmpty}>
+                    <Ionicons name="car-outline" size={24} color="rgba(0,0,0,0.3)" />
+                    <Text style={styles.carDropdownEmptyText}>등록된 차량이 없습니다</Text>
+                  </View>
+                ) : (
+                  cars.map((car, index) => (
+                    <TouchableOpacity
+                      key={car.id}
+                      style={[
+                        styles.carDropdownItem,
+                        selectedCar?.id === car.id && styles.carDropdownItemActive,
+                        index < cars.length - 1 && styles.carDropdownItemBorder,
+                      ]}
+                      onPress={() => handleCarSelect(car.id)}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons
+                        name="car-sport"
+                        size={18}
+                        color={selectedCar?.id === car.id ? colors.primary : 'rgba(0,0,0,0.4)'}
+                      />
+                      <Text style={[
+                        styles.carDropdownItemText,
+                        selectedCar?.id === car.id && styles.carDropdownItemTextActive,
+                      ]}>
+                        {car.name}
+                      </Text>
+                      {selectedCar?.id === car.id && (
+                        <Ionicons name="checkmark" size={18} color={colors.primary} />
+                      )}
+                    </TouchableOpacity>
+                  ))
+                )}
+              </View>
+            )}
           </GlassCard>
 
           {/* 카테고리 */}
@@ -231,60 +400,41 @@ export default function AddScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* 차량 선택 모달 */}
+      {/* 날짜 선택 모달 */}
       <Modal
-        visible={carModalVisible}
+        visible={datePickerExpanded}
         animationType="slide"
         presentationStyle="pageSheet"
-        onRequestClose={() => setCarModalVisible(false)}
+        onRequestClose={() => setDatePickerExpanded(false)}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setCarModalVisible(false)}>
-              <Text style={styles.modalCancel}>취소</Text>
+        <View style={styles.dateModalContainer}>
+          <View style={styles.dateModalHeader}>
+            <TouchableOpacity onPress={() => setDatePickerExpanded(false)}>
+              <Text style={styles.dateModalCancel}>취소</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>차량 선택</Text>
-            <View style={{ width: 40 }} />
+            <Text style={styles.dateModalTitle}>날짜 선택</Text>
+            <TouchableOpacity onPress={() => setDatePickerExpanded(false)}>
+              <Text style={styles.dateModalSave}>완료</Text>
+            </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.modalContent}>
-            {cars.length === 0 ? (
-              <View style={styles.emptyCarState}>
-                <Ionicons name="car-outline" size={48} color={colors.textTertiary} />
-                <Text style={styles.emptyCarText}>등록된 차량이 없습니다</Text>
-                <Text style={styles.emptyCarSubtext}>설정에서 차량을 추가해주세요</Text>
-              </View>
-            ) : (
-              cars.map((car) => (
-                <TouchableOpacity
-                  key={car.id}
-                  style={[
-                    styles.carOption,
-                    selectedCar?.id === car.id && styles.carOptionActive,
-                  ]}
-                  onPress={() => {
-                    selectCar(car.id);
-                    setCarModalVisible(false);
-                  }}
-                >
-                  <View style={styles.carOptionIcon}>
-                    <Ionicons name="car-sport" size={22} color={colors.primary} />
-                  </View>
-                  <View style={styles.carOptionInfo}>
-                    <Text style={styles.carOptionName}>{car.name}</Text>
-                    {car.plateNumber && (
-                      <Text style={styles.carOptionDetail}>{car.plateNumber}</Text>
-                    )}
-                  </View>
-                  {selectedCar?.id === car.id && (
-                    <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
-                  )}
-                </TouchableOpacity>
-              ))
-            )}
-          </ScrollView>
+          <View style={styles.datePickerModalContent}>
+            <DateTimePicker
+              value={date}
+              mode="date"
+              display="inline"
+              onChange={onDateChange}
+              minimumDate={minDate}
+              maximumDate={maxDate}
+              locale="ko-KR"
+              style={styles.datePickerModal}
+              accentColor={colors.primary}
+              themeVariant="light"
+            />
+          </View>
         </View>
       </Modal>
+
     </SafeAreaView>
   );
 }
@@ -341,12 +491,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: layout.screenPadding,
-    paddingVertical: spacing[4],
+    paddingHorizontal: spacing[2],
+    paddingVertical: spacing[3],
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '600',
     color: colors.textPrimary,
   },
   saveButton: {
@@ -445,12 +601,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.03)',
-    borderRadius: 12,
-    paddingHorizontal: spacing[4],
-    paddingVertical: spacing[3],
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
+    paddingVertical: spacing[2],
+  },
+  dateLabelText: {
+    fontSize: 15,
+    color: 'rgba(0,0,0,0.5)',
+    fontWeight: '500',
+  },
+  dateValueContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(212, 168, 75, 0.15)',
+    paddingHorizontal: spacing[3],
+    paddingVertical: spacing[2],
+    borderRadius: 8,
+    gap: spacing[1],
+  },
+  dateValueText: {
+    fontSize: 15,
+    color: colors.primary,
+    fontWeight: '600',
   },
   dateText: {
     fontSize: 16,
@@ -584,5 +754,87 @@ const styles = StyleSheet.create({
   carOptionDetail: {
     fontSize: 14,
     color: colors.textSecondary,
+  },
+  // 날짜 선택 모달 전용 스타일 (밝은 배경)
+  dateModalContainer: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
+  },
+  dateModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: layout.screenPadding,
+    paddingVertical: spacing[4],
+    backgroundColor: '#F2F2F7',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  dateModalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1C1C1E',
+  },
+  dateModalCancel: {
+    fontSize: 16,
+    color: '#8E8E93',
+  },
+  dateModalSave: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  datePickerModalContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: spacing[4],
+    backgroundColor: '#F2F2F7',
+  },
+  datePickerModal: {
+    width: '100%',
+    height: 400,
+    backgroundColor: '#F2F2F7',
+  },
+  // 차량 드롭다운 스타일
+  carDropdownList: {
+    marginTop: spacing[3],
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.06)',
+    paddingTop: spacing[2],
+  },
+  carDropdownEmpty: {
+    alignItems: 'center',
+    paddingVertical: spacing[4],
+    gap: spacing[2],
+  },
+  carDropdownEmptyText: {
+    fontSize: 14,
+    color: 'rgba(0,0,0,0.4)',
+  },
+  carDropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing[3],
+    paddingHorizontal: spacing[2],
+    gap: spacing[3],
+    borderRadius: 12,
+  },
+  carDropdownItemActive: {
+    backgroundColor: 'rgba(212, 168, 75, 0.1)',
+  },
+  carDropdownItemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.04)',
+  },
+  carDropdownItemText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '500',
+    color: 'rgba(0,0,0,0.7)',
+  },
+  carDropdownItemTextActive: {
+    color: colors.primary,
+    fontWeight: '600',
   },
 });

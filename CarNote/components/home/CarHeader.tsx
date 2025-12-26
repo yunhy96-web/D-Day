@@ -38,7 +38,7 @@ export function CarHeader({ carName, mileage, onCarSelect, onMaintenancePress }:
         <BlurView intensity={40} tint="light" style={styles.blurView}>
           <View style={styles.buttonGlassOverlay} />
         </BlurView>
-        <Ionicons name="construct" size={22} color={colors.primary} />
+        <Ionicons name="add" size={26} color={colors.primary} />
       </TouchableOpacity>
     </View>
   );
