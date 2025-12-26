@@ -196,7 +196,7 @@ export default function SettingsScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>현재 주행거리</Text>
+              <Text style={styles.inputLabel}>현재 누적 주행거리</Text>
               <View style={styles.inputWithUnit}>
                 <TextInput
                   style={[styles.input, styles.inputFlex]}

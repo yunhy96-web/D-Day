@@ -54,7 +54,7 @@ export default function HistoryScreen() {
   // 필터 상태
   const [selectedCategory, setSelectedCategory] = useState<RecordCategory | 'all'>('all');
   const [showCarPicker, setShowCarPicker] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   // 선택된 차량의 기록 가져오기
@@ -89,16 +89,6 @@ export default function HistoryScreen() {
             {/* 뷰 모드 토글 */}
             <View style={styles.viewToggle}>
               <TouchableOpacity
-                style={[styles.viewToggleButton, viewMode === 'list' && styles.viewToggleButtonActive]}
-                onPress={() => setViewMode('list')}
-              >
-                <Ionicons
-                  name="list"
-                  size={18}
-                  color={viewMode === 'list' ? colors.primary : 'rgba(255,255,255,0.5)'}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
                 style={[styles.viewToggleButton, viewMode === 'calendar' && styles.viewToggleButtonActive]}
                 onPress={() => setViewMode('calendar')}
               >
@@ -106,6 +96,16 @@ export default function HistoryScreen() {
                   name="calendar"
                   size={18}
                   color={viewMode === 'calendar' ? colors.primary : 'rgba(255,255,255,0.5)'}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.viewToggleButton, viewMode === 'list' && styles.viewToggleButtonActive]}
+                onPress={() => setViewMode('list')}
+              >
+                <Ionicons
+                  name="list"
+                  size={18}
+                  color={viewMode === 'list' ? colors.primary : 'rgba(255,255,255,0.5)'}
                 />
               </TouchableOpacity>
             </View>

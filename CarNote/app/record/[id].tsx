@@ -93,7 +93,7 @@ export default function RecordDetailScreen() {
         <DetailCard title="차량 정보" icon="car-sport" iconColor={colors.primary}>
           <DetailRow label="차량" value={car?.name || '-'} />
           {record.mileage && (
-            <DetailRow label="주행거리" value={`${record.mileage.toLocaleString()}km`} />
+            <DetailRow label="누적 주행거리" value={`${record.mileage.toLocaleString()}km`} />
           )}
         </DetailCard>
 

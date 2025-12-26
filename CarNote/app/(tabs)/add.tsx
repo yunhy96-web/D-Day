@@ -42,7 +42,7 @@ const getSelectedCategory = (type: string): '정비' | '주유' | '기타' | nul
 
 export default function AddScreen() {
   const router = useRouter();
-  const { cars, selectedCar, selectCar } = useCar();
+  const { cars, selectedCar, selectCar, updateCar } = useCar();
   const { addRecord } = useRecord();
   const [maintenanceType, setMaintenanceType] = useState('');
   const [cost, setCost] = useState('');
@@ -96,6 +96,8 @@ export default function AddScreen() {
       return;
     }
 
+    const recordMileage = mileage ? Number(mileage) : undefined;
+
     // 기록 저장
     addRecord({
       carId: selectedCar.id,
@@ -103,11 +105,16 @@ export default function AddScreen() {
       type: maintenanceType,
       date: date,
       cost: cost ? Number(cost) : undefined,
-      mileage: mileage ? Number(mileage) : undefined,
+      mileage: recordMileage,
       location: location || undefined,
       fuelAmount: fuelAmount ? Number(fuelAmount) : undefined,
       memo: memo || undefined,
     });
+
+    // 주행거리가 입력되었고, 기존 차량 주행거리보다 크면 차량 주행거리 업데이트
+    if (recordMileage && recordMileage > selectedCar.mileage) {
+      updateCar(selectedCar.id, { mileage: recordMileage });
+    }
 
     // 폼 초기화 및 홈으로 이동
     resetForm();
@@ -333,14 +340,14 @@ export default function AddScreen() {
             </GlassCard>
           )}
 
-          {/* 주행거리 - 정비만 표시 */}
+          {/* 누적 주행거리 - 정비만 표시 */}
           {selectedCategory === '정비' && (
             <GlassCard>
-              <CardHeader icon="speedometer-outline" iconColor="#48BB78" title="주행거리" />
+              <CardHeader icon="speedometer-outline" iconColor="#48BB78" title="누적 주행거리" />
               <View style={styles.inputWithUnit}>
                 <TextInput
                   style={[styles.input, styles.inputFlex]}
-                  placeholder="현재 주행거리"
+                  placeholder="현재 누적 주행거리"
                   placeholderTextColor="rgba(0,0,0,0.3)"
                   value={mileage}
                   onChangeText={setMileage}
