@@ -117,7 +117,7 @@ export default function RecordDetailScreen() {
             <DetailRow
               label="총 비용"
               value={`${record.cost.toLocaleString()}원`}
-              valueColor={colors.primary}
+              valueColor="rgba(0,0,0,0.7)"
               bold
             />
           </DetailCard>
