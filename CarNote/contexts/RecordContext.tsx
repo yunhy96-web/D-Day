@@ -24,6 +24,7 @@ interface RecordContextType {
   getRecordsByCarId: (carId: string) => MaintenanceRecord[];
   getRecentRecords: (carId: string, limit?: number) => MaintenanceRecord[];
   getLastMaintenance: (carId: string) => MaintenanceRecord | null;
+  getUpcomingSchedule: (carId: string) => MaintenanceRecord | null;
   getMonthlyExpense: (carId: string) => number;
 }
 
@@ -61,9 +62,32 @@ export function RecordProvider({ children }: { children: ReactNode }) {
     return getRecordsByCarId(carId).slice(0, limit);
   }, [getRecordsByCarId]);
 
+  // 마지막 정비: 오늘 이전의 기록 중 가장 최근
   const getLastMaintenance = useCallback((carId: string) => {
-    const carRecords = getRecordsByCarId(carId);
-    return carRecords.length > 0 ? carRecords[0] : null;
+    const now = new Date();
+    now.setHours(23, 59, 59, 999); // 오늘 끝까지 포함
+
+    const pastRecords = getRecordsByCarId(carId)
+      .filter(record => new Date(record.date) <= now);
+
+    return pastRecords.length > 0 ? pastRecords[0] : null;
+  }, [getRecordsByCarId]);
+
+  // 다가오는 일정: 내일 이후의 기록 중 가장 가까운 것 (오늘은 제외)
+  const getUpcomingSchedule = useCallback((carId: string) => {
+    const tomorrow = new Date();
+    tomorrow.setHours(0, 0, 0, 0);
+    tomorrow.setDate(tomorrow.getDate() + 1); // 내일부터
+
+    const futureRecords = getRecordsByCarId(carId)
+      .filter(record => {
+        const recordDate = new Date(record.date);
+        recordDate.setHours(0, 0, 0, 0);
+        return recordDate >= tomorrow;
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // 가까운 순으로 정렬
+
+    return futureRecords.length > 0 ? futureRecords[0] : null;
   }, [getRecordsByCarId]);
 
   const getMonthlyExpense = useCallback((carId: string) => {
@@ -88,6 +112,7 @@ export function RecordProvider({ children }: { children: ReactNode }) {
       getRecordsByCarId,
       getRecentRecords,
       getLastMaintenance,
+      getUpcomingSchedule,
       getMonthlyExpense,
     }}>
       {children}

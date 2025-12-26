@@ -7,11 +7,12 @@ import { colors, spacing, layout } from '@/styles';
 interface CarHeaderProps {
   carName: string;
   mileage: number;
+  isDropdownOpen?: boolean;
   onCarSelect?: () => void;
   onMaintenancePress?: () => void;
 }
 
-export function CarHeader({ carName, mileage, onCarSelect, onMaintenancePress }: CarHeaderProps) {
+export function CarHeader({ carName, mileage, isDropdownOpen, onCarSelect, onMaintenancePress }: CarHeaderProps) {
   return (
     <View style={styles.container}>
       {/* 차량 정보 글래스 카드 */}
@@ -26,7 +27,11 @@ export function CarHeader({ carName, mileage, onCarSelect, onMaintenancePress }:
           <View style={styles.carInfo}>
             <View style={styles.carNameRow}>
               <Text style={styles.carName}>{carName}</Text>
-              <Ionicons name="chevron-down" size={16} color="rgba(0,0,0,0.4)" />
+              <Ionicons
+                name={isDropdownOpen ? "chevron-up" : "chevron-down"}
+                size={16}
+                color="rgba(0,0,0,0.4)"
+              />
             </View>
             <Text style={styles.mileage}>{mileage.toLocaleString()} km</Text>
           </View>

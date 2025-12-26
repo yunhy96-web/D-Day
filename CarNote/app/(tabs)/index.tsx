@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, LayoutAnimation, UIManager, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { BlurView } from 'expo-blur';
@@ -9,12 +9,31 @@ import { SectionHeader, EmptyState } from '@/components/common';
 import { colors, spacing, layout } from '@/styles';
 import { useCar, useRecord, MaintenanceRecord } from '@/contexts';
 
-// 날짜를 "3일 전", "오늘" 등으로 표시
+// Android에서 LayoutAnimation 활성화
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+// 날짜를 "3일 전", "오늘", "2일 후" 등으로 표시
 const formatRelativeDate = (date: Date): string => {
   const now = new Date();
-  const diffTime = now.getTime() - new Date(date).getTime();
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  now.setHours(0, 0, 0, 0);
+  const targetDate = new Date(date);
+  targetDate.setHours(0, 0, 0, 0);
 
+  const diffTime = now.getTime() - targetDate.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+  // 미래 날짜
+  if (diffDays < 0) {
+    const futureDays = Math.abs(diffDays);
+    if (futureDays === 1) return '내일';
+    if (futureDays < 7) return `${futureDays}일 후`;
+    if (futureDays < 30) return `${Math.floor(futureDays / 7)}주 후`;
+    return `${Math.floor(futureDays / 30)}개월 후`;
+  }
+
+  // 오늘 또는 과거 날짜
   if (diffDays === 0) return '오늘';
   if (diffDays === 1) return '어제';
   if (diffDays < 7) return `${diffDays}일 전`;
@@ -34,8 +53,20 @@ const getCategoryIcon = (category: string): keyof typeof Ionicons.glyphMap => {
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { selectedCar, cars } = useCar();
-  const { getRecentRecords, getLastMaintenance, getMonthlyExpense } = useRecord();
+  const { selectedCar, cars, selectCar } = useCar();
+  const { getRecentRecords, getLastMaintenance, getUpcomingSchedule, getMonthlyExpense } = useRecord();
+  const [showCarDropdown, setShowCarDropdown] = useState(false);
+
+  const handleCarSelect = (carId: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    selectCar(carId);
+    setShowCarDropdown(false);
+  };
+
+  const toggleCarDropdown = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setShowCarDropdown(!showCarDropdown);
+  };
 
   // 선택된 차량이 있으면 해당 정보, 없으면 기본값
   const carName = selectedCar?.name || (cars.length > 0 ? '차량을 선택하세요' : '차량을 추가하세요');
@@ -44,6 +75,7 @@ export default function HomeScreen() {
   // 선택된 차량의 기록 가져오기
   const recentRecords = selectedCar ? getRecentRecords(selectedCar.id, 3) : [];
   const lastMaintenanceRecord = selectedCar ? getLastMaintenance(selectedCar.id) : null;
+  const upcomingRecord = selectedCar ? getUpcomingSchedule(selectedCar.id) : null;
   const monthlyExpense = selectedCar ? getMonthlyExpense(selectedCar.id) : 0;
 
   // 마지막 정비 표시 텍스트
@@ -52,7 +84,11 @@ export default function HomeScreen() {
     ? formatRelativeDate(lastMaintenanceRecord.date)
     : undefined;
 
-  const nextMaintenanceDate = null; // TODO: 다가오는 일정 기능
+  // 다가오는 일정 표시 텍스트
+  const upcomingValue = upcomingRecord?.type || '예정 없음';
+  const upcomingSubtitle = upcomingRecord
+    ? formatRelativeDate(upcomingRecord.date)
+    : undefined;
 
   const goToAdd = () => {
     router.push('/add');
@@ -69,9 +105,75 @@ export default function HomeScreen() {
         <CarHeader
           carName={carName}
           mileage={carMileage}
-          onCarSelect={() => router.push('/settings')}
+          isDropdownOpen={showCarDropdown}
+          onCarSelect={toggleCarDropdown}
           onMaintenancePress={goToAdd}
         />
+
+        {/* 차량 선택 드롭다운 */}
+        {showCarDropdown && (
+          <View style={styles.carDropdownContainer}>
+            <View style={styles.carDropdown}>
+              {cars.length === 0 ? (
+                <TouchableOpacity
+                  style={styles.carDropdownItem}
+                  onPress={() => {
+                    setShowCarDropdown(false);
+                    router.push('/settings');
+                  }}
+                >
+                  <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
+                  <Text style={styles.carDropdownAddText}>차량 추가하기</Text>
+                </TouchableOpacity>
+              ) : (
+                <>
+                  {cars.map((car) => (
+                    <TouchableOpacity
+                      key={car.id}
+                      style={[
+                        styles.carDropdownItem,
+                        selectedCar?.id === car.id && styles.carDropdownItemActive,
+                      ]}
+                      onPress={() => handleCarSelect(car.id)}
+                    >
+                      <Ionicons
+                        name="car-sport"
+                        size={18}
+                        color={selectedCar?.id === car.id ? colors.primary : 'rgba(0,0,0,0.5)'}
+                      />
+                      <View style={styles.carDropdownInfo}>
+                        <Text
+                          style={[
+                            styles.carDropdownName,
+                            selectedCar?.id === car.id && styles.carDropdownNameActive,
+                          ]}
+                        >
+                          {car.name}
+                        </Text>
+                        <Text style={styles.carDropdownMileage}>
+                          {car.mileage.toLocaleString()} km
+                        </Text>
+                      </View>
+                      {selectedCar?.id === car.id && (
+                        <Ionicons name="checkmark" size={18} color={colors.primary} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                  <TouchableOpacity
+                    style={[styles.carDropdownItem, styles.carDropdownAddItem]}
+                    onPress={() => {
+                      setShowCarDropdown(false);
+                      router.push('/settings');
+                    }}
+                  >
+                    <Ionicons name="settings-outline" size={18} color="rgba(0,0,0,0.4)" />
+                    <Text style={styles.carDropdownSettingsText}>차량 관리</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </View>
+        )}
 
         {/* Info Cards */}
         <View style={styles.infoCards}>
@@ -79,7 +181,8 @@ export default function HomeScreen() {
             icon="calendar-outline"
             iconColor={colors.iconBlue}
             label="다가오는 일정"
-            value={nextMaintenanceDate || '예정 없음'}
+            value={upcomingValue}
+            subtitle={upcomingSubtitle}
           />
           <InfoCard
             icon="construct-outline"
@@ -177,6 +280,64 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing[3],
     paddingHorizontal: layout.screenPadding,
+  },
+  carDropdownContainer: {
+    paddingHorizontal: layout.screenPadding,
+    marginTop: -spacing[2],
+    marginBottom: spacing[2],
+  },
+  carDropdown: {
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+    overflow: 'hidden',
+  },
+  carDropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[3],
+    gap: spacing[3],
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
+  },
+  carDropdownItemActive: {
+    backgroundColor: 'rgba(212, 168, 75, 0.1)',
+  },
+  carDropdownInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  carDropdownName: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: 'rgba(0,0,0,0.7)',
+  },
+  carDropdownNameActive: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  carDropdownMileage: {
+    fontSize: 13,
+    color: 'rgba(0,0,0,0.4)',
+  },
+  carDropdownAddText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  carDropdownAddItem: {
+    borderBottomWidth: 0,
+  },
+  carDropdownSettingsText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '500',
+    color: 'rgba(0,0,0,0.5)',
   },
   recordList: {
     paddingHorizontal: layout.screenPadding,
