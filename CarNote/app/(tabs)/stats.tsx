@@ -19,6 +19,15 @@ const periodOptions: { value: PeriodType; label: string }[] = [
   { value: 'thisMonth', label: '이번 달' },
 ];
 
+// 파이 차트 카테고리 옵션
+type ChartCategoryType = 'all' | '정비' | '주유' | '기타';
+const chartCategoryOptions: { value: ChartCategoryType; label: string }[] = [
+  { value: 'all', label: '전체' },
+  { value: '정비', label: '정비' },
+  { value: '주유', label: '주유' },
+  { value: '기타', label: '기타' },
+];
+
 // 차트 색상
 const CHART_COLORS = [
   colors.primary,    // 골드
@@ -39,6 +48,7 @@ export default function StatsScreen() {
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>('all');
   const [showPeriodPicker, setShowPeriodPicker] = useState(false);
   const [showCarPicker, setShowCarPicker] = useState(false);
+  const [selectedChartCategory, setSelectedChartCategory] = useState<ChartCategoryType>('all');
 
   // 선택된 차량의 기록
   const carRecords = useMemo(() => {
@@ -86,8 +96,13 @@ export default function StatsScreen() {
 
   // 유형별 비용 (파이 차트 데이터)
   const typeData = useMemo(() => {
+    // 카테고리별 필터링
+    const categoryFilteredRecords = selectedChartCategory === 'all'
+      ? filteredRecords
+      : filteredRecords.filter(r => r.category === selectedChartCategory);
+
     const typeMap: { [key: string]: number } = {};
-    filteredRecords.forEach(record => {
+    categoryFilteredRecords.forEach(record => {
       if (record.cost) {
         typeMap[record.type] = (typeMap[record.type] || 0) + record.cost;
       }
@@ -100,7 +115,12 @@ export default function StatsScreen() {
         color: CHART_COLORS[index % CHART_COLORS.length],
       }))
       .sort((a, b) => b.cost - a.cost);
-  }, [filteredRecords]);
+  }, [filteredRecords, selectedChartCategory]);
+
+  // 선택된 카테고리의 총 비용
+  const categoryTotalCost = useMemo(() => {
+    return typeData.reduce((sum, item) => sum + item.cost, 0);
+  }, [typeData]);
 
   // 월별 비용 추이 (라인 차트 데이터)
   const monthlyData = useMemo(() => {
@@ -328,31 +348,61 @@ export default function StatsScreen() {
             </View>
 
             {/* 유형별 비용 파이 차트 */}
-            {typeData.length > 0 && (
-              <GlassCard>
-                <View style={styles.chartHeader}>
-                  <Ionicons name="pie-chart-outline" size={22} color={colors.primary} />
-                  <Text style={styles.chartTitle}>정비 유형별 비용</Text>
+            <GlassCard>
+              <View style={styles.chartHeader}>
+                <Ionicons name="pie-chart-outline" size={22} color={colors.primary} />
+                <Text style={styles.chartTitle}>유형별 비용</Text>
+              </View>
+
+              {/* 카테고리 토글 */}
+              <View style={styles.categoryToggle}>
+                {chartCategoryOptions.map(option => (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={[
+                      styles.categoryToggleButton,
+                      selectedChartCategory === option.value && styles.categoryToggleButtonActive,
+                    ]}
+                    onPress={() => setSelectedChartCategory(option.value)}
+                  >
+                    <Text
+                      style={[
+                        styles.categoryToggleText,
+                        selectedChartCategory === option.value && styles.categoryToggleTextActive,
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {typeData.length > 0 ? (
+                <>
+                  <PieChart data={typeData} totalCost={categoryTotalCost} />
+                  <View style={styles.legendContainer}>
+                    {typeData.map((item, index) => {
+                      const percentage = categoryTotalCost > 0
+                        ? ((item.cost / categoryTotalCost) * 100).toFixed(1)
+                        : '0.0';
+                      return (
+                        <View key={index} style={styles.legendItem}>
+                          <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+                          <Text style={styles.legendLabel} numberOfLines={1}>{item.type}</Text>
+                          <Text style={styles.legendValue}>
+                            {item.cost.toLocaleString()}원 ({percentage}%)
+                          </Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                </>
+              ) : (
+                <View style={styles.noDataContainer}>
+                  <Text style={styles.noDataText}>해당 카테고리의 기록이 없습니다</Text>
                 </View>
-                <PieChart data={typeData} totalCost={stats.totalCost} />
-                <View style={styles.legendContainer}>
-                  {typeData.map((item, index) => {
-                    const percentage = stats.totalCost > 0
-                      ? ((item.cost / stats.totalCost) * 100).toFixed(1)
-                      : '0.0';
-                    return (
-                      <View key={index} style={styles.legendItem}>
-                        <View style={[styles.legendDot, { backgroundColor: item.color }]} />
-                        <Text style={styles.legendLabel} numberOfLines={1}>{item.type}</Text>
-                        <Text style={styles.legendValue}>
-                          {item.cost.toLocaleString()}원 ({percentage}%)
-                        </Text>
-                      </View>
-                    );
-                  })}
-                </View>
-              </GlassCard>
-            )}
+              )}
+            </GlassCard>
 
             {/* 월별 비용 추이 라인 차트 */}
             <GlassCard>
@@ -545,6 +595,19 @@ const formatCostLabel = (val: number): string => {
   return val.toLocaleString();
 };
 
+// 주행거리 포맷 함수 (km 단위)
+const formatMileageLabel = (val: number): string => {
+  if (val === 0) return '0';
+  if (val >= 10000) {
+    const man = val / 10000;
+    return man % 1 === 0 ? `${man.toFixed(0)}만km` : `${man.toFixed(1)}만km`;
+  }
+  if (val >= 1000) {
+    return `${(val / 1000).toFixed(0)}천km`;
+  }
+  return `${val}km`;
+};
+
 // 라인 차트 컴포넌트
 function LineChart({ data }: { data: { month: string; cost: number }[] }) {
   const chartWidth = SCREEN_WIDTH - layout.screenPadding * 2 - spacing[8];
@@ -725,7 +788,7 @@ function MileageLineChart({ data }: { data: { month: string; mileage: number }[]
               fill="rgba(0,0,0,0.5)"
               textAnchor="end"
             >
-              {val.toLocaleString()}
+              {formatMileageLabel(val)}
             </SvgText>
           );
         })}
@@ -938,6 +1001,45 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: 'rgba(0,0,0,0.8)',
+  },
+  // 카테고리 토글
+  categoryToggle: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 10,
+    padding: 4,
+    marginBottom: spacing[4],
+  },
+  categoryToggleButton: {
+    flex: 1,
+    paddingVertical: spacing[2],
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  categoryToggleButtonActive: {
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  categoryToggleText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: 'rgba(0,0,0,0.5)',
+  },
+  categoryToggleTextActive: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  noDataContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing[8],
+  },
+  noDataText: {
+    fontSize: 14,
+    color: 'rgba(0,0,0,0.4)',
   },
   // 파이 차트
   pieChartContainer: {
