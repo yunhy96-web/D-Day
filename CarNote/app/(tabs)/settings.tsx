@@ -10,13 +10,21 @@ import {
   LayoutAnimation,
   UIManager,
   Platform,
+  Linking,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { colors, spacing, layout } from '@/styles';
 import { useCar, Car } from '@/contexts';
+
+// 앱 정보 상수
+const APP_VERSION = Constants.expoConfig?.version || '1.0.0';
+const DEVELOPER_EMAIL = 'yhy0818@gmail.com';
+const PRIVACY_POLICY_URL = 'https://canyon-petroleum-c80.notion.site/2d58531fa7f2803e8e09cf1898d6392b';
 
 // Android에서 LayoutAnimation 활성화
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -84,6 +92,27 @@ export default function SettingsScreen() {
     deleteCar(carId);
   };
 
+  // 외부 링크 열기
+  const openURL = async (url: string) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('오류', '링크를 열 수 없습니다.');
+      }
+    } catch (error) {
+      Alert.alert('오류', '링크를 열 수 없습니다.');
+    }
+  };
+
+  // 이메일 보내기
+  const sendEmail = () => {
+    const subject = encodeURIComponent('[CarNote] 문의사항');
+    const body = encodeURIComponent(`\n\n---\n앱 버전: ${APP_VERSION}\n기기: ${Platform.OS}`);
+    openURL(`mailto:${DEVELOPER_EMAIL}?subject=${subject}&body=${body}`);
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
@@ -149,6 +178,50 @@ export default function SettingsScreen() {
               </GlassCard>
             ))
           )}
+        </View>
+
+        {/* 앱 정보 섹션 */}
+        <View style={[styles.section, styles.sectionMarginTop]}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>앱 정보</Text>
+          </View>
+
+          <GlassCard>
+            {/* 앱 버전 */}
+            <View style={styles.infoRow}>
+              <View style={styles.infoIconWrapper}>
+                <Ionicons name="information-circle-outline" size={20} color={colors.iconBlue} />
+              </View>
+              <Text style={styles.infoLabel}>앱 버전</Text>
+              <Text style={styles.infoValue}>{APP_VERSION}</Text>
+            </View>
+
+            <View style={styles.infoDivider} />
+
+            {/* 개발자 연락처 */}
+            <TouchableOpacity style={styles.infoRow} onPress={sendEmail} activeOpacity={0.7}>
+              <View style={styles.infoIconWrapper}>
+                <Ionicons name="mail-outline" size={20} color={colors.success} />
+              </View>
+              <Text style={styles.infoLabel}>개발자 문의</Text>
+              <Ionicons name="chevron-forward" size={18} color="rgba(0,0,0,0.3)" />
+            </TouchableOpacity>
+
+            <View style={styles.infoDivider} />
+
+            {/* 개인정보 처리방침 */}
+            <TouchableOpacity
+              style={styles.infoRow}
+              onPress={() => openURL(PRIVACY_POLICY_URL)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.infoIconWrapper}>
+                <Ionicons name="shield-checkmark-outline" size={20} color={colors.primary} />
+              </View>
+              <Text style={styles.infoLabel}>개인정보 처리방침</Text>
+              <Ionicons name="chevron-forward" size={18} color="rgba(0,0,0,0.3)" />
+            </TouchableOpacity>
+          </GlassCard>
         </View>
       </ScrollView>
 
@@ -264,6 +337,9 @@ const styles = StyleSheet.create({
   section: {
     gap: spacing[3],
   },
+  sectionMarginTop: {
+    marginTop: spacing[6],
+  },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -363,6 +439,38 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     padding: spacing[2],
+  },
+  // 앱 정보 스타일
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing[2],
+  },
+  infoIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing[3],
+  },
+  infoLabel: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
+    color: 'rgba(0,0,0,0.8)',
+  },
+  infoValue: {
+    fontSize: 15,
+    color: 'rgba(0,0,0,0.5)',
+    fontWeight: '500',
+  },
+  infoDivider: {
+    height: 1,
+    backgroundColor: 'rgba(0,0,0,0.06)',
+    marginVertical: spacing[2],
+    marginLeft: 48,
   },
   // Modal styles
   modalContainer: {

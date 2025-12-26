@@ -4,6 +4,7 @@ import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/styles';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { AdBanner } from './AdBanner';
 
 const { width } = Dimensions.get('window');
 
@@ -18,6 +19,9 @@ export function LiquidTabBar({ state, descriptors, navigation }: BottomTabBarPro
 
   return (
     <View style={styles.container}>
+      {/* 광고 배너 */}
+      <AdBanner style={styles.adBanner} />
+
       <View style={styles.tabBarWrapper}>
         {/* Glass background */}
         <BlurView intensity={40} tint="light" style={styles.blurView}>
@@ -74,6 +78,11 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
+    gap: 8,
+  },
+  adBanner: {
+    width: width,
+    marginBottom: 4,
   },
   tabBarWrapper: {
     width: width - 48,
