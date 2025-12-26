@@ -49,6 +49,7 @@ export default function StatsScreen() {
   const [showPeriodPicker, setShowPeriodPicker] = useState(false);
   const [showCarPicker, setShowCarPicker] = useState(false);
   const [selectedChartCategory, setSelectedChartCategory] = useState<ChartCategoryType>('all');
+  const [selectedMonthlyCategory, setSelectedMonthlyCategory] = useState<ChartCategoryType>('all');
 
   // 선택된 차량의 기록
   const carRecords = useMemo(() => {
@@ -127,13 +128,18 @@ export default function StatsScreen() {
     const now = new Date();
     const months: { month: string; cost: number }[] = [];
 
+    // 카테고리별 필터링
+    const categoryFilteredRecords = selectedMonthlyCategory === 'all'
+      ? carRecords
+      : carRecords.filter(r => r.category === selectedMonthlyCategory);
+
     for (let i = 5; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthLabel = `${date.getMonth() + 1}월`;
       const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
       const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
-      const monthCost = carRecords
+      const monthCost = categoryFilteredRecords
         .filter(r => {
           const recordDate = new Date(r.date);
           return recordDate >= monthStart && recordDate <= monthEnd;
@@ -144,7 +150,7 @@ export default function StatsScreen() {
     }
 
     return months;
-  }, [carRecords]);
+  }, [carRecords, selectedMonthlyCategory]);
 
   // 월별 누적 주행거리 추이 (라인 차트 데이터)
   const monthlyMileageData = useMemo(() => {
@@ -408,8 +414,32 @@ export default function StatsScreen() {
             <GlassCard>
               <View style={styles.chartHeader}>
                 <Ionicons name="analytics-outline" size={22} color={colors.primary} />
-                <Text style={styles.chartTitle}>월별 정비 비용</Text>
+                <Text style={styles.chartTitle}>월별 유형별 비용</Text>
               </View>
+
+              {/* 카테고리 토글 */}
+              <View style={styles.categoryToggle}>
+                {chartCategoryOptions.map(option => (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={[
+                      styles.categoryToggleButton,
+                      selectedMonthlyCategory === option.value && styles.categoryToggleButtonActive,
+                    ]}
+                    onPress={() => setSelectedMonthlyCategory(option.value)}
+                  >
+                    <Text
+                      style={[
+                        styles.categoryToggleText,
+                        selectedMonthlyCategory === option.value && styles.categoryToggleTextActive,
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
               <LineChart data={monthlyData} />
             </GlassCard>
 
