@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { getAllRecords, insertRecord, updateRecordById, deleteRecordById } from '@/utils/database';
 
 export type RecordCategory = '정비' | '주유' | '기타';
 
@@ -18,9 +19,10 @@ export interface MaintenanceRecord {
 
 interface RecordContextType {
   records: MaintenanceRecord[];
-  addRecord: (record: Omit<MaintenanceRecord, 'id' | 'createdAt'>) => void;
-  updateRecord: (id: string, record: Partial<MaintenanceRecord>) => void;
-  deleteRecord: (id: string) => void;
+  isLoading: boolean;
+  addRecord: (record: Omit<MaintenanceRecord, 'id' | 'createdAt'>) => Promise<void>;
+  updateRecord: (id: string, record: Partial<MaintenanceRecord>) => Promise<void>;
+  deleteRecord: (id: string) => Promise<void>;
   getRecordsByCarId: (carId: string) => MaintenanceRecord[];
   getRecentRecords: (carId: string, limit?: number) => MaintenanceRecord[];
   getLastMaintenance: (carId: string) => MaintenanceRecord | null;
@@ -32,24 +34,95 @@ const RecordContext = createContext<RecordContextType | undefined>(undefined);
 
 export function RecordProvider({ children }: { children: ReactNode }) {
   const [records, setRecords] = useState<MaintenanceRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const addRecord = useCallback((recordData: Omit<MaintenanceRecord, 'id' | 'createdAt'>) => {
+  // 초기 데이터 로드
+  useEffect(() => {
+    loadRecords();
+  }, []);
+
+  const loadRecords = async () => {
+    try {
+      const dbRecords = await getAllRecords();
+      const formattedRecords: MaintenanceRecord[] = dbRecords.map(record => ({
+        id: record.id,
+        carId: record.carId,
+        category: record.category as RecordCategory,
+        type: record.type,
+        date: new Date(record.date),
+        cost: record.cost || undefined,
+        mileage: record.mileage || undefined,
+        location: record.location || undefined,
+        fuelAmount: record.fuelAmount || undefined,
+        memo: record.memo || undefined,
+        createdAt: new Date(record.createdAt),
+      }));
+      setRecords(formattedRecords);
+    } catch (error) {
+      console.error('Failed to load records:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addRecord = useCallback(async (recordData: Omit<MaintenanceRecord, 'id' | 'createdAt'>) => {
     const newRecord: MaintenanceRecord = {
       ...recordData,
       id: Date.now().toString(),
       createdAt: new Date(),
     };
-    setRecords(prev => [newRecord, ...prev]);
+
+    try {
+      await insertRecord({
+        id: newRecord.id,
+        carId: newRecord.carId,
+        category: newRecord.category,
+        type: newRecord.type,
+        date: newRecord.date.toISOString(),
+        cost: newRecord.cost,
+        mileage: newRecord.mileage,
+        location: newRecord.location,
+        fuelAmount: newRecord.fuelAmount,
+        memo: newRecord.memo,
+        createdAt: newRecord.createdAt.toISOString(),
+      });
+      setRecords(prev => [newRecord, ...prev]);
+    } catch (error) {
+      console.error('Failed to add record:', error);
+      throw error;
+    }
   }, []);
 
-  const updateRecord = useCallback((id: string, recordData: Partial<MaintenanceRecord>) => {
-    setRecords(prev => prev.map(record =>
-      record.id === id ? { ...record, ...recordData } : record
-    ));
+  const updateRecord = useCallback(async (id: string, recordData: Partial<MaintenanceRecord>) => {
+    try {
+      const dbData: Record<string, string | number | undefined> = {};
+      if (recordData.category !== undefined) dbData.category = recordData.category;
+      if (recordData.type !== undefined) dbData.type = recordData.type;
+      if (recordData.date !== undefined) dbData.date = recordData.date.toISOString();
+      if (recordData.cost !== undefined) dbData.cost = recordData.cost;
+      if (recordData.mileage !== undefined) dbData.mileage = recordData.mileage;
+      if (recordData.location !== undefined) dbData.location = recordData.location;
+      if (recordData.fuelAmount !== undefined) dbData.fuelAmount = recordData.fuelAmount;
+      if (recordData.memo !== undefined) dbData.memo = recordData.memo;
+
+      await updateRecordById(id, dbData);
+      setRecords(prev => prev.map(record =>
+        record.id === id ? { ...record, ...recordData } : record
+      ));
+    } catch (error) {
+      console.error('Failed to update record:', error);
+      throw error;
+    }
   }, []);
 
-  const deleteRecord = useCallback((id: string) => {
-    setRecords(prev => prev.filter(record => record.id !== id));
+  const deleteRecord = useCallback(async (id: string) => {
+    try {
+      await deleteRecordById(id);
+      setRecords(prev => prev.filter(record => record.id !== id));
+    } catch (error) {
+      console.error('Failed to delete record:', error);
+      throw error;
+    }
   }, []);
 
   const getRecordsByCarId = useCallback((carId: string) => {
@@ -106,6 +179,7 @@ export function RecordProvider({ children }: { children: ReactNode }) {
   return (
     <RecordContext.Provider value={{
       records,
+      isLoading,
       addRecord,
       updateRecord,
       deleteRecord,

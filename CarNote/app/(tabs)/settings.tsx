@@ -25,6 +25,8 @@ import { useCar, Car } from '@/contexts';
 const APP_VERSION = Constants.expoConfig?.version || '1.0.0';
 const DEVELOPER_EMAIL = 'yhy0818@gmail.com';
 const PRIVACY_POLICY_URL = 'https://canyon-petroleum-c80.notion.site/2d58531fa7f2803e8e09cf1898d6392b';
+const COPYRIGHT_YEAR = new Date().getFullYear();
+const COPYRIGHT_HOLDER = 'HuiYeong Yun';
 
 // Android에서 LayoutAnimation 활성화
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -221,6 +223,17 @@ export default function SettingsScreen() {
               <Text style={styles.infoLabel}>개인정보 처리방침</Text>
               <Ionicons name="chevron-forward" size={18} color="rgba(0,0,0,0.3)" />
             </TouchableOpacity>
+
+            <View style={styles.infoDivider} />
+
+            {/* 저작권 정보 */}
+            <View style={styles.infoRow}>
+              <View style={styles.infoIconWrapper}>
+                <Ionicons name="document-text-outline" size={20} color={colors.warning} />
+              </View>
+              <Text style={styles.infoLabel}>저작권</Text>
+              <Text style={styles.infoValue}>© {COPYRIGHT_YEAR} {COPYRIGHT_HOLDER}</Text>
+            </View>
           </GlassCard>
         </View>
       </ScrollView>

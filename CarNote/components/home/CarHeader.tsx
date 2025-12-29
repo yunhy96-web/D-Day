@@ -8,11 +8,19 @@ interface CarHeaderProps {
   carName: string;
   mileage: number;
   isDropdownOpen?: boolean;
+  hasUpcomingSchedule?: boolean;
   onCarSelect?: () => void;
-  onMaintenancePress?: () => void;
+  onNotificationPress?: () => void;
 }
 
-export function CarHeader({ carName, mileage, isDropdownOpen, onCarSelect, onMaintenancePress }: CarHeaderProps) {
+export function CarHeader({
+  carName,
+  mileage,
+  isDropdownOpen,
+  hasUpcomingSchedule,
+  onCarSelect,
+  onNotificationPress
+}: CarHeaderProps) {
   return (
     <View style={styles.container}>
       {/* 차량 정보 글래스 카드 */}
@@ -38,12 +46,13 @@ export function CarHeader({ carName, mileage, isDropdownOpen, onCarSelect, onMai
         </View>
       </TouchableOpacity>
 
-      {/* 정비 버튼 */}
-      <TouchableOpacity style={styles.maintenanceButton} onPress={onMaintenancePress} activeOpacity={0.8}>
+      {/* 알림 버튼 */}
+      <TouchableOpacity style={styles.notificationButton} onPress={onNotificationPress} activeOpacity={0.8}>
         <BlurView intensity={40} tint="light" style={styles.blurView}>
           <View style={styles.buttonGlassOverlay} />
         </BlurView>
-        <Ionicons name="add" size={26} color={colors.primary} />
+        <Ionicons name="notifications-outline" size={24} color={colors.primary} />
+        {hasUpcomingSchedule && <View style={styles.badge} />}
       </TouchableOpacity>
     </View>
   );
@@ -113,7 +122,7 @@ const styles = StyleSheet.create({
     color: 'rgba(0,0,0,0.45)',
     fontWeight: '500',
   },
-  maintenanceButton: {
+  notificationButton: {
     width: 56,
     height: 56,
     borderRadius: 28,
@@ -132,5 +141,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 28,
+  },
+  badge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.error,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.9)',
   },
 });

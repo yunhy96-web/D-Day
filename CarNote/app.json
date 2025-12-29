@@ -5,15 +5,29 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "carnote",
+    "icon": "./appIcon2.png",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0D1B2A",
+    "splash": {
+      "image": "./appIcon2.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0D1B2A"
+    },
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.carnote.app"
+      "bundleIdentifier": "com.carnote.app",
+      "icon": "./appIcon2.png",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
-      "package": "com.carnote.app"
+      "package": "com.carnote.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./appIcon2.png",
+        "backgroundColor": "#0D1B2A"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -25,6 +39,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3d42501d-0fed-4580-9679-419199d797c3"
+      }
     }
   }
 }

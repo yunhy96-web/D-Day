@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, LayoutAnimation, UIManager, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, LayoutAnimation, UIManager, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { BlurView } from 'expo-blur';
@@ -94,6 +94,14 @@ export default function HomeScreen() {
     router.push('/add');
   };
 
+  const handleNotificationPress = () => {
+    if (upcomingRecord) {
+      router.push(`/record/${upcomingRecord.id}`);
+    } else {
+      Alert.alert('알림', '예정된 일정이 없습니다.');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
@@ -106,8 +114,9 @@ export default function HomeScreen() {
           carName={carName}
           mileage={carMileage}
           isDropdownOpen={showCarDropdown}
+          hasUpcomingSchedule={!!upcomingRecord}
           onCarSelect={toggleCarDropdown}
-          onMaintenancePress={goToAdd}
+          onNotificationPress={handleNotificationPress}
         />
 
         {/* 차량 선택 드롭다운 */}
