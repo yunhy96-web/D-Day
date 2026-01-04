@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -23,7 +23,7 @@ import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, layout } from '@/styles';
 import { useCar, useRecord, RecordCategory } from '@/contexts';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 const CATEGORIES = {
   정비: ['엔진오일', '타이어', '브레이크', '에어필터', '배터리', '냉각수'],
@@ -42,6 +42,7 @@ const getSelectedCategory = (type: string): '정비' | '주유' | '기타' | nul
 
 export default function AddScreen() {
   const router = useRouter();
+  const { date: dateParam } = useLocalSearchParams<{ date?: string }>();
   const { cars, selectedCar, selectCar, updateCar } = useCar();
   const { addRecord } = useRecord();
   const [maintenanceType, setMaintenanceType] = useState('');
@@ -52,6 +53,13 @@ export default function AddScreen() {
   const [memo, setMemo] = useState('');
   const [date, setDate] = useState(new Date());
   const [carDropdownOpen, setCarDropdownOpen] = useState(false);
+
+  // 쿼리 파라미터로 전달된 날짜가 있으면 해당 날짜로 설정
+  useEffect(() => {
+    if (dateParam) {
+      setDate(new Date(dateParam));
+    }
+  }, [dateParam]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [datePickerExpanded, setDatePickerExpanded] = useState(false);
 

@@ -243,7 +243,13 @@ export default function HistoryScreen() {
           currentMonth={currentMonth}
           onMonthChange={setCurrentMonth}
           onRecordPress={handleRecordPress}
-          onAddPress={() => router.push('/add')}
+          onAddPress={(date?: Date) => {
+            if (date) {
+              router.push(`/add?date=${date.toISOString()}`);
+            } else {
+              router.push('/add');
+            }
+          }}
           selectedCar={selectedCar}
           router={router}
         />
@@ -285,7 +291,7 @@ interface CalendarViewProps {
   currentMonth: Date;
   onMonthChange: (date: Date) => void;
   onRecordPress: (recordId: string) => void;
-  onAddPress: () => void;
+  onAddPress: (date?: Date) => void;
   selectedCar: { id: string; name: string } | null;
   router: ReturnType<typeof useRouter>;
 }
@@ -482,40 +488,34 @@ function CalendarView({
             <Text style={styles.selectedDateTitle}>
               {selectedDate.getMonth() + 1}월 {selectedDate.getDate()}일 기록
             </Text>
-            {selectedDateRecords.length === 0 ? (
-              <TouchableOpacity style={styles.noRecordCard} onPress={onAddPress}>
-                <Ionicons name="add-circle-outline" size={24} color={colors.primary} />
-                <Text style={styles.noRecordText}>기록 추가하기</Text>
-              </TouchableOpacity>
-            ) : (
-              selectedDateRecords.map(record => (
-                <RecordCard
-                  key={record.id}
-                  record={record}
-                  onPress={() => onRecordPress(record.id)}
-                />
-              ))
-            )}
+            {selectedDateRecords.map(record => (
+              <RecordCard
+                key={record.id}
+                record={record}
+                onPress={() => onRecordPress(record.id)}
+              />
+            ))}
+            <TouchableOpacity style={styles.noRecordCard} onPress={() => onAddPress(selectedDate)}>
+              <Ionicons name="add-circle-outline" size={24} color={colors.primary} />
+              <Text style={styles.noRecordText}>기록 추가하기</Text>
+            </TouchableOpacity>
           </>
         ) : (
           <>
             <Text style={styles.selectedDateTitle}>
               {month + 1}월 전체 기록 ({currentMonthRecords.length}건)
             </Text>
-            {currentMonthRecords.length === 0 ? (
-              <TouchableOpacity style={styles.noRecordCard} onPress={onAddPress}>
-                <Ionicons name="add-circle-outline" size={24} color={colors.primary} />
-                <Text style={styles.noRecordText}>기록 추가하기</Text>
-              </TouchableOpacity>
-            ) : (
-              currentMonthRecords.map(record => (
-                <RecordCard
-                  key={record.id}
-                  record={record}
-                  onPress={() => onRecordPress(record.id)}
-                />
-              ))
-            )}
+            {currentMonthRecords.map(record => (
+              <RecordCard
+                key={record.id}
+                record={record}
+                onPress={() => onRecordPress(record.id)}
+              />
+            ))}
+            <TouchableOpacity style={styles.noRecordCard} onPress={() => onAddPress()}>
+              <Ionicons name="add-circle-outline" size={24} color={colors.primary} />
+              <Text style={styles.noRecordText}>기록 추가하기</Text>
+            </TouchableOpacity>
           </>
         )}
       </View>

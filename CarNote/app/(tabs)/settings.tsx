@@ -1,15 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  TextInput,
-  Modal,
-  LayoutAnimation,
-  UIManager,
-  Platform,
   Linking,
   Alert,
 } from 'react-native';
@@ -19,7 +14,6 @@ import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { colors, spacing, layout } from '@/styles';
-import { useCar, Car } from '@/contexts';
 
 // 앱 정보 상수
 const APP_VERSION = Constants.expoConfig?.version || '1.0.0';
@@ -28,71 +22,8 @@ const PRIVACY_POLICY_URL = 'https://canyon-petroleum-c80.notion.site/2d58531fa7f
 const COPYRIGHT_YEAR = new Date().getFullYear();
 const COPYRIGHT_HOLDER = 'HuiYeong Yun';
 
-// Android에서 LayoutAnimation 활성화
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-
 export default function SettingsScreen() {
   const router = useRouter();
-  const { cars, addCar, updateCar, deleteCar } = useCar();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editingCar, setEditingCar] = useState<Car | null>(null);
-
-  // 폼 상태
-  const [carName, setCarName] = useState('');
-  const [plateNumber, setPlateNumber] = useState('');
-  const [mileage, setMileage] = useState('');
-
-  const resetForm = () => {
-    setCarName('');
-    setPlateNumber('');
-    setMileage('');
-    setEditingCar(null);
-  };
-
-  const openAddModal = () => {
-    resetForm();
-    setModalVisible(true);
-  };
-
-  const openEditModal = (car: Car) => {
-    setEditingCar(car);
-    setCarName(car.name);
-    setPlateNumber(car.plateNumber || '');
-    setMileage(car.mileage.toString());
-    setModalVisible(true);
-  };
-
-  const handleSave = () => {
-    if (!carName.trim()) return;
-
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-
-    if (editingCar) {
-      // 수정
-      updateCar(editingCar.id, {
-        name: carName,
-        plateNumber: plateNumber || undefined,
-        mileage: Number(mileage) || 0,
-      });
-    } else {
-      // 추가
-      addCar({
-        name: carName,
-        plateNumber: plateNumber || undefined,
-        mileage: Number(mileage) || 0,
-      });
-    }
-
-    setModalVisible(false);
-    resetForm();
-  };
-
-  const handleDelete = (carId: string) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    deleteCar(carId);
-  };
 
   // 외부 링크 열기
   const openURL = async (url: string) => {
@@ -111,18 +42,15 @@ export default function SettingsScreen() {
   // 이메일 보내기
   const sendEmail = () => {
     const subject = encodeURIComponent('[CarNote] 문의사항');
-    const body = encodeURIComponent(`\n\n---\n앱 버전: ${APP_VERSION}\n기기: ${Platform.OS}`);
+    const body = encodeURIComponent(`\n\n---\n앱 버전: ${APP_VERSION}`);
     openURL(`mailto:${DEVELOPER_EMAIL}?subject=${subject}&body=${body}`);
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* 헤더 */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.push('/')} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
-        </TouchableOpacity>
         <Text style={styles.title}>설정</Text>
-        <View style={styles.headerSpacer} />
       </View>
 
       <ScrollView
@@ -130,174 +58,71 @@ export default function SettingsScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* 보유 차량 섹션 */}
-        <View style={styles.section}>
+        {/* 차량 관리 */}
+        <TouchableOpacity
+          style={styles.menuCard}
+          onPress={() => router.push('/cars')}
+          activeOpacity={0.7}
+        >
+          <BlurView intensity={40} tint="light" style={styles.blurView}>
+            <View style={styles.glassOverlay} />
+          </BlurView>
+          <View style={styles.menuContent}>
+            <View style={styles.menuIconWrapper}>
+              <Ionicons name="car-sport" size={22} color={colors.primary} />
+            </View>
+            <Text style={styles.menuText}>차량 관리</Text>
+            <Ionicons name="chevron-forward" size={20} color="rgba(0,0,0,0.3)" />
+          </View>
+        </TouchableOpacity>
+
+        {/* 정보 섹션 */}
+        <GlassCard>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>보유 차량</Text>
-            <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-              <Ionicons name="add" size={20} color={colors.primary} />
-              <Text style={styles.addButtonText}>추가</Text>
-            </TouchableOpacity>
+            <View style={styles.sectionIconWrapper}>
+              <Ionicons name="information-circle-outline" size={20} color={colors.iconBlue} />
+            </View>
+            <Text style={styles.sectionTitle}>정보</Text>
           </View>
 
-          {cars.length === 0 ? (
-            <GlassCard>
-              <View style={styles.emptyState}>
-                <View style={styles.emptyIconContainer}>
-                  <Ionicons name="car-outline" size={32} color="rgba(0,0,0,0.2)" />
-                </View>
-                <Text style={styles.emptyText}>등록된 차량이 없습니다</Text>
-                <Text style={styles.emptySubtext}>차량을 추가해보세요</Text>
-              </View>
-            </GlassCard>
-          ) : (
-            cars.map((car) => (
-              <GlassCard key={car.id}>
-                <TouchableOpacity
-                  style={styles.carItem}
-                  onPress={() => openEditModal(car)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.carIconWrapper}>
-                    <Ionicons name="car-sport" size={22} color={colors.primary} />
-                  </View>
-                  <View style={styles.carInfo}>
-                    <Text style={styles.carName}>{car.name}</Text>
-                    <View style={styles.carDetails}>
-                      {car.plateNumber && (
-                        <Text style={styles.carDetail}>{car.plateNumber}</Text>
-                      )}
-                      <Text style={styles.carDetail}>{car.mileage.toLocaleString()} km</Text>
-                    </View>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={() => handleDelete(car.id)}
-                  >
-                    <Ionicons name="trash-outline" size={18} color="rgba(0,0,0,0.3)" />
-                  </TouchableOpacity>
-                </TouchableOpacity>
-              </GlassCard>
-            ))
-          )}
-        </View>
-
-        {/* 앱 정보 섹션 */}
-        <View style={[styles.section, styles.sectionMarginTop]}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>앱 정보</Text>
+          {/* 앱 버전 */}
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>앱 버전</Text>
+            <Text style={styles.infoValue}>{APP_VERSION}</Text>
           </View>
 
-          <GlassCard>
-            {/* 앱 버전 */}
-            <View style={styles.infoRow}>
-              <View style={styles.infoIconWrapper}>
-                <Ionicons name="information-circle-outline" size={20} color={colors.iconBlue} />
-              </View>
-              <Text style={styles.infoLabel}>앱 버전</Text>
-              <Text style={styles.infoValue}>{APP_VERSION}</Text>
+          <View style={styles.infoDivider} />
+
+          {/* 개발자 문의 */}
+          <TouchableOpacity style={styles.infoRow} onPress={sendEmail} activeOpacity={0.7}>
+            <Text style={styles.infoLabel}>개발자 문의</Text>
+            <View style={styles.infoValueWithIcon}>
+              <Text style={styles.infoValue}>{DEVELOPER_EMAIL}</Text>
+              <Ionicons name="chevron-forward" size={16} color="rgba(0,0,0,0.3)" />
             </View>
+          </TouchableOpacity>
 
-            <View style={styles.infoDivider} />
+          <View style={styles.infoDivider} />
 
-            {/* 개발자 연락처 */}
-            <TouchableOpacity style={styles.infoRow} onPress={sendEmail} activeOpacity={0.7}>
-              <View style={styles.infoIconWrapper}>
-                <Ionicons name="mail-outline" size={20} color={colors.success} />
-              </View>
-              <Text style={styles.infoLabel}>개발자 문의</Text>
-              <Ionicons name="chevron-forward" size={18} color="rgba(0,0,0,0.3)" />
-            </TouchableOpacity>
+          {/* 개인정보 처리방침 */}
+          <TouchableOpacity
+            style={styles.infoRow}
+            onPress={() => openURL(PRIVACY_POLICY_URL)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.infoLabel}>개인정보 처리방침</Text>
+            <Ionicons name="chevron-forward" size={16} color="rgba(0,0,0,0.3)" />
+          </TouchableOpacity>
 
-            <View style={styles.infoDivider} />
+          <View style={styles.infoDivider} />
 
-            {/* 개인정보 처리방침 */}
-            <TouchableOpacity
-              style={styles.infoRow}
-              onPress={() => openURL(PRIVACY_POLICY_URL)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.infoIconWrapper}>
-                <Ionicons name="shield-checkmark-outline" size={20} color={colors.primary} />
-              </View>
-              <Text style={styles.infoLabel}>개인정보 처리방침</Text>
-              <Ionicons name="chevron-forward" size={18} color="rgba(0,0,0,0.3)" />
-            </TouchableOpacity>
-
-            <View style={styles.infoDivider} />
-
-            {/* 저작권 정보 */}
-            <View style={styles.infoRow}>
-              <View style={styles.infoIconWrapper}>
-                <Ionicons name="document-text-outline" size={20} color={colors.warning} />
-              </View>
-              <Text style={styles.infoLabel}>저작권</Text>
-              <Text style={styles.infoValue}>© {COPYRIGHT_YEAR} {COPYRIGHT_HOLDER}</Text>
-            </View>
-          </GlassCard>
-        </View>
+          {/* 저작권 */}
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>저작권</Text>
+            <Text style={styles.infoValue}>© {COPYRIGHT_YEAR} {COPYRIGHT_HOLDER}</Text>
+          </View>
+        </GlassCard>
       </ScrollView>
-
-      {/* 차량 추가/수정 모달 */}
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Text style={styles.modalCancel}>취소</Text>
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>
-              {editingCar ? '차량 수정' : '차량 추가'}
-            </Text>
-            <TouchableOpacity onPress={handleSave}>
-              <Text style={styles.modalSave}>저장</Text>
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView style={styles.modalContent}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>차량명</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="예: 아반떼, K5, 테슬라 모델3"
-                placeholderTextColor="rgba(255,255,255,0.4)"
-                value={carName}
-                onChangeText={setCarName}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>차량 번호 (선택)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="예: 12가 3456"
-                placeholderTextColor="rgba(255,255,255,0.4)"
-                value={plateNumber}
-                onChangeText={setPlateNumber}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>현재 누적 주행거리</Text>
-              <View style={styles.inputWithUnit}>
-                <TextInput
-                  style={[styles.input, styles.inputFlex]}
-                  placeholder="0"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  value={mileage}
-                  onChangeText={setMileage}
-                  keyboardType="numeric"
-                />
-                <Text style={styles.unit}>km</Text>
-              </View>
-            </View>
-          </ScrollView>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -320,24 +145,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing[2],
-    paddingVertical: spacing[3],
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerSpacer: {
-    width: 44,
+    paddingHorizontal: layout.screenPadding,
+    paddingVertical: spacing[4],
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 28,
+    fontWeight: '700',
     color: colors.textPrimary,
   },
   scrollView: {
@@ -346,42 +159,47 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: layout.screenPadding,
     paddingBottom: 120,
+    gap: spacing[4],
   },
-  section: {
-    gap: spacing[3],
-  },
-  sectionMarginTop: {
-    marginTop: spacing[6],
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing[1],
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[1],
-  },
-  addButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  card: {
-    borderRadius: 20,
+  // 메뉴 카드 스타일
+  menuCard: {
+    borderRadius: 16,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  menuContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing[4],
+    gap: spacing[3],
+  },
+  menuIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(212, 168, 75, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'rgba(0,0,0,0.8)',
+  },
+  // 글래스 카드 스타일
+  card: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   blurView: {
     ...StyleSheet.absoluteFillObject,
@@ -391,162 +209,55 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.75)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
+    borderRadius: 16,
   },
   cardContent: {
     padding: spacing[4],
   },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: spacing[4],
-    gap: spacing[2],
-  },
-  emptyIconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing[2],
-  },
-  emptyText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: 'rgba(0,0,0,0.5)',
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: 'rgba(0,0,0,0.3)',
-  },
-  carItem: {
+  // 섹션 헤더
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[3],
+    gap: spacing[2],
+    marginBottom: spacing[3],
   },
-  carIconWrapper: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(212, 168, 75, 0.15)',
+  sectionIconWrapper: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(74, 144, 226, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  carInfo: {
-    flex: 1,
-    gap: 2,
-  },
-  carName: {
-    fontSize: 17,
+  sectionTitle: {
+    fontSize: 16,
     fontWeight: '600',
     color: 'rgba(0,0,0,0.8)',
   },
-  carDetails: {
-    flexDirection: 'row',
-    gap: spacing[2],
-  },
-  carDetail: {
-    fontSize: 14,
-    color: 'rgba(0,0,0,0.45)',
-    fontWeight: '500',
-  },
-  deleteButton: {
-    padding: spacing[2],
-  },
-  // 앱 정보 스타일
+  // 정보 행 스타일
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing[2],
-  },
-  infoIconWrapper: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing[3],
+    justifyContent: 'space-between',
+    paddingVertical: spacing[3],
   },
   infoLabel: {
-    flex: 1,
     fontSize: 15,
     fontWeight: '500',
-    color: 'rgba(0,0,0,0.8)',
+    color: 'rgba(0,0,0,0.7)',
   },
   infoValue: {
     fontSize: 15,
     color: 'rgba(0,0,0,0.5)',
     fontWeight: '500',
   },
+  infoValueWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[1],
+  },
   infoDivider: {
     height: 1,
     backgroundColor: 'rgba(0,0,0,0.06)',
-    marginVertical: spacing[2],
-    marginLeft: 48,
-  },
-  // Modal styles
-  modalContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: layout.screenPadding,
-    paddingVertical: spacing[4],
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  modalCancel: {
-    fontSize: 16,
-    color: colors.textSecondary,
-  },
-  modalSave: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  modalContent: {
-    flex: 1,
-    padding: layout.screenPadding,
-  },
-  inputGroup: {
-    marginBottom: spacing[4],
-  },
-  inputLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: spacing[2],
-  },
-  input: {
-    backgroundColor: colors.cardBackground,
-    borderRadius: 12,
-    paddingHorizontal: spacing[4],
-    paddingVertical: spacing[3],
-    fontSize: 16,
-    color: colors.textPrimary,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  inputWithUnit: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[2],
-  },
-  inputFlex: {
-    flex: 1,
-  },
-  unit: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    fontWeight: '500',
   },
 });
