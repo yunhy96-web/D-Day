@@ -26,7 +26,7 @@ import { useCar, useRecord, RecordCategory, useInsurance } from '@/contexts';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
 const CATEGORIES = {
-  정비: ['엔진오일', '타이어', '브레이크', '에어필터', '배터리', '냉각수'],
+  정비: ['엔진오일', '타이어', '브레이크', '에어필터', '배터리', '냉각수', '기타'],
   주유: ['주유'],
   기타: ['세차', '보험', '검사'],
 };
@@ -66,9 +66,9 @@ export default function AddScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [datePickerExpanded, setDatePickerExpanded] = useState(false);
 
-  // 날짜 제한: 오늘 기준 앞뒤로 1년
+  // 날짜 제한: 10년 전부터 1년 후까지
   const today = new Date();
-  const minDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+  const minDate = new Date(today.getFullYear() - 10, today.getMonth(), today.getDate());
   const maxDate = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
 
   const selectedCategory = getSelectedCategory(maintenanceType);
