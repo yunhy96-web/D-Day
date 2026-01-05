@@ -76,6 +76,24 @@ export default function SettingsScreen() {
           </View>
         </TouchableOpacity>
 
+        {/* 보험사 관리 */}
+        <TouchableOpacity
+          style={styles.menuCard}
+          onPress={() => router.push('/insurers')}
+          activeOpacity={0.7}
+        >
+          <BlurView intensity={40} tint="light" style={styles.blurView}>
+            <View style={styles.glassOverlay} />
+          </BlurView>
+          <View style={styles.menuContent}>
+            <View style={[styles.menuIconWrapper, { backgroundColor: 'rgba(74, 144, 226, 0.15)' }]}>
+              <Ionicons name="shield-checkmark" size={22} color={colors.iconBlue} />
+            </View>
+            <Text style={styles.menuText}>보험사 관리</Text>
+            <Ionicons name="chevron-forward" size={20} color="rgba(0,0,0,0.3)" />
+          </View>
+        </TouchableOpacity>
+
         {/* 정보 섹션 */}
         <GlassCard>
           <View style={styles.sectionHeader}>

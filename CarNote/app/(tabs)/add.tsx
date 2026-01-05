@@ -22,7 +22,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, layout } from '@/styles';
-import { useCar, useRecord, RecordCategory } from '@/contexts';
+import { useCar, useRecord, RecordCategory, useInsurance } from '@/contexts';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
 const CATEGORIES = {
@@ -45,6 +45,7 @@ export default function AddScreen() {
   const { date: dateParam } = useLocalSearchParams<{ date?: string }>();
   const { cars, selectedCar, selectCar, updateCar } = useCar();
   const { addRecord } = useRecord();
+  const { insurers } = useInsurance();
   const [maintenanceType, setMaintenanceType] = useState('');
   const [cost, setCost] = useState('');
   const [mileage, setMileage] = useState('');
@@ -53,6 +54,8 @@ export default function AddScreen() {
   const [memo, setMemo] = useState('');
   const [date, setDate] = useState(new Date());
   const [carDropdownOpen, setCarDropdownOpen] = useState(false);
+  const [selectedInsurerId, setSelectedInsurerId] = useState<string | null>(null);
+  const [insurerDropdownOpen, setInsurerDropdownOpen] = useState(false);
 
   // 쿼리 파라미터로 전달된 날짜가 있으면 해당 날짜로 설정
   useEffect(() => {
@@ -70,6 +73,9 @@ export default function AddScreen() {
 
   const selectedCategory = getSelectedCategory(maintenanceType);
 
+  // 선택된 보험사
+  const selectedInsurer = insurers.find(i => i.id === selectedInsurerId);
+
   // 폼 초기화
   const resetForm = () => {
     setMaintenanceType('');
@@ -79,6 +85,7 @@ export default function AddScreen() {
     setFuelAmount('');
     setMemo('');
     setDate(new Date());
+    setSelectedInsurerId(null);
   };
 
   // 카테고리 선택 시 애니메이션과 함께 상태 변경
@@ -192,6 +199,31 @@ export default function AddScreen() {
       )
     );
     setCarDropdownOpen(false);
+  };
+
+  // 보험사 드롭다운 토글
+  const toggleInsurerDropdown = useCallback(() => {
+    LayoutAnimation.configureNext(
+      LayoutAnimation.create(
+        250,
+        LayoutAnimation.Types.easeInEaseOut,
+        LayoutAnimation.Properties.opacity
+      )
+    );
+    setInsurerDropdownOpen(!insurerDropdownOpen);
+  }, [insurerDropdownOpen]);
+
+  // 보험사 선택 핸들러
+  const handleInsurerSelect = (insurerId: string) => {
+    setSelectedInsurerId(insurerId);
+    LayoutAnimation.configureNext(
+      LayoutAnimation.create(
+        250,
+        LayoutAnimation.Types.easeInEaseOut,
+        LayoutAnimation.Properties.opacity
+      )
+    );
+    setInsurerDropdownOpen(false);
   };
 
   return (
@@ -345,6 +377,67 @@ export default function AddScreen() {
                 />
                 <Text style={styles.unit}>원</Text>
               </View>
+            </GlassCard>
+          )}
+
+          {/* 보험사 선택 - 보험만 표시 */}
+          {maintenanceType === '보험' && (
+            <GlassCard>
+              <CardHeader icon="shield-checkmark" iconColor={colors.iconBlue} title="보험사" />
+              <TouchableOpacity style={styles.selector} onPress={toggleInsurerDropdown}>
+                <Text style={styles.selectorText}>
+                  {selectedInsurer ? selectedInsurer.name : (insurers.length > 0 ? '보험사를 선택하세요' : '보험사를 추가하세요')}
+                </Text>
+                <Ionicons
+                  name={insurerDropdownOpen ? "chevron-up" : "chevron-down"}
+                  size={18}
+                  color={colors.iconBlue}
+                />
+              </TouchableOpacity>
+
+              {/* 보험사 드롭다운 목록 */}
+              {insurerDropdownOpen && (
+                <View style={styles.carDropdownList}>
+                  {insurers.length === 0 ? (
+                    <TouchableOpacity
+                      style={styles.carDropdownEmpty}
+                      onPress={() => router.push('/insurers')}
+                    >
+                      <Ionicons name="shield-outline" size={24} color="rgba(0,0,0,0.3)" />
+                      <Text style={styles.carDropdownEmptyText}>등록된 보험사가 없습니다</Text>
+                      <Text style={[styles.carDropdownEmptyText, { color: colors.primary }]}>보험사 추가하러 가기</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    insurers.map((insurer, index) => (
+                      <TouchableOpacity
+                        key={insurer.id}
+                        style={[
+                          styles.carDropdownItem,
+                          selectedInsurerId === insurer.id && styles.carDropdownItemActive,
+                          index < insurers.length - 1 && styles.carDropdownItemBorder,
+                        ]}
+                        onPress={() => handleInsurerSelect(insurer.id)}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons
+                          name="shield-checkmark"
+                          size={18}
+                          color={selectedInsurerId === insurer.id ? colors.iconBlue : 'rgba(0,0,0,0.4)'}
+                        />
+                        <Text style={[
+                          styles.carDropdownItemText,
+                          selectedInsurerId === insurer.id && styles.insurerDropdownItemTextActive,
+                        ]}>
+                          {insurer.name}
+                        </Text>
+                        {selectedInsurerId === insurer.id && (
+                          <Ionicons name="checkmark" size={18} color={colors.iconBlue} />
+                        )}
+                      </TouchableOpacity>
+                    ))
+                  )}
+                </View>
+              )}
             </GlassCard>
           )}
 
@@ -850,6 +943,10 @@ const styles = StyleSheet.create({
   },
   carDropdownItemTextActive: {
     color: colors.primary,
+    fontWeight: '600',
+  },
+  insurerDropdownItemTextActive: {
+    color: colors.iconBlue,
     fontWeight: '600',
   },
 });

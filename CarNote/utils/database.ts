@@ -42,6 +42,14 @@ async function initializeTables(): Promise<void> {
       FOREIGN KEY (carId) REFERENCES cars(id) ON DELETE CASCADE
     );
   `);
+
+  // Insurers 테이블 (보험사)
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS insurers (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL
+    );
+  `);
 }
 
 // Car CRUD
@@ -218,4 +226,37 @@ export async function updateRecordById(
 export async function deleteRecordById(id: string) {
   const database = await getDatabase();
   await database.runAsync('DELETE FROM records WHERE id = ?', [id]);
+}
+
+// Insurer CRUD (보험사)
+export async function getAllInsurers() {
+  const database = await getDatabase();
+  return database.getAllAsync<{
+    id: string;
+    name: string;
+  }>('SELECT * FROM insurers');
+}
+
+export async function insertInsurer(insurer: {
+  id: string;
+  name: string;
+}) {
+  const database = await getDatabase();
+  await database.runAsync(
+    'INSERT INTO insurers (id, name) VALUES (?, ?)',
+    [insurer.id, insurer.name]
+  );
+}
+
+export async function updateInsurerById(id: string, name: string) {
+  const database = await getDatabase();
+  await database.runAsync(
+    'UPDATE insurers SET name = ? WHERE id = ?',
+    [name, id]
+  );
+}
+
+export async function deleteInsurerById(id: string) {
+  const database = await getDatabase();
+  await database.runAsync('DELETE FROM insurers WHERE id = ?', [id]);
 }

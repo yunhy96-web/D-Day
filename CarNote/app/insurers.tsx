@@ -16,29 +16,25 @@ import { useRouter } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, layout } from '@/styles';
-import { useCar, Car } from '@/contexts';
+import { useInsurance, Insurer } from '@/contexts';
 
 // Android에서 LayoutAnimation 활성화
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-export default function CarsScreen() {
+export default function InsurersScreen() {
   const router = useRouter();
-  const { cars, addCar, updateCar, deleteCar } = useCar();
+  const { insurers, addInsurer, updateInsurer, deleteInsurer } = useInsurance();
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingCar, setEditingCar] = useState<Car | null>(null);
+  const [editingInsurer, setEditingInsurer] = useState<Insurer | null>(null);
 
   // 폼 상태
-  const [carName, setCarName] = useState('');
-  const [plateNumber, setPlateNumber] = useState('');
-  const [mileage, setMileage] = useState('');
+  const [insurerName, setInsurerName] = useState('');
 
   const resetForm = () => {
-    setCarName('');
-    setPlateNumber('');
-    setMileage('');
-    setEditingCar(null);
+    setInsurerName('');
+    setEditingInsurer(null);
   };
 
   const openAddModal = () => {
@@ -46,42 +42,30 @@ export default function CarsScreen() {
     setModalVisible(true);
   };
 
-  const openEditModal = (car: Car) => {
-    setEditingCar(car);
-    setCarName(car.name);
-    setPlateNumber(car.plateNumber || '');
-    setMileage(car.mileage.toString());
+  const openEditModal = (insurer: Insurer) => {
+    setEditingInsurer(insurer);
+    setInsurerName(insurer.name);
     setModalVisible(true);
   };
 
   const handleSave = () => {
-    if (!carName.trim()) return;
+    if (!insurerName.trim()) return;
 
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
-    if (editingCar) {
-      // 수정
-      updateCar(editingCar.id, {
-        name: carName,
-        plateNumber: plateNumber || undefined,
-        mileage: Number(mileage) || 0,
-      });
+    if (editingInsurer) {
+      updateInsurer(editingInsurer.id, insurerName);
     } else {
-      // 추가
-      addCar({
-        name: carName,
-        plateNumber: plateNumber || undefined,
-        mileage: Number(mileage) || 0,
-      });
+      addInsurer(insurerName);
     }
 
     setModalVisible(false);
     resetForm();
   };
 
-  const handleDelete = (carId: string) => {
+  const handleDelete = (insurerId: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    deleteCar(carId);
+    deleteInsurer(insurerId);
   };
 
   return (
@@ -91,7 +75,7 @@ export default function CarsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.title}>차량 관리</Text>
+        <Text style={styles.title}>보험사 관리</Text>
         <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
           <Ionicons name="add" size={26} color={colors.primary} />
         </TouchableOpacity>
@@ -102,40 +86,34 @@ export default function CarsScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {cars.length === 0 ? (
+        {insurers.length === 0 ? (
           <View style={styles.emptyState}>
             <View style={styles.emptyIconContainer}>
-              <Ionicons name="car-outline" size={48} color="rgba(255,255,255,0.3)" />
+              <Ionicons name="shield-outline" size={48} color="rgba(255,255,255,0.3)" />
             </View>
-            <Text style={styles.emptyText}>등록된 차량이 없습니다</Text>
-            <Text style={styles.emptySubtext}>차량을 추가해보세요</Text>
+            <Text style={styles.emptyText}>등록된 보험사가 없습니다</Text>
+            <Text style={styles.emptySubtext}>보험사를 추가해보세요</Text>
             <TouchableOpacity style={styles.emptyButton} onPress={openAddModal}>
-              <Text style={styles.emptyButtonText}>차량 추가하기</Text>
+              <Text style={styles.emptyButtonText}>보험사 추가하기</Text>
             </TouchableOpacity>
           </View>
         ) : (
-          cars.map((car) => (
-            <GlassCard key={car.id}>
+          insurers.map((insurer) => (
+            <GlassCard key={insurer.id}>
               <TouchableOpacity
-                style={styles.carItem}
-                onPress={() => openEditModal(car)}
+                style={styles.insurerItem}
+                onPress={() => openEditModal(insurer)}
                 activeOpacity={0.7}
               >
-                <View style={styles.carIconWrapper}>
-                  <Ionicons name="car-sport" size={22} color={colors.primary} />
+                <View style={styles.insurerIconWrapper}>
+                  <Ionicons name="shield-checkmark" size={22} color={colors.iconBlue} />
                 </View>
-                <View style={styles.carInfo}>
-                  <Text style={styles.carName}>{car.name}</Text>
-                  <View style={styles.carDetails}>
-                    {car.plateNumber && (
-                      <Text style={styles.carDetail}>{car.plateNumber}</Text>
-                    )}
-                    <Text style={styles.carDetail}>{car.mileage.toLocaleString()} km</Text>
-                  </View>
+                <View style={styles.insurerInfo}>
+                  <Text style={styles.insurerName}>{insurer.name}</Text>
                 </View>
                 <TouchableOpacity
                   style={styles.deleteButton}
-                  onPress={() => handleDelete(car.id)}
+                  onPress={() => handleDelete(insurer.id)}
                 >
                   <Ionicons name="trash-outline" size={18} color="rgba(0,0,0,0.3)" />
                 </TouchableOpacity>
@@ -145,7 +123,7 @@ export default function CarsScreen() {
         )}
       </ScrollView>
 
-      {/* 차량 추가/수정 모달 */}
+      {/* 보험사 추가/수정 모달 */}
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -158,7 +136,7 @@ export default function CarsScreen() {
               <Text style={styles.modalCancel}>취소</Text>
             </TouchableOpacity>
             <Text style={styles.modalTitle}>
-              {editingCar ? '차량 수정' : '차량 추가'}
+              {editingInsurer ? '보험사 수정' : '보험사 추가'}
             </Text>
             <TouchableOpacity onPress={handleSave}>
               <Text style={styles.modalSave}>저장</Text>
@@ -167,40 +145,15 @@ export default function CarsScreen() {
 
           <ScrollView style={styles.modalContent}>
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>차량명</Text>
+              <Text style={styles.inputLabel}>보험사명</Text>
               <TextInput
                 style={styles.input}
-                placeholder="예: 아반떼, K5, 테슬라 모델3"
+                placeholder="예: 삼성화재, 현대해상, DB손해보험"
                 placeholderTextColor="rgba(255,255,255,0.4)"
-                value={carName}
-                onChangeText={setCarName}
+                value={insurerName}
+                onChangeText={setInsurerName}
+                autoFocus
               />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>차량 번호 (선택)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="예: 12가 3456"
-                placeholderTextColor="rgba(255,255,255,0.4)"
-                value={plateNumber}
-                onChangeText={setPlateNumber}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>현재 누적 주행거리</Text>
-              <View style={styles.inputWithUnit}>
-                <TextInput
-                  style={[styles.input, styles.inputFlex]}
-                  placeholder="0"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  value={mileage}
-                  onChangeText={setMileage}
-                  keyboardType="numeric"
-                />
-                <Text style={styles.unit}>km</Text>
-              </View>
             </View>
           </ScrollView>
         </View>
@@ -317,37 +270,28 @@ const styles = StyleSheet.create({
   cardContent: {
     padding: spacing[4],
   },
-  // 차량 아이템
-  carItem: {
+  // 보험사 아이템
+  insurerItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[3],
   },
-  carIconWrapper: {
+  insurerIconWrapper: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(212, 168, 75, 0.15)',
+    backgroundColor: 'rgba(74, 144, 226, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  carInfo: {
+  insurerInfo: {
     flex: 1,
     gap: 2,
   },
-  carName: {
+  insurerName: {
     fontSize: 17,
     fontWeight: '600',
     color: 'rgba(0,0,0,0.8)',
-  },
-  carDetails: {
-    flexDirection: 'row',
-    gap: spacing[2],
-  },
-  carDetail: {
-    fontSize: 14,
-    color: 'rgba(0,0,0,0.45)',
-    fontWeight: '500',
   },
   deleteButton: {
     padding: spacing[2],
@@ -402,18 +346,5 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     borderWidth: 1,
     borderColor: colors.border,
-  },
-  inputWithUnit: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[2],
-  },
-  inputFlex: {
-    flex: 1,
-  },
-  unit: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    fontWeight: '500',
   },
 });
