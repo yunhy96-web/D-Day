@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "CheckStock",
+    "slug": "checkstock",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "checkstock",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0D1B2A",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0D1B2A"
+    },
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.checkstock.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": ["fetch"]
+      }
+    },
+    "android": {
+      "package": "com.checkstock.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0D1B2A"
+      }
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {}
+    }
+  }
+}

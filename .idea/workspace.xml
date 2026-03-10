@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="6985b164-e5cb-4efd-8740-2a173ceaf81a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/DdayBack/src/main/java/DdaySpringBoot/domain/crawler/application/CrawlerScheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/DdayBack/src/main/java/DdaySpringBoot/domain/crawler/application/CrawlerScheduler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DdayBack/src/main/java/DdaySpringBoot/domain/scheduler/application/DynamicSchedulerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/DdayBack/src/main/java/DdaySpringBoot/domain/scheduler/application/DynamicSchedulerService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DdayBack/src/main/java/DdaySpringBoot/domain/scheduler/presentation/SchedulerAdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/DdayBack/src/main/java/DdaySpringBoot/domain/scheduler/presentation/SchedulerAdminController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DdayBack/src/main/java/DdaySpringBoot/global/config/AsyncConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/DdayBack/src/main/java/DdaySpringBoot/global/config/AsyncConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DdayFront/app/article/[uuid].tsx" beforeDir="false" afterPath="$PROJECT_DIR$/DdayFront/app/article/[uuid].tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DdayFront/hooks/useArticles.ts" beforeDir="false" afterPath="$PROJECT_DIR$/DdayFront/hooks/useArticles.ts" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 4
+}]]></component>
+  <component name="ProjectId" id="37KkkDOXfI7msx5luHpPdS7A6SU" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/huiyeongyun/project/D-Day",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.27397.103" />
+        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.27397.103" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="6985b164-e5cb-4efd-8740-2a173ceaf81a" name="Changes" comment="" />
+      <created>1766659290747</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1766659290747</updated>
+      <workItem from="1766659291855" duration="50000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

@@ -26,7 +26,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 const CATEGORIES = {
-  정비: ['엔진오일', '타이어', '브레이크', '에어필터', '배터리', '냉각수', '기타'],
+  정비: ['엔진오일', '타이어', '브레이크', '에어컨필터', '배터리', '냉각수', '기타'],
   주유: ['주유'],
   기타: ['세차', '보험', '검사'],
 };
@@ -438,7 +438,7 @@ export default function RecordDetailScreen() {
               <DateTimePicker
                 value={editDate}
                 mode="date"
-                display="inline"
+                display="spinner"
                 onChange={onDateChange}
                 minimumDate={minDate}
                 maximumDate={maxDate}

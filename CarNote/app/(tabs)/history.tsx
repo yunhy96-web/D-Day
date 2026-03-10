@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Platform } from 'react-native';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { BlurView } from 'expo-blur';
@@ -306,10 +307,28 @@ function CalendarView({
   router,
 }: CalendarViewProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showDatePickerModal, setShowDatePickerModal] = useState(false);
 
   // 현재 월의 날짜 계산
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
+
+  // 날짜 제한 (10년 전 ~ 1년 후)
+  const today = new Date();
+  const minDate = new Date(today.getFullYear() - 10, 0, 1);
+  const maxDate = new Date(today.getFullYear() + 1, 11, 31);
+
+  // 날짜 변경 핸들러
+  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    if (selectedDate) {
+      onMonthChange(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
+      setSelectedDate(null);
+    }
+  };
 
   const firstDayOfMonth = new Date(year, month, 1);
   const lastDayOfMonth = new Date(year, month + 1, 0);
@@ -354,8 +373,7 @@ function CalendarView({
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [records, year, month]);
 
-  // 오늘 날짜
-  const today = new Date();
+  // 오늘 날짜인지 확인
   const isToday = (day: number) =>
     today.getFullYear() === year &&
     today.getMonth() === month &&
@@ -407,13 +425,66 @@ function CalendarView({
         <TouchableOpacity onPress={goToPrevMonth} style={styles.monthNavButton}>
           <Ionicons name="chevron-back" size={24} color="rgba(255,255,255,0.8)" />
         </TouchableOpacity>
-        <Text style={styles.monthTitle}>
-          {year}년 {month + 1}월
-        </Text>
+        <TouchableOpacity
+          onPress={() => Platform.OS === 'android' ? setShowDatePicker(true) : setShowDatePickerModal(true)}
+          style={styles.monthTitleButton}
+        >
+          <Text style={styles.monthTitle}>
+            {year}년 {month + 1}월
+          </Text>
+          <Ionicons name="chevron-down" size={16} color="rgba(255,255,255,0.6)" />
+        </TouchableOpacity>
         <TouchableOpacity onPress={goToNextMonth} style={styles.monthNavButton}>
           <Ionicons name="chevron-forward" size={24} color="rgba(255,255,255,0.8)" />
         </TouchableOpacity>
       </View>
+
+      {/* Android: 시스템 날짜 피커 */}
+      {Platform.OS === 'android' && showDatePicker && (
+        <DateTimePicker
+          value={currentMonth}
+          mode="date"
+          display="default"
+          onChange={onDateChange}
+          minimumDate={minDate}
+          maximumDate={maxDate}
+        />
+      )}
+
+      {/* iOS: 스피너 모달 */}
+      <Modal
+        visible={showDatePickerModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowDatePickerModal(false)}
+      >
+        <View style={styles.datePickerModalContainer}>
+          <View style={styles.datePickerModalHeader}>
+            <TouchableOpacity onPress={() => setShowDatePickerModal(false)}>
+              <Text style={styles.datePickerModalCancel}>취소</Text>
+            </TouchableOpacity>
+            <Text style={styles.datePickerModalTitle}>날짜 선택</Text>
+            <TouchableOpacity onPress={() => setShowDatePickerModal(false)}>
+              <Text style={styles.datePickerModalDone}>완료</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.datePickerModalContent}>
+            <DateTimePicker
+              value={currentMonth}
+              mode="date"
+              display="spinner"
+              onChange={onDateChange}
+              minimumDate={minDate}
+              maximumDate={maxDate}
+              locale="ko-KR"
+              style={styles.datePickerSpinner}
+              accentColor={colors.primary}
+              themeVariant="light"
+            />
+          </View>
+        </View>
+      </Modal>
 
       {/* 캘린더 그리드 */}
       <View style={styles.calendarCard}>
@@ -857,5 +928,53 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: colors.primary,
+  },
+  // 날짜 선택 스타일
+  monthTitleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[1],
+    paddingVertical: spacing[2],
+    paddingHorizontal: spacing[3],
+  },
+  datePickerModalContainer: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
+  },
+  datePickerModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: layout.screenPadding,
+    paddingVertical: spacing[4],
+    backgroundColor: '#F2F2F7',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  datePickerModalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1C1C1E',
+  },
+  datePickerModalCancel: {
+    fontSize: 16,
+    color: '#8E8E93',
+  },
+  datePickerModalDone: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  datePickerModalContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: spacing[4],
+    backgroundColor: '#F2F2F7',
+  },
+  datePickerSpinner: {
+    width: '100%',
+    height: 400,
+    backgroundColor: '#F2F2F7',
   },
 });
