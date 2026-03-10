@@ -1,40 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const TARGET_URL =
-  'https://www.ralphlauren.co.kr/men/brands/double-rl?prefn1=CategoryCode&prefv1=%EB%8D%B0%EB%8B%98';
-
-const BASE_URL = 'https://www.ralphlauren.co.kr';
-const STORAGE_KEY_INTERVAL = 'refreshInterval';
-const DEFAULT_INTERVAL = 30; // 초
-
-const INJECTED_JS = `
-(function() {
-  function extract() {
-    var products = [];
-    var links = document.querySelectorAll('a.name-link.js-pdp-link');
-    for (var i = 0; i < links.length; i++) {
-      var name = links[i].textContent.trim();
-      var href = links[i].getAttribute('href') || '';
-      if (name) products.push({ name: name, href: href });
-    }
-    var countInput = document.querySelector('input[name="totalProductsCount"]');
-    var count = countInput ? parseInt(countInput.value, 10) : products.length;
-    window.ReactNativeWebView.postMessage(JSON.stringify({ count: count, products: products }));
-  }
-  if (document.readyState === 'complete') {
-    setTimeout(extract, 1000);
-  } else {
-    window.addEventListener('load', function() { setTimeout(extract, 1000); });
-  }
-})();
-true;
-`;
-
-export interface Product {
-  name: string;
-  url: string;
-}
+import { generateInjectedJs } from '@/utils/generateInjectedJs';
+import { getLatestSnapshot, insertSnapshot, insertChange } from '@/utils/database';
+import type { Product, Site } from '@/types';
 
 export interface StockState {
   count: number | null;
@@ -44,7 +11,20 @@ export interface StockState {
   error: string | null;
 }
 
-export function useStockChecker() {
+function diffProducts(
+  oldProducts: Product[],
+  newProducts: Product[]
+): { added: Product[]; removed: Product[] } {
+  const oldNames = new Set(oldProducts.map((p) => p.name));
+  const newNames = new Set(newProducts.map((p) => p.name));
+
+  const added = newProducts.filter((p) => !oldNames.has(p.name));
+  const removed = oldProducts.filter((p) => !newNames.has(p.name));
+
+  return { added, removed };
+}
+
+export function useStockChecker(site: Site | null) {
   const [state, setState] = useState<StockState>({
     count: null,
     products: [],
@@ -52,48 +32,91 @@ export function useStockChecker() {
     isLoading: false,
     error: null,
   });
-  const [refreshInterval, setRefreshInterval] = useState(DEFAULT_INTERVAL);
-  const [countdown, setCountdown] = useState(DEFAULT_INTERVAL);
+  const [countdown, setCountdown] = useState(site?.refreshInterval ?? 30);
   const webViewRef = useRef<any>(null);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // 저장된 새로고침 주기 로드
-  useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY_INTERVAL).then((val) => {
-      if (val) {
-        const saved = parseInt(val, 10);
-        setRefreshInterval(saved);
-        setCountdown(saved);
-      }
-    });
-  }, []);
+  const refreshInterval = site?.refreshInterval ?? 30;
+  const injectedJs = site ? generateInjectedJs(site.selector, site.countSelector) : '';
 
-  const handleMessage = useCallback((event: any) => {
-    try {
-      const data = JSON.parse(event.nativeEvent.data);
-      if (data.count !== undefined) {
-        const products: Product[] = (data.products || []).map(
-          (p: { name: string; href: string }) => ({
-            name: p.name,
-            url: p.href.startsWith('http') ? p.href : `${BASE_URL}${p.href}`,
-          })
-        );
-        setState({
-          count: data.count,
-          products,
-          lastChecked: new Date(),
+  // refreshInterval 변경 시 카운트다운 리셋
+  useEffect(() => {
+    setCountdown(refreshInterval);
+  }, [refreshInterval]);
+
+  const handleMessage = useCallback(
+    async (event: any) => {
+      if (!site) return;
+      try {
+        const data = JSON.parse(event.nativeEvent.data);
+        if (data.count !== undefined) {
+          const products: Product[] = (data.products || []).map(
+            (p: { name: string; href: string }) => ({
+              name: p.name,
+              url: p.href.startsWith('http') ? p.href : `${site.baseUrl}${p.href}`,
+            })
+          );
+
+          const newCount = data.count as number;
+          const now = new Date();
+
+          // 이전 스냅샷과 비교
+          try {
+            const prev = await getLatestSnapshot(site.id);
+            const hasChange =
+              !prev ||
+              prev.productCount !== newCount ||
+              JSON.stringify(prev.products.map((p) => p.name).sort()) !==
+                JSON.stringify(products.map((p) => p.name).sort());
+
+            if (hasChange) {
+              // 스냅샷 저장
+              await insertSnapshot({
+                id: Date.now().toString(),
+                siteId: site.id,
+                productCount: newCount,
+                products,
+                checkedAt: now.toISOString(),
+              });
+
+              // 변동 기록 저장 (첫 스냅샷이 아닐 때만)
+              if (prev) {
+                const { added, removed } = diffProducts(prev.products, products);
+                if (added.length > 0 || removed.length > 0) {
+                  await insertChange({
+                    id: (Date.now() + 1).toString(),
+                    siteId: site.id,
+                    oldCount: prev.productCount,
+                    newCount,
+                    addedProducts: added,
+                    removedProducts: removed,
+                    detectedAt: now.toISOString(),
+                  });
+                }
+              }
+            }
+          } catch (dbErr) {
+            console.error('DB write error:', dbErr);
+          }
+
+          setState({
+            count: newCount,
+            products,
+            lastChecked: now,
+            isLoading: false,
+            error: null,
+          });
+        }
+      } catch {
+        setState((prev) => ({
+          ...prev,
           isLoading: false,
-          error: null,
-        });
+          error: '데이터 파싱 실패',
+        }));
       }
-    } catch {
-      setState((prev) => ({
-        ...prev,
-        isLoading: false,
-        error: '데이터 파싱 실패',
-      }));
-    }
-  }, []);
+    },
+    [site]
+  );
 
   const resetCountdown = useCallback(() => {
     setCountdown(refreshInterval);
@@ -117,13 +140,6 @@ export function useStockChecker() {
       isLoading: false,
       error: '페이지 로드 실패',
     }));
-  }, []);
-
-  // 새로고침 주기 변경
-  const updateRefreshInterval = useCallback(async (seconds: number) => {
-    setRefreshInterval(seconds);
-    setCountdown(seconds);
-    await AsyncStorage.setItem(STORAGE_KEY_INTERVAL, seconds.toString());
   }, []);
 
   // 카운트다운 타이머
@@ -153,10 +169,8 @@ export function useStockChecker() {
     ...state,
     countdown,
     refreshInterval,
-    updateRefreshInterval,
     webViewRef,
-    targetUrl: TARGET_URL,
-    injectedJs: INJECTED_JS,
+    injectedJs,
     refresh,
     handleMessage,
     handleLoadStart,

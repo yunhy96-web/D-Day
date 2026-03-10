@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, ScrollView, Alert, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import WebView from 'react-native-webview';
+import Sidebar from '@/components/Sidebar';
 import { colors, layout, shadows, spacing } from '@/styles';
 import { useStockChecker } from '@/hooks/useStockChecker';
+import { useSites } from '@/contexts';
 
 function formatTime(date: Date | null): string {
   if (!date) return '-';
@@ -13,7 +16,14 @@ function formatTime(date: Date | null): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 }
 
-export default function HomeScreen() {
+export default function SiteDashboard() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { sites, updateSite } = useSites();
+  const router = useRouter();
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+
+  const site = sites.find((s) => s.id === id) ?? null;
+
   const {
     count,
     products,
@@ -21,16 +31,14 @@ export default function HomeScreen() {
     isLoading,
     error,
     refresh,
-    refreshInterval,
-    updateRefreshInterval,
     countdown,
+    refreshInterval,
     webViewRef,
-    targetUrl,
     injectedJs,
     handleMessage,
     handleLoadStart,
     handleError,
-  } = useStockChecker();
+  } = useStockChecker(site);
 
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
@@ -55,13 +63,26 @@ export default function HomeScreen() {
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
+  const handleIntervalChange = async (seconds: number) => {
+    if (!site) return;
+    await updateSite(site.id, { refreshInterval: seconds });
+  };
+
+  if (!site) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.errorText}>사이트를 찾을 수 없습니다</Text>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* 숨겨진 WebView - 백그라운드에서 페이지 로드 */}
+      {/* 숨겨진 WebView */}
       <View style={styles.hiddenWebView}>
         <WebView
           ref={webViewRef}
-          source={{ uri: targetUrl }}
+          source={{ uri: site.url }}
           injectedJavaScript={injectedJs}
           onMessage={handleMessage}
           onLoadStart={handleLoadStart}
@@ -79,8 +100,21 @@ export default function HomeScreen() {
       >
         {/* 헤더 */}
         <View style={styles.header}>
-          <Text style={styles.title}>CheckStock</Text>
-          <Text style={styles.subtitle}>RRL Double RL 데님</Text>
+          <TouchableOpacity
+            onPress={() => setSidebarVisible(true)}
+            style={styles.menuButton}
+          >
+            <Ionicons name="menu-outline" size={26} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <Text style={styles.title} numberOfLines={1}>{site.name}</Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => router.push(`/history/${site.id}` as any)}
+            style={styles.historyButton}
+          >
+            <Ionicons name="time-outline" size={24} color={colors.textSecondary} />
+          </TouchableOpacity>
         </View>
 
         {/* 상품 수 카드 */}
@@ -121,11 +155,7 @@ export default function HomeScreen() {
             </Text>
           </View>
           <View style={styles.infoRow}>
-            <Ionicons
-              name="refresh-circle-outline"
-              size={18}
-              color={colors.textTertiary}
-            />
+            <Ionicons name="refresh-circle-outline" size={18} color={colors.textTertiary} />
             <Text style={styles.infoText}>
               다음 새로고침까지 <Text style={styles.countdownText}>{countdown}초</Text>
             </Text>
@@ -143,7 +173,7 @@ export default function HomeScreen() {
                   styles.intervalButton,
                   refreshInterval === sec && styles.intervalButtonActive,
                 ]}
-                onPress={() => updateRefreshInterval(sec)}
+                onPress={() => handleIntervalChange(sec)}
                 activeOpacity={0.7}
               >
                 <Text
@@ -206,6 +236,11 @@ export default function HomeScreen() {
           {isLoading ? '확인 중...' : '지금 확인하기'}
         </Text>
       </TouchableOpacity>
+      <Sidebar
+        visible={sidebarVisible}
+        onClose={() => setSidebarVisible(false)}
+        activeSiteId={id}
+      />
     </SafeAreaView>
   );
 }
@@ -227,19 +262,26 @@ const styles = StyleSheet.create({
     paddingBottom: spacing[4],
   },
   header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: spacing[8],
-    marginBottom: spacing[6],
+    marginTop: spacing[4],
+    marginBottom: spacing[5],
+  },
+  menuButton: {
+    padding: spacing[1],
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: spacing[3],
   },
   title: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: '700',
     color: colors.textPrimary,
   },
-  subtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: spacing[1],
+  historyButton: {
+    padding: spacing[1],
   },
   card: {
     backgroundColor: colors.cardBackground,
