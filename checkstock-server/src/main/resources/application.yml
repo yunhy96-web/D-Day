@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/checkstock
+    username: sideproject
+    password: "20251220"
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+
+server:
+  port: 8090
+
+checkstock:
+  default-interval: 30000
+  telegram:
+    bot-token: "8664853691:AAFRtxg7Ub3Mw29ayN3a9_bW2DSD5VeGkxE"
+    chat-id: "7179141221"
