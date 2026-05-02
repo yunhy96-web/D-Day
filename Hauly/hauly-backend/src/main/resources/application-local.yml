@@ -1,0 +1,41 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/hauly
+    username: sideproject
+    password: ${DB_PASSWORD:20251220}  # env 우선, 기본값은 로컬 전용 — prod 에서 절대 사용 금지
+  jpa:
+    hibernate:
+      ddl-auto: validate              # Flyway 가 스키마 관리 → JPA 는 검증만
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+logging:
+  level:
+    com.hauly: DEBUG
+    org.hibernate.SQL: DEBUG
+
+server:
+  port: 8090                          # checkstock 가 8091 사용 → 충돌 회피
+
+hauly:
+  s3:
+    bucket: hauly-local-dev           # 로컬은 LocalStack 또는 실 dev 버킷
+    region: ap-northeast-2
+  jwt:
+    secret: ${JWT_SECRET:local-dev-only-not-for-prod-min-32-chars}  # 로컬 전용 fallback
+    access-ttl-min: 30
+    refresh-ttl-day: 14
+  security:
+    cors:
+      allowed-origins:
+        - "http://localhost:5173"     # Vite dev server
+        - "http://localhost:3000"     # alternate local frontend
+    cookie:
+      secure: false

@@ -1,0 +1,27 @@
+### Build outputs ###
+build/
+out/
+
+### Gradle ###
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+### IDE ###
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+### Logs ###
+*.log
+logs/
+
+### Secrets (never commit) ###
+application-local-secret.yml
+application-*-secret.yml
+
+### OS ###
+.DS_Store
+Thumbs.db
