@@ -38,3 +38,9 @@ out/
 
 ### macOS ###
 .DS_Store
+
+### OMC ###
+.omc/
+
+### Crawler ###
+crawler/.chrome_profile/

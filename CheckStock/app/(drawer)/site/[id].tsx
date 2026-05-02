@@ -1,14 +1,17 @@
-import { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, ScrollView, Alert, Linking } from 'react-native';
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, ScrollView, Alert, Linking, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import WebView from 'react-native-webview';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import Sidebar from '@/components/Sidebar';
 import { colors, layout, shadows, spacing } from '@/styles';
-import { useStockChecker } from '@/hooks/useStockChecker';
+import { useStockChecker, type CrawlMode } from '@/hooks/useStockChecker';
 import { useSites } from '@/contexts';
+
+const KEEP_AWAKE_TAG = 'site-dashboard-app-mode';
 
 function formatTime(date: Date | null): string {
   if (!date) return '-';
@@ -21,11 +24,13 @@ export default function SiteDashboard() {
   const { sites, updateSite } = useSites();
   const router = useRouter();
   const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [mode, setMode] = useState<CrawlMode>('backend');
 
   const site = sites.find((s) => s.id === id) ?? null;
 
   const {
-    count,
+    totalCount,
+    matchedCount,
     products,
     lastChecked,
     isLoading,
@@ -38,9 +43,22 @@ export default function SiteDashboard() {
     handleMessage,
     handleLoadStart,
     handleError,
-  } = useStockChecker(site);
+  } = useStockChecker(site, mode);
 
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  // app 모드일 때 화면 자동 잠금 방지
+  useEffect(() => {
+    if (mode === 'app') {
+      activateKeepAwakeAsync(KEEP_AWAKE_TAG).catch(() => {});
+      return () => {
+        try {
+          deactivateKeepAwake(KEEP_AWAKE_TAG);
+        } catch {}
+      };
+    }
+    return;
+  }, [mode]);
 
   const handleProductPress = async (url: string) => {
     try {
@@ -78,20 +96,22 @@ export default function SiteDashboard() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 숨겨진 WebView */}
-      <View style={styles.hiddenWebView}>
-        <WebView
-          ref={webViewRef}
-          source={{ uri: site.url }}
-          injectedJavaScript={injectedJs}
-          onMessage={handleMessage}
-          onLoadStart={handleLoadStart}
-          onError={handleError}
-          javaScriptEnabled
-          domStorageEnabled
-          sharedCookiesEnabled
-        />
-      </View>
+      {/* app 모드 전용 숨겨진 WebView */}
+      {mode === 'app' && (
+        <View style={styles.hiddenWebView}>
+          <WebView
+            ref={webViewRef}
+            source={{ uri: site.url }}
+            injectedJavaScript={injectedJs}
+            onMessage={handleMessage}
+            onLoadStart={handleLoadStart}
+            onError={handleError}
+            javaScriptEnabled
+            domStorageEnabled
+            sharedCookiesEnabled
+          />
+        </View>
+      )}
 
       <ScrollView
         style={styles.scrollView}
@@ -133,15 +153,17 @@ export default function SiteDashboard() {
             </View>
           ) : (
             <>
-              <Text style={styles.cardLabel}>현재 상품 수</Text>
+              <Text style={styles.cardLabel}>매칭 상품 수</Text>
               <View style={styles.countContainer}>
-                {isLoading && count === null ? (
+                {isLoading && matchedCount === null ? (
                   <ActivityIndicator size="large" color={colors.primary} />
                 ) : (
-                  <Text style={styles.countText}>{count ?? '-'}</Text>
+                  <Text style={styles.countText}>{matchedCount === null ? '-' : matchedCount}</Text>
                 )}
               </View>
-              <Text style={styles.countUnit}>개</Text>
+              <Text style={styles.countUnit}>
+                {totalCount !== null ? `전체 ${totalCount}개 중` : '개'}
+              </Text>
             </>
           )}
         </View>
@@ -159,6 +181,28 @@ export default function SiteDashboard() {
             <Text style={styles.infoText}>
               다음 새로고침까지 <Text style={styles.countdownText}>{countdown}초</Text>
             </Text>
+          </View>
+        </View>
+
+        {/* 크롤링 모드 토글 */}
+        <View style={styles.modeSection}>
+          <View style={styles.modeRow}>
+            <View style={styles.modeLabelGroup}>
+              <Text style={styles.modeLabel}>
+                {mode === 'app' ? '앱 크롤링 (수면 모드)' : '백엔드 크롤링'}
+              </Text>
+              <Text style={styles.modeHint}>
+                {mode === 'app'
+                  ? '화면 켠 상태 유지 · 캡차 우회 · 알림 수신용'
+                  : '앱 꺼져도 동작 · Python 크롤러 사용'}
+              </Text>
+            </View>
+            <Switch
+              value={mode === 'app'}
+              onValueChange={(v) => setMode(v ? 'app' : 'backend')}
+              trackColor={{ false: colors.border, true: colors.primary }}
+              thumbColor={colors.white}
+            />
           </View>
         </View>
 
@@ -352,6 +396,32 @@ const styles = StyleSheet.create({
   countdownText: {
     color: colors.primary,
     fontWeight: '700',
+  },
+  modeSection: {
+    marginTop: spacing[5],
+    backgroundColor: colors.cardBackground,
+    borderRadius: layout.cardBorderRadius,
+    padding: spacing[4],
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  modeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[3],
+  },
+  modeLabelGroup: {
+    flex: 1,
+  },
+  modeLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  modeHint: {
+    fontSize: 11,
+    color: colors.textTertiary,
+    marginTop: 2,
   },
   intervalSection: {
     marginTop: spacing[5],

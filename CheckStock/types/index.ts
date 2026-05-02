@@ -13,6 +13,8 @@ export interface Site {
   refreshInterval: number;
   isActive: boolean;
   createdAt: string;
+  includeKeywords: string[];
+  excludeKeywords: string[];
 }
 
 export interface Snapshot {

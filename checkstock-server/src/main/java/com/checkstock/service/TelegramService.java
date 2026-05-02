@@ -62,6 +62,16 @@ public class TelegramService {
         sendMessage(sb.toString());
     }
 
+    public void sendErrorAlert(String productName, String errorMessage) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("🚨 <b>크롤링 에러</b>\n\n");
+        sb.append("📦 ").append(productName).append("\n");
+        sb.append("❗ ").append(errorMessage).append("\n\n");
+        sb.append("서버 확인이 필요합니다.");
+
+        sendMessage(sb.toString());
+    }
+
     public void sendMessage(String text) {
         if (botToken.isEmpty() || chatId.isEmpty()) return;
 

@@ -116,8 +116,16 @@ export default function Sidebar({ visible, onClose, activeSiteId }: SidebarProps
                 onPress={() => navigateTo('/manage')}
                 activeOpacity={0.7}
               >
-                <Ionicons name="settings-outline" size={20} color={colors.textSecondary} />
+                <Ionicons name="list-outline" size={20} color={colors.textSecondary} />
                 <Text style={styles.footerButtonText}>사이트 관리</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.footerButton}
+                onPress={() => navigateTo('/settings')}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="options-outline" size={20} color={colors.textSecondary} />
+                <Text style={styles.footerButtonText}>필터 설정</Text>
               </TouchableOpacity>
             </View>
           </SafeAreaView>

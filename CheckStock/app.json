@@ -2,7 +2,7 @@
   "expo": {
     "name": "CheckStock",
     "slug": "checkstock",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "scheme": "checkstock",
     "userInterfaceStyle": "dark",
@@ -26,8 +26,17 @@
       }
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "color": "#0D1B2A"
+        }
+      ]
     ],
+    "notification": {
+      "iosDisplayInForeground": true
+    },
     "experiments": {
       "typedRoutes": true
     },

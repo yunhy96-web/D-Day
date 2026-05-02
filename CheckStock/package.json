@@ -1,6 +1,6 @@
 {
   "name": "checkstock",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
@@ -13,7 +13,11 @@
     "expo": "~54.0.0",
     "expo-clipboard": "^55.0.8",
     "expo-constants": "~18.0.0",
+    "expo-dev-client": "~6.0.20",
+    "expo-device": "~8.0.10",
+    "expo-keep-awake": "~15.0.8",
     "expo-linking": "~8.0.0",
+    "expo-notifications": "~0.32.16",
     "expo-router": "~5.0.0",
     "expo-sqlite": "^55.0.10",
     "expo-status-bar": "~3.0.0",

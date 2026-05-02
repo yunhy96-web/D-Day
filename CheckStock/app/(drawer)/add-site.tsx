@@ -59,6 +59,8 @@ export default function AddSiteScreen() {
           countSelector: countSelector.trim() || undefined,
           refreshInterval: parseInt(refreshInterval, 10) || 30,
           isActive: true,
+          includeKeywords: [],
+          excludeKeywords: [],
         });
       }
       router.back();

@@ -16,9 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +33,15 @@ public class MonitoringService {
     private final SizeChangeRepository changeRepository;
     private final TelegramService telegramService;
     private final ObjectMapper objectMapper;
+
+    /**
+     * 사이즈별 연속 상태 카운트 추적
+     * Key: "productId|label:group" → 연속 횟수 (양수=available, 음수=soldOut)
+     */
+    private final Map<String, Integer> consecutiveCountMap = new ConcurrentHashMap<>();
+
+    /** 알림을 보내기 위한 최소 연속 확인 횟수 */
+    private static final int CONFIRM_THRESHOLD = 3;
 
     @Transactional
     public void process(Product product, List<SizeOptionDto> newSizes) {
@@ -59,25 +71,121 @@ public class MonitoringService {
 
             diffSizes(oldSizes, newSizes, becameAvailable, becameSoldOut);
 
-            if (!becameAvailable.isEmpty() || !becameSoldOut.isEmpty()) {
+            // 연속 확인 카운트 업데이트 및 필터링
+            List<SizeOptionDto> confirmedAvailable = updateAndFilter(product.getId(), becameAvailable, true);
+            List<SizeOptionDto> confirmedSoldOut = updateAndFilter(product.getId(), becameSoldOut, false);
+
+            // 변동이 없는 사이즈는 카운트 리셋
+            resetUnchangedSizes(product.getId(), newSizes, becameAvailable, becameSoldOut);
+
+            if (!confirmedAvailable.isEmpty() || !confirmedSoldOut.isEmpty()) {
                 // 변동 기록 저장
                 SizeChange change = new SizeChange();
                 change.setProductId(product.getId());
-                change.setBecameAvailable(toJson(becameAvailable));
-                change.setBecameSoldOut(toJson(becameSoldOut));
+                change.setBecameAvailable(toJson(confirmedAvailable));
+                change.setBecameSoldOut(toJson(confirmedSoldOut));
                 change.setOldAvailableCount(oldAvailable);
                 change.setNewAvailableCount(availableCount);
                 change.setDetectedAt(LocalDateTime.now());
                 changeRepository.save(change);
 
-                log.info("[{}] 사이즈 변동 감지! 구매가능: {} → {}", product.getName(), oldAvailable, availableCount);
+                log.info("[{}] 사이즈 변동 확정! ({}회 연속 확인) 구매가능: {} → {}",
+                        product.getName(), CONFIRM_THRESHOLD, oldAvailable, availableCount);
 
-                // 텔레그램 알림
-                telegramService.sendChangeAlert(product, becameAvailable, becameSoldOut, oldAvailable, availableCount, totalCount);
+                // alertSizeFilter가 있으면 해당 사이즈만 알림
+                List<SizeOptionDto> alertAvailable = filterByAlertSize(product, confirmedAvailable);
+                List<SizeOptionDto> alertSoldOut = filterByAlertSize(product, confirmedSoldOut);
+
+                // 텔레그램 알림 (필터 후 변동이 있을 때만)
+                if (!alertAvailable.isEmpty() || !alertSoldOut.isEmpty()) {
+                    telegramService.sendChangeAlert(product, alertAvailable, alertSoldOut, oldAvailable, availableCount, totalCount);
+                }
+
+                // 알림 보낸 사이즈는 카운트 리셋
+                for (SizeOptionDto s : confirmedAvailable) {
+                    consecutiveCountMap.remove(buildKey(product.getId(), s));
+                }
+                for (SizeOptionDto s : confirmedSoldOut) {
+                    consecutiveCountMap.remove(buildKey(product.getId(), s));
+                }
             }
         } else {
             log.info("[{}] 첫 스냅샷 저장. 사이즈 {}개, 구매가능 {}개", product.getName(), totalCount, availableCount);
         }
+    }
+
+    /**
+     * 변동 감지된 사이즈의 연속 카운트를 업데이트하고, 임계치에 도달한 것만 반환
+     */
+    private List<SizeOptionDto> updateAndFilter(String productId, List<SizeOptionDto> changed, boolean isAvailable) {
+        List<SizeOptionDto> confirmed = new ArrayList<>();
+        for (SizeOptionDto size : changed) {
+            String key = buildKey(productId, size);
+            int current = consecutiveCountMap.getOrDefault(key, 0);
+
+            if (isAvailable) {
+                // available 상태는 양수로 카운트
+                current = current > 0 ? current + 1 : 1;
+            } else {
+                // soldOut 상태는 음수로 카운트
+                current = current < 0 ? current - 1 : -1;
+            }
+            consecutiveCountMap.put(key, current);
+
+            int absCount = Math.abs(current);
+            if (absCount >= CONFIRM_THRESHOLD) {
+                confirmed.add(size);
+                log.info("[{}] {}({}) {}회 연속 {} 확인 → 알림 발송",
+                        productId, size.getLabel(), size.getGroup(), absCount,
+                        isAvailable ? "구매가능" : "품절");
+            } else {
+                log.info("[{}] {}({}) {}회 연속 {} (임계치 {}회 미달, 알림 보류)",
+                        productId, size.getLabel(), size.getGroup(), absCount,
+                        isAvailable ? "구매가능" : "품절", CONFIRM_THRESHOLD);
+            }
+        }
+        return confirmed;
+    }
+
+    /**
+     * 변동이 없는(상태 유지) 사이즈의 카운트를 리셋
+     */
+    private void resetUnchangedSizes(String productId, List<SizeOptionDto> newSizes,
+                                      List<SizeOptionDto> becameAvailable, List<SizeOptionDto> becameSoldOut) {
+        // 변동 감지된 사이즈 키 목록
+        var changedKeys = new java.util.HashSet<String>();
+        for (SizeOptionDto s : becameAvailable) changedKeys.add(buildKey(productId, s));
+        for (SizeOptionDto s : becameSoldOut) changedKeys.add(buildKey(productId, s));
+
+        // 변동이 없는 사이즈는 카운트 리셋 (상태가 안정됨)
+        for (SizeOptionDto s : newSizes) {
+            String key = buildKey(productId, s);
+            if (!changedKeys.contains(key)) {
+                consecutiveCountMap.remove(key);
+            }
+        }
+    }
+
+    /**
+     * alertSizeFilter가 설정된 경우, 해당 사이즈(라벨)만 필터링
+     */
+    private List<SizeOptionDto> filterByAlertSize(Product product, List<SizeOptionDto> sizes) {
+        String filter = product.getAlertSizeFilter();
+        if (filter == null || filter.isBlank()) {
+            return sizes; // 필터 없으면 전체
+        }
+        Set<String> allowedLabels = Arrays.stream(filter.split(","))
+                .map(String::trim)
+                .map(String::toUpperCase)
+                .collect(Collectors.toSet());
+
+        return sizes.stream()
+                .filter(s -> allowedLabels.contains(s.getLabel().toUpperCase()))
+                .collect(Collectors.toList());
+    }
+
+    private String buildKey(String productId, SizeOptionDto size) {
+        return productId + "|" + size.getLabel() + ":" + (size.getGroup() != null ? size.getGroup() : "");
     }
 
     private void diffSizes(List<SizeOptionDto> oldSizes, List<SizeOptionDto> newSizes,

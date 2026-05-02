@@ -9,5 +9,5 @@ public class ProductRequest {
     private String sizeSelector = "li.variations-attribute";
     private String soldOutIndicator = "out";
     private String targetSize; // 클릭할 허리 사이즈 (예: "32")
-    private int refreshInterval = 30;
+    private int refreshInterval = 300;
 }
