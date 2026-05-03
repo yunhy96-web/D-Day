@@ -88,6 +88,15 @@ public class AppUser {
         return matcher.apply(rawPassword, this.passwordHash);
     }
 
+    /** Replaces the stored hash with one freshly derived from {@code rawPassword}. */
+    public void changePassword(String rawPassword, Function<String, String> passwordEncoder) {
+        if (rawPassword == null || rawPassword.isBlank()) {
+            throw new IllegalArgumentException("password must not be blank");
+        }
+        this.passwordHash = passwordEncoder.apply(rawPassword);
+        this.updatedAt = OffsetDateTime.now();
+    }
+
     // --- Accessors (read-only from outside) ---
 
     public Long getId() { return id; }

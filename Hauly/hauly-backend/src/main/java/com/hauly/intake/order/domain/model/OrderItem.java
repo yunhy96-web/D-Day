@@ -12,6 +12,9 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -63,7 +66,13 @@ public class OrderItem {
     @Column(name = "unit_price_currency", length = 8)
     private String unitPriceCurrency;
 
+    /** S3 (or local FS) keys for customer-attached request photos. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "request_image_keys", columnDefinition = "jsonb")
+    private List<String> requestImageKeys;
+
     private static final Set<String> ALLOWED_CURRENCIES = Set.of("KRW", "THB", "USD");
+    private static final int MAX_IMAGES_PER_ITEM = 5;
 
     /** JPA only. */
     protected OrderItem() {}
@@ -106,6 +115,19 @@ public class OrderItem {
         this.outOfStockNote = note;
     }
 
+    /** Replace the full list of request-image keys. Max 5 images per item. */
+    public void setRequestImageKeys(List<String> keys) {
+        if (keys == null || keys.isEmpty()) {
+            this.requestImageKeys = null;
+            return;
+        }
+        if (keys.size() > MAX_IMAGES_PER_ITEM) {
+            throw new IllegalArgumentException(
+                    "max " + MAX_IMAGES_PER_ITEM + " images per item, got " + keys.size());
+        }
+        this.requestImageKeys = new ArrayList<>(keys);
+    }
+
     // --- Accessors ---
 
     public Long getId() { return id; }
@@ -117,4 +139,7 @@ public class OrderItem {
     public Map<String, Object> getAttributes() { return attributes; }
     public BigDecimal getUnitPriceAmount() { return unitPriceAmount; }
     public String getUnitPriceCurrency() { return unitPriceCurrency; }
+    public List<String> getRequestImageKeys() {
+        return requestImageKeys == null ? List.of() : Collections.unmodifiableList(requestImageKeys);
+    }
 }

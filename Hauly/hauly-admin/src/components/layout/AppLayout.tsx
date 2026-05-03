@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { LayoutDashboard, Package, PlusCircle } from 'lucide-react'
+import { LayoutDashboard, Package, PlusCircle, KeyRound } from 'lucide-react'
 import { useLogout } from '@/features/auth/hooks'
+import { ChangePasswordModal } from '@/features/auth/ChangePasswordModal'
 import { Button } from '@/components/ui/button'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { cn } from '@/lib/utils'
@@ -9,6 +11,7 @@ import { cn } from '@/lib/utils'
 export default function AppLayout() {
   const { t } = useTranslation()
   const logoutMutation = useLogout()
+  const [pwOpen, setPwOpen] = useState(false)
 
   const navItem = (to: string, label: string, Icon: typeof LayoutDashboard) => (
     <NavLink
@@ -46,6 +49,15 @@ export default function AppLayout() {
             variant="outline"
             size="sm"
             className="w-full"
+            onClick={() => setPwOpen(true)}
+          >
+            <KeyRound className="h-4 w-4 mr-1" />
+            비밀번호 변경
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
             onClick={() => logoutMutation.mutate()}
             disabled={logoutMutation.isPending}
           >
@@ -58,6 +70,8 @@ export default function AppLayout() {
       <main className="flex-1 bg-muted/20 overflow-auto">
         <Outlet />
       </main>
+
+      <ChangePasswordModal open={pwOpen} onClose={() => setPwOpen(false)} />
     </div>
   )
 }

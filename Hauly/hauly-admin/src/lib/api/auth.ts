@@ -18,3 +18,10 @@ export async function refresh(): Promise<void> {
 export async function logout(): Promise<void> {
   await apiClient.post('/auth/logout')
 }
+
+export async function changePassword(input: {
+  currentPassword: string
+  newPassword: string
+}): Promise<void> {
+  await apiClient.post('/auth/password', input)
+}

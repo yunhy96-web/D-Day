@@ -8,8 +8,10 @@ import com.hauly.intake.order.application.query.OrderListItemView;
 import com.hauly.intake.order.domain.model.FulfillmentStatus;
 import com.hauly.intake.order.domain.model.Order;
 import com.hauly.intake.order.domain.model.OrderStatusLog;
+import com.hauly.intake.order.domain.model.OrderItem;
 import com.hauly.intake.order.domain.repository.OrderRepository;
 import com.hauly.intake.order.domain.service.OrderNoGenerator;
+import com.hauly.platform.storage.domain.BlobStorage;
 import com.hauly.shared.customer.application.CustomerLookupService;
 import com.hauly.shared.customer.application.command.IdentifyCustomerCommand;
 import com.hauly.shared.customer.domain.model.Customer;
@@ -20,7 +22,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Application service orchestrating the INTAKE order use cases.
@@ -35,18 +39,33 @@ public class IntakeOrderService {
     private final OrderRepository orderRepository;
     private final CustomerLookupService customerLookupService;
     private final OrderNoGenerator orderNoGenerator;
+    private final BlobStorage blobStorage;
 
     public IntakeOrderService(OrderRepository orderRepository,
                               CustomerLookupService customerLookupService,
-                              OrderNoGenerator orderNoGenerator) {
+                              OrderNoGenerator orderNoGenerator,
+                              BlobStorage blobStorage) {
         this.orderRepository = orderRepository;
         this.customerLookupService = customerLookupService;
         this.orderNoGenerator = orderNoGenerator;
+        this.blobStorage = blobStorage;
     }
 
     public OrderDetailView createOrder(CreateOrderCommand cmd, Long createdBy) {
         if (cmd.items() == null || cmd.items().isEmpty()) {
             throw new IllegalArgumentException("At least one item is required");
+        }
+
+        // Validate that any temp image keys belong to the caller — prevents one user from
+        // attaching another user's uploads. Keys are namespaced as `temp/{userId}/...`.
+        String tempPrefix = "temp/" + createdBy + "/";
+        for (CreateOrderCommand.Item item : cmd.items()) {
+            if (item.tempImageKeys() == null) continue;
+            for (String key : item.tempImageKeys()) {
+                if (key == null || !key.startsWith(tempPrefix)) {
+                    throw new IllegalArgumentException("invalid temp image key: " + key);
+                }
+            }
         }
 
         Customer customer = customerLookupService.findOrCreate(new IdentifyCustomerCommand(
@@ -66,18 +85,43 @@ public class IntakeOrderService {
                     item.unitPriceAmount(), item.unitPriceCurrency());
         }
 
-        // First save → DB assigns id
+        // First save → DB assigns id (both order and items)
         order = orderRepository.save(order);
 
         // Replace placeholder order_no with HL-yyyy-#### derived from id
         order.assignOrderNo(orderNoGenerator.generate(order.getId()));
+
+        // Promote temp image keys → permanent. Items now have IDs.
+        // Positional pairing: cmd.items().get(i) ↔ order.getItems().get(i).
+        List<OrderItem> savedItems = order.getItems();
+        for (int i = 0; i < cmd.items().size(); i++) {
+            List<String> tempKeys = cmd.items().get(i).tempImageKeys();
+            if (tempKeys == null || tempKeys.isEmpty()) continue;
+            OrderItem entityItem = savedItems.get(i);
+            List<String> permanentKeys = new ArrayList<>(tempKeys.size());
+            for (String tempKey : tempKeys) {
+                String ext = extractExt(tempKey);
+                String permanentKey = "orders/" + order.getId() + "/items/" + entityItem.getId()
+                        + "/" + UUID.randomUUID() + "." + ext;
+                blobStorage.copy(tempKey, permanentKey);
+                blobStorage.delete(tempKey);
+                permanentKeys.add(permanentKey);
+            }
+            entityItem.setRequestImageKeys(permanentKeys);
+        }
         order = orderRepository.save(order);
 
         flushPendingLogs(order);
 
         List<OrderStatusLog> history = orderRepository.findStatusLogsByOrderId(order.getId());
         return OrderDetailView.from(
-                order, customer.getName(), customer.getLineId(), customer.getPhone(), history);
+                order, customer.getName(), customer.getLineId(), customer.getPhone(),
+                history, blobStorage);
+    }
+
+    private static String extractExt(String key) {
+        int dot = key.lastIndexOf('.');
+        return (dot >= 0 && dot < key.length() - 1) ? key.substring(dot + 1) : "bin";
     }
 
     @Transactional(readOnly = true)
@@ -120,7 +164,8 @@ public class IntakeOrderService {
         Customer customer = customerLookupService.getById(order.getCustomerId());
         List<OrderStatusLog> history = orderRepository.findStatusLogsByOrderId(order.getId());
         return OrderDetailView.from(
-                order, customer.getName(), customer.getLineId(), customer.getPhone(), history);
+                order, customer.getName(), customer.getLineId(), customer.getPhone(),
+                history, blobStorage);
     }
 
     public OrderDetailView changeFulfillmentStatus(ChangeFulfillmentStatusCommand cmd, Long actorId) {

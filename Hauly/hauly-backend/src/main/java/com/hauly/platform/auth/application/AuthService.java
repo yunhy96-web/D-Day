@@ -1,6 +1,7 @@
 package com.hauly.platform.auth.application;
 
 import com.hauly.platform.auth.application.command.BootstrapUserCommand;
+import com.hauly.platform.auth.application.command.ChangePasswordCommand;
 import com.hauly.platform.auth.application.command.LoginCommand;
 import com.hauly.platform.auth.application.command.RefreshCommand;
 import com.hauly.platform.auth.application.query.CurrentUserView;
@@ -89,6 +90,25 @@ public class AuthService {
         AppUser user = userRepository.findById(userId)
                 .orElseThrow(() -> new BadCredentialsException("User not found"));
         return CurrentUserView.from(user);
+    }
+
+    /**
+     * Change password for the currently authenticated user.
+     * Verifies the current password, validates the new one against policy, then persists.
+     */
+    public void changePassword(ChangePasswordCommand command) {
+        AppUser user = userRepository.findById(command.userId())
+                .orElseThrow(() -> new BadCredentialsException("User not found"));
+
+        boolean matches = user.verifyPassword(command.currentPassword(),
+                (raw, hash) -> passwordEncoder.matches(raw, hash));
+        if (!matches) {
+            throw new BadCredentialsException("Current password is incorrect");
+        }
+
+        passwordPolicyService.validate(command.newPassword());
+        user.changePassword(command.newPassword(), passwordEncoder::encode);
+        userRepository.save(user);
     }
 
     /**

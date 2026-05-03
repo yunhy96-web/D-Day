@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFieldArray, useForm, useWatch, type Control } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -17,6 +17,7 @@ import { useCreateOrder } from './hooks'
 import { useCategories } from './categoryHooks'
 import { useCommonCodeGroup } from './commonCodeHooks'
 import { DynamicFields } from './DynamicFields'
+import { ImageUploader, type UploadedImage } from './ImageUploader'
 import { createOrderSchema, type CreateOrderFormValues, type CurrencyCode } from './schema'
 import type { CategoryView } from '@/lib/api/categories'
 import { ApiError } from '@/lib/api/types'
@@ -77,6 +78,21 @@ export default function OrderCreatePage() {
 
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
 
+  // Tracked outside react-hook-form because uploads are transient (object URLs, server temp keys)
+  // and don't participate in zod validation. Keyed by the rhf field id so it survives re-renders.
+  const [imagesByItemId, setImagesByItemId] = useState<Record<string, UploadedImage[]>>({})
+
+  function removeItem(index: number) {
+    const id = fields[index].id
+    const imgs = imagesByItemId[id]
+    if (imgs) imgs.forEach((img) => URL.revokeObjectURL(img.previewUrl))
+    setImagesByItemId((prev) => {
+      const { [id]: _drop, ...rest } = prev
+      return rest
+    })
+    remove(index)
+  }
+
   function onSubmit(values: CreateOrderFormValues) {
     mutation.mutate(
       {
@@ -87,17 +103,21 @@ export default function OrderCreatePage() {
         internalMemo: values.internalMemo || undefined,
         koreanTrackingNo: values.koreanTrackingNo || undefined,
         koreanCourier: values.koreanCourier || undefined,
-        items: values.items.map((i) => ({
-          productName: i.productName,
-          productUrl: i.productUrl || undefined,
-          quantity: i.quantity,
-          categoryId: i.categoryId,
-          attributes: i.attributes && Object.keys(i.attributes).length > 0
-            ? pruneEmpty(i.attributes)
-            : undefined,
-          unitPriceAmount: i.unitPriceAmount || undefined,
-          unitPriceCurrency: (i.unitPriceCurrency || undefined) as CurrencyCode | undefined,
-        })),
+        items: values.items.map((i, idx) => {
+          const tempImageKeys = (imagesByItemId[fields[idx].id] ?? []).map((img) => img.tempKey)
+          return {
+            productName: i.productName,
+            productUrl: i.productUrl || undefined,
+            quantity: i.quantity,
+            categoryId: i.categoryId,
+            attributes: i.attributes && Object.keys(i.attributes).length > 0
+              ? pruneEmpty(i.attributes)
+              : undefined,
+            unitPriceAmount: i.unitPriceAmount || undefined,
+            unitPriceCurrency: (i.unitPriceCurrency || undefined) as CurrencyCode | undefined,
+            tempImageKeys: tempImageKeys.length > 0 ? tempImageKeys : undefined,
+          }
+        }),
       },
       {
         onSuccess: (created) => navigate(`/orders/${created.id}`, { replace: true }),
@@ -187,7 +207,7 @@ export default function OrderCreatePage() {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => remove(index)}
+                      onClick={() => removeItem(index)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -270,6 +290,15 @@ export default function OrderCreatePage() {
                   index={index}
                   categories={categories}
                 />
+                <div className="space-y-1.5">
+                  <Label>참고 이미지</Label>
+                  <ImageUploader
+                    value={imagesByItemId[field.id] ?? []}
+                    onChange={(next) =>
+                      setImagesByItemId((prev) => ({ ...prev, [field.id]: next }))
+                    }
+                  />
+                </div>
               </div>
             ))}
             {errors.items?.root && (

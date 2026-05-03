@@ -7,6 +7,10 @@ spring:
     time-zone: Asia/Seoul
     serialization:
       write-dates-as-timestamps: false
+  servlet:
+    multipart:
+      max-file-size: 8MB        # client compresses >5MB; allow some slack for HEIC etc.
+      max-request-size: 12MB
 
 management:
   endpoints:

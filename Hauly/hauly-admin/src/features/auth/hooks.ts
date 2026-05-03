@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { login, fetchMe, logout } from '@/lib/api/auth'
+import { login, fetchMe, logout, changePassword } from '@/lib/api/auth'
 import type { MeResponse } from '@/lib/api/types'
 
 export const ME_QUERY_KEY = ['me'] as const
@@ -34,5 +34,11 @@ export function useLogout() {
       queryClient.clear()
       navigate('/login', { replace: true })
     },
+  })
+}
+
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: changePassword,
   })
 }

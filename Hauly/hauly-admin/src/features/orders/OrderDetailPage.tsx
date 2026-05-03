@@ -18,6 +18,7 @@ import {
 import { useCategories } from './categoryHooks'
 import { useCommonCodeGroup } from './commonCodeHooks'
 import { formatMoney } from './money'
+import { ImageGallery } from './ImageGallery'
 import { useMe } from '@/features/auth/hooks'
 import {
   findLabel,
@@ -177,6 +178,13 @@ export default function OrderDetailPage() {
                     <tr className="border-b bg-muted/30">
                       <td colSpan={6} className="py-2 px-2 text-xs">
                         <AttributesView attrs={item.attributes} />
+                      </td>
+                    </tr>
+                  )}
+                  {item.requestImageUrls && item.requestImageUrls.length > 0 && (
+                    <tr className="border-b">
+                      <td colSpan={6} className="py-2 px-2">
+                        <ImageGallery urls={item.requestImageUrls} />
                       </td>
                     </tr>
                   )}

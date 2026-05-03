@@ -44,6 +44,8 @@ export interface OrderItemDetail {
   attributes: Record<string, unknown> | null
   unitPriceAmount: string | null
   unitPriceCurrency: CurrencyCode | null
+  requestImageKeys: string[]
+  requestImageUrls: string[]
 }
 
 export interface OrderStatusLogEntry {
@@ -101,6 +103,7 @@ export interface CreateOrderInput {
     attributes?: Record<string, unknown>
     unitPriceAmount?: string
     unitPriceCurrency?: CurrencyCode
+    tempImageKeys?: string[]
   }>
 }
 

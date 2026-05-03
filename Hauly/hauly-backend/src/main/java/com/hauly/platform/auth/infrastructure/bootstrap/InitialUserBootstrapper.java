@@ -44,10 +44,16 @@ public class InitialUserBootstrapper implements CommandLineRunner {
 
         log.info("Bootstrap enabled — creating initial users...");
 
+        String adminEmail     = requireEnv("HAULY_BOOTSTRAP_ADMIN_EMAIL");
+        String adminPassword  = requireEnv("HAULY_BOOTSTRAP_ADMIN_PASSWORD");
         String intakeEmail    = requireEnv("HAULY_BOOTSTRAP_INTAKE_EMAIL");
         String intakePassword = requireEnv("HAULY_BOOTSTRAP_INTAKE_PASSWORD");
         String buyerEmail     = requireEnv("HAULY_BOOTSTRAP_BUYER_EMAIL");
         String buyerPassword  = requireEnv("HAULY_BOOTSTRAP_BUYER_PASSWORD");
+
+        AppUser adminUser = authService.bootstrapUser(
+                new BootstrapUserCommand(adminEmail, adminPassword, Role.ADMIN, "Admin User"));
+        log.info("Created user: email={}, role={}", adminUser.getEmailValue(), adminUser.getRole());
 
         AppUser intakeUser = authService.bootstrapUser(
                 new BootstrapUserCommand(intakeEmail, intakePassword, Role.INTAKE, "Intake User"));

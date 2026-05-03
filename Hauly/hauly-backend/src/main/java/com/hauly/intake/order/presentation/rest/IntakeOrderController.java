@@ -48,7 +48,8 @@ public class IntakeOrderController {
                 .map(i -> new CreateOrderCommand.Item(
                         i.productName(), i.productUrl(), i.quantity(),
                         i.categoryId(), i.attributes(),
-                        i.unitPriceAmount(), i.unitPriceCurrency()))
+                        i.unitPriceAmount(), i.unitPriceCurrency(),
+                        i.tempImageKeys()))
                 .toList();
 
         OrderDetailView detail = intakeOrderService.createOrder(new CreateOrderCommand(

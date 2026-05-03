@@ -25,6 +25,7 @@ public record CreateOrderCommand(
             Long categoryId,
             Map<String, Object> attributes,
             BigDecimal unitPriceAmount,
-            String unitPriceCurrency
+            String unitPriceCurrency,
+            List<String> tempImageKeys
     ) {}
 }

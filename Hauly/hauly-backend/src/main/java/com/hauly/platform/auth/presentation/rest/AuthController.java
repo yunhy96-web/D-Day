@@ -1,9 +1,11 @@
 package com.hauly.platform.auth.presentation.rest;
 
 import com.hauly.platform.auth.application.AuthService;
+import com.hauly.platform.auth.application.command.ChangePasswordCommand;
 import com.hauly.platform.auth.application.command.LoginCommand;
 import com.hauly.platform.auth.application.command.RefreshCommand;
 import com.hauly.platform.auth.application.query.CurrentUserView;
+import com.hauly.platform.auth.presentation.dto.ChangePasswordRequest;
 import com.hauly.platform.auth.presentation.dto.LoginRequest;
 import com.hauly.platform.auth.presentation.dto.LoginResponse;
 import com.hauly.platform.auth.presentation.dto.MeResponse;
@@ -31,6 +33,8 @@ public class AuthController {
 
     private static final String ACCESS_COOKIE  = "hauly_at";
     private static final String REFRESH_COOKIE = "hauly_rt";
+    private static final String ACCESS_COOKIE_PATH  = "/";
+    private static final String REFRESH_COOKIE_PATH = "/api/auth/refresh";
 
     // Access token TTL in seconds (30 min)
     private static final int ACCESS_COOKIE_MAX_AGE  = 30 * 60;
@@ -93,11 +97,24 @@ public class AuthController {
 
     /**
      * POST /api/auth/logout — clears cookies.
+     * Each cookie must be cleared with the SAME path it was set with — browsers key
+     * cookies by (name, domain, path), so a delete cookie at a different path is a no-op.
      */
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletResponse response) {
-        clearCookie(response, ACCESS_COOKIE);
-        clearCookie(response, REFRESH_COOKIE);
+        clearCookie(response, ACCESS_COOKIE, ACCESS_COOKIE_PATH);
+        clearCookie(response, REFRESH_COOKIE, REFRESH_COOKIE_PATH);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * POST /api/auth/password — change password for the authenticated user.
+     */
+    @PostMapping("/password")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request,
+                                                @AuthenticationPrincipal Long userId) {
+        authService.changePassword(new ChangePasswordCommand(
+                userId, request.currentPassword(), request.newPassword()));
         return ResponseEntity.noContent().build();
     }
 
@@ -125,7 +142,7 @@ public class AuthController {
         Cookie cookie = new Cookie(ACCESS_COOKIE, token);
         cookie.setHttpOnly(true);
         cookie.setSecure(cookieSecure);
-        cookie.setPath("/");
+        cookie.setPath(ACCESS_COOKIE_PATH);
         cookie.setMaxAge(ACCESS_COOKIE_MAX_AGE);
         cookie.setAttribute("SameSite", "Lax");
         response.addCookie(cookie);
@@ -135,17 +152,19 @@ public class AuthController {
         Cookie cookie = new Cookie(REFRESH_COOKIE, token);
         cookie.setHttpOnly(true);
         cookie.setSecure(cookieSecure);
-        cookie.setPath("/api/auth/refresh");
+        cookie.setPath(REFRESH_COOKIE_PATH);
         cookie.setMaxAge(REFRESH_COOKIE_MAX_AGE);
         cookie.setAttribute("SameSite", "Lax");
         response.addCookie(cookie);
     }
 
-    private void clearCookie(HttpServletResponse response, String name) {
+    private void clearCookie(HttpServletResponse response, String name, String path) {
         Cookie cookie = new Cookie(name, "");
         cookie.setHttpOnly(true);
-        cookie.setPath("/");
+        cookie.setSecure(cookieSecure);
+        cookie.setPath(path);
         cookie.setMaxAge(0);
+        cookie.setAttribute("SameSite", "Lax");
         response.addCookie(cookie);
     }
 }

@@ -34,6 +34,7 @@ public record CreateOrderRequest(
             @Digits(integer = 10, fraction = 2)
                                        BigDecimal unitPriceAmount,
             @Pattern(regexp = "^(KRW|THB|USD)?$")
-                                       String unitPriceCurrency
+                                       String unitPriceCurrency,
+            @Size(max = 5)             List<String> tempImageKeys
     ) {}
 }
