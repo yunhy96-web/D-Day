@@ -35,7 +35,13 @@ export function ImageGallery({ urls }: Props) {
             className="w-20 h-20 rounded-md border overflow-hidden bg-muted hover:opacity-80"
             aria-label={t('image.aria.zoom', { n: i + 1 })}
           >
-            <img src={url} alt="" className="w-full h-full object-cover" />
+            <img
+              src={url}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover"
+            />
           </button>
         ))}
       </div>

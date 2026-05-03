@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Search } from 'lucide-react'
@@ -33,10 +33,14 @@ export default function OrderListPage() {
   const [sort, setSort] = useState<OrderSortOption>('createdAt-desc')
   const debouncedQuery = useDebounced(query, 300)
 
-  const { data, isLoading, isError, refetch, isFetching } = useOrders({
-    q: debouncedQuery || undefined,
-    sort,
-  })
+  // Memoize so the query key stays referentially stable across re-renders —
+  // otherwise a parent re-render storm (e.g. from a browser extension mutating
+  // the DOM) creates a fresh QueryObserver each time.
+  const queryParams = useMemo(
+    () => ({ q: debouncedQuery || undefined, sort }),
+    [debouncedQuery, sort],
+  )
+  const { data, isLoading, isError, refetch, isFetching } = useOrders(queryParams)
   const { data: fulfillmentLabels } = useFulfillmentLabels()
   const { data: paymentLabels } = usePaymentLabels()
 

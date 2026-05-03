@@ -25,6 +25,9 @@ server:
   port: 8090                          # checkstock 가 8091 사용 → 충돌 회피
 
 hauly:
+  bootstrap:
+    # 로컬은 /opt/hauly/secrets/ 에 쓰기 권한이 없으니 홈 디렉토리로 떨굼
+    passwords-file: ${user.home}/.hauly-bootstrap-passwords.txt
   s3:
     bucket: hauly-local-dev           # 로컬은 LocalStack 또는 실 dev 버킷
     region: ap-northeast-2
