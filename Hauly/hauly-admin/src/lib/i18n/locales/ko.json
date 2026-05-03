@@ -1,0 +1,119 @@
+{
+  "btn": {
+    "login": "로그인",
+    "logging_in": "로그인 중...",
+    "logout": "로그아웃",
+    "cancel": "취소",
+    "save": "저장",
+    "saving": "저장 중...",
+    "reload": "새로고침"
+  },
+  "field": {
+    "email": {
+      "label": "이메일",
+      "placeholder": "example@hauly.local"
+    },
+    "password": {
+      "label": "비밀번호",
+      "placeholder": "비밀번호를 입력하세요"
+    },
+    "role": {
+      "label": "역할"
+    },
+    "name": {
+      "label": "이름"
+    },
+    "customer_name": { "label": "고객명" },
+    "line_id": { "label": "LINE ID" },
+    "phone": { "label": "전화번호" },
+    "product_name": { "label": "상품명" },
+    "product_url": { "label": "상품 URL" },
+    "quantity": { "label": "수량" },
+    "category": { "label": "카테고리" },
+    "customer_memo": { "label": "고객 메모" },
+    "internal_memo": { "label": "내부 메모" }
+  },
+  "menu": {
+    "dashboard": "대시보드",
+    "orders": "주문 목록",
+    "orders_new": "주문 등록",
+    "customers": "고객 관리"
+  },
+  "msg": {
+    "loading": "불러오는 중...",
+    "error": {
+      "required": "필수 입력 항목입니다.",
+      "invalid_email": "올바른 이메일 형식이 아닙니다.",
+      "password_too_short": "비밀번호는 최소 12자 이상이어야 합니다.",
+      "at_least_one_item": "최소 1개 이상의 상품을 등록해주세요.",
+      "AUTHENTICATION_ERROR": "이메일 또는 비밀번호가 올바르지 않습니다.",
+      "INVALID_STATUS_TRANSITION": "현재 상태에서 변경할 수 없습니다.",
+      "network": "네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+      "unexpected": "예상치 못한 오류가 발생했습니다."
+    },
+    "not_found": "페이지를 찾을 수 없습니다"
+  },
+  "auth": {
+    "login": {
+      "title": "Hauly Admin",
+      "subtitle": "계정에 로그인하세요"
+    },
+    "dashboard": {
+      "welcome": "환영합니다"
+    }
+  },
+  "order": {
+    "list": {
+      "title": "주문 목록",
+      "empty": "등록된 주문이 없습니다."
+    },
+    "create": {
+      "title": "주문 등록",
+      "customer": "고객 정보",
+      "items": "상품 항목",
+      "memo": "메모",
+      "add_item": "상품 추가",
+      "matching_hint": "LINE ID 또는 전화번호로 기존 고객이 자동 매칭됩니다."
+    },
+    "detail": {
+      "customer": "고객 정보",
+      "items": "주문 상품",
+      "memo": "메모",
+      "history": "상태 이력",
+      "note_placeholder": "변경 사유 (선택)",
+      "terminal": "최종 상태입니다."
+    },
+    "col": {
+      "no": "주문번호",
+      "customer": "고객",
+      "items": "상품 수",
+      "fulfillment": "처리 상태",
+      "payment": "결제 상태",
+      "created_at": "등록일시"
+    },
+    "fulfillment": {
+      "DRAFT": "작성 중",
+      "REQUESTED": "의뢰 확정",
+      "ACKNOWLEDGED": "확인 완료",
+      "PURCHASING": "구매 진행 중",
+      "PURCHASED": "구매 완료",
+      "SHIPPED_TO_AGENT": "배대지 발송",
+      "COMPLETED": "완료",
+      "OUT_OF_STOCK": "품절",
+      "CANCELLED": "취소",
+      "REJECTED": "거절"
+    },
+    "payment": {
+      "NOT_REQUIRED": "해당없음",
+      "PENDING": "결제 대기",
+      "SUBMITTED": "영수증 제출됨",
+      "CONFIRMED": "입금 확인됨",
+      "REJECTED": "영수증 거절"
+    }
+  },
+  "lang": {
+    "ko": "한국어",
+    "en": "English",
+    "th": "ภาษาไทย"
+  }
+}

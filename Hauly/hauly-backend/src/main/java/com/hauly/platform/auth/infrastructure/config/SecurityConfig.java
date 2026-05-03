@@ -39,9 +39,14 @@ public class SecurityConfig {
 
     public SecurityConfig(
             JwtTokenProvider jwtTokenProvider,
-            @Value("${hauly.security.cors.allowed-origins}") List<String> allowedOrigins) {
+            // SpEL split — @Value + List<String> doesn't bind YAML lists reliably,
+            // so we use a comma-separated string and split it here.
+            @Value("#{'${hauly.security.cors.allowed-origins:}'.split(',')}") List<String> allowedOrigins) {
         this.jwtTokenProvider = jwtTokenProvider;
-        this.allowedOrigins = allowedOrigins;
+        this.allowedOrigins = allowedOrigins.stream()
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
     }
 
     @Bean
@@ -58,6 +63,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/login",
                     "/api/auth/refresh",
+                    "/api/i18n/messages",
                     "/actuator/health",
                     "/error"
                 ).permitAll()

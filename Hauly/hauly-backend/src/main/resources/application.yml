@@ -21,4 +21,4 @@ management:
 hauly:
   security:
     cors:
-      allowed-origins: []   # override in profile-specific yml (local/prod)
+      allowed-origins: ""   # comma-separated; override in profile-specific yml (local/prod)

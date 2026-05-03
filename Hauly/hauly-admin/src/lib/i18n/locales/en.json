@@ -1,0 +1,97 @@
+{
+  "btn": {
+    "login": "Log In",
+    "logging_in": "Signing in...",
+    "logout": "Log Out",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "reload": "Reload"
+  },
+  "field": {
+    "email": { "label": "Email", "placeholder": "example@hauly.local" },
+    "password": { "label": "Password", "placeholder": "Enter your password" },
+    "role": { "label": "Role" },
+    "name": { "label": "Name" },
+    "customer_name": { "label": "Customer Name" },
+    "line_id": { "label": "LINE ID" },
+    "phone": { "label": "Phone" },
+    "product_name": { "label": "Product Name" },
+    "product_url": { "label": "Product URL" },
+    "quantity": { "label": "Quantity" },
+    "category": { "label": "Category" },
+    "customer_memo": { "label": "Customer Memo" },
+    "internal_memo": { "label": "Internal Memo" }
+  },
+  "menu": {
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "orders_new": "New Order",
+    "customers": "Customers"
+  },
+  "msg": {
+    "loading": "Loading...",
+    "error": {
+      "required": "This field is required.",
+      "invalid_email": "Please enter a valid email address.",
+      "password_too_short": "Password must be at least 12 characters.",
+      "at_least_one_item": "Please add at least one item.",
+      "AUTHENTICATION_ERROR": "Incorrect email or password.",
+      "INVALID_STATUS_TRANSITION": "Status change is not allowed from the current state.",
+      "network": "A network error occurred. Please try again later.",
+      "unexpected": "An unexpected error occurred."
+    },
+    "not_found": "Page not found"
+  },
+  "auth": {
+    "login": { "title": "Hauly Admin", "subtitle": "Sign in to your account" },
+    "dashboard": { "welcome": "Welcome" }
+  },
+  "order": {
+    "list": { "title": "Orders", "empty": "No orders yet." },
+    "create": {
+      "title": "New Order",
+      "customer": "Customer",
+      "items": "Items",
+      "memo": "Memo",
+      "add_item": "Add Item",
+      "matching_hint": "Existing customers are auto-matched by LINE ID or phone."
+    },
+    "detail": {
+      "customer": "Customer",
+      "items": "Items",
+      "memo": "Memo",
+      "history": "History",
+      "note_placeholder": "Reason for change (optional)",
+      "terminal": "Terminal state."
+    },
+    "col": {
+      "no": "No.",
+      "customer": "Customer",
+      "items": "Items",
+      "fulfillment": "Fulfillment",
+      "payment": "Payment",
+      "created_at": "Created"
+    },
+    "fulfillment": {
+      "DRAFT": "Draft",
+      "REQUESTED": "Requested",
+      "ACKNOWLEDGED": "Acknowledged",
+      "PURCHASING": "Purchasing",
+      "PURCHASED": "Purchased",
+      "SHIPPED_TO_AGENT": "Shipped to Agent",
+      "COMPLETED": "Completed",
+      "OUT_OF_STOCK": "Out of Stock",
+      "CANCELLED": "Cancelled",
+      "REJECTED": "Rejected"
+    },
+    "payment": {
+      "NOT_REQUIRED": "Not Required",
+      "PENDING": "Pending",
+      "SUBMITTED": "Submitted",
+      "CONFIRMED": "Confirmed",
+      "REJECTED": "Rejected"
+    }
+  },
+  "lang": { "ko": "한국어", "en": "English", "th": "ภาษาไทย" }
+}

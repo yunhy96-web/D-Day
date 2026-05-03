@@ -47,6 +47,14 @@ public class GlobalExceptionHandler {
                 .body(new ErrorEnvelope(new ErrorBody("ACCESS_DENIED", "Access denied", null)));
     }
 
+    /** 409 — System-protected resource modification attempt */
+    @ExceptionHandler(SystemProtectedException.class)
+    public ResponseEntity<ErrorEnvelope> handleSystemProtected(SystemProtectedException ex) {
+        log.warn("System-protected resource modification attempt: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorEnvelope(new ErrorBody("SYSTEM_PROTECTED", ex.getMessage(), null)));
+    }
+
     /** 400 — Domain / Hauly-specific exceptions */
     @ExceptionHandler(HaulyException.class)
     public ResponseEntity<ErrorEnvelope> handleHauly(HaulyException ex) {

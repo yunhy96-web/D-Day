@@ -1,0 +1,97 @@
+{
+  "btn": {
+    "login": "เข้าสู่ระบบ",
+    "logging_in": "กำลังเข้าสู่ระบบ...",
+    "logout": "ออกจากระบบ",
+    "cancel": "ยกเลิก",
+    "save": "บันทึก",
+    "saving": "กำลังบันทึก...",
+    "reload": "โหลดใหม่"
+  },
+  "field": {
+    "email": { "label": "อีเมล", "placeholder": "example@hauly.local" },
+    "password": { "label": "รหัสผ่าน", "placeholder": "กรอกรหัสผ่านของคุณ" },
+    "role": { "label": "บทบาท" },
+    "name": { "label": "ชื่อ" },
+    "customer_name": { "label": "ชื่อลูกค้า" },
+    "line_id": { "label": "LINE ID" },
+    "phone": { "label": "เบอร์โทร" },
+    "product_name": { "label": "ชื่อสินค้า" },
+    "product_url": { "label": "URL สินค้า" },
+    "quantity": { "label": "จำนวน" },
+    "category": { "label": "หมวดหมู่" },
+    "customer_memo": { "label": "บันทึกลูกค้า" },
+    "internal_memo": { "label": "บันทึกภายใน" }
+  },
+  "menu": {
+    "dashboard": "แดชบอร์ด",
+    "orders": "รายการคำสั่งซื้อ",
+    "orders_new": "เพิ่มคำสั่งซื้อ",
+    "customers": "จัดการลูกค้า"
+  },
+  "msg": {
+    "loading": "กำลังโหลด...",
+    "error": {
+      "required": "กรุณากรอกข้อมูลนี้",
+      "invalid_email": "รูปแบบอีเมลไม่ถูกต้อง",
+      "password_too_short": "รหัสผ่านต้องมีอย่างน้อย 12 ตัวอักษร",
+      "at_least_one_item": "กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ",
+      "AUTHENTICATION_ERROR": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+      "INVALID_STATUS_TRANSITION": "ไม่สามารถเปลี่ยนสถานะจากสถานะปัจจุบันได้",
+      "network": "เกิดข้อผิดพลาดเครือข่าย กรุณาลองใหม่อีกครั้ง",
+      "unexpected": "เกิดข้อผิดพลาดที่ไม่คาดคิด"
+    },
+    "not_found": "ไม่พบหน้าที่ต้องการ"
+  },
+  "auth": {
+    "login": { "title": "Hauly Admin", "subtitle": "เข้าสู่ระบบบัญชีของคุณ" },
+    "dashboard": { "welcome": "ยินดีต้อนรับ" }
+  },
+  "order": {
+    "list": { "title": "รายการคำสั่งซื้อ", "empty": "ยังไม่มีคำสั่งซื้อ" },
+    "create": {
+      "title": "เพิ่มคำสั่งซื้อ",
+      "customer": "ข้อมูลลูกค้า",
+      "items": "สินค้า",
+      "memo": "บันทึก",
+      "add_item": "เพิ่มสินค้า",
+      "matching_hint": "ลูกค้าเดิมจะจับคู่อัตโนมัติด้วย LINE ID หรือเบอร์โทร"
+    },
+    "detail": {
+      "customer": "ลูกค้า",
+      "items": "สินค้า",
+      "memo": "บันทึก",
+      "history": "ประวัติ",
+      "note_placeholder": "เหตุผลในการเปลี่ยน (ไม่บังคับ)",
+      "terminal": "สถานะสุดท้าย"
+    },
+    "col": {
+      "no": "เลขที่",
+      "customer": "ลูกค้า",
+      "items": "จำนวนสินค้า",
+      "fulfillment": "สถานะดำเนินการ",
+      "payment": "สถานะชำระเงิน",
+      "created_at": "วันที่สร้าง"
+    },
+    "fulfillment": {
+      "DRAFT": "ร่าง",
+      "REQUESTED": "ส่งคำสั่ง",
+      "ACKNOWLEDGED": "รับทราบแล้ว",
+      "PURCHASING": "กำลังซื้อ",
+      "PURCHASED": "ซื้อแล้ว",
+      "SHIPPED_TO_AGENT": "จัดส่งแล้ว",
+      "COMPLETED": "เสร็จสิ้น",
+      "OUT_OF_STOCK": "สินค้าหมด",
+      "CANCELLED": "ยกเลิก",
+      "REJECTED": "ถูกปฏิเสธ"
+    },
+    "payment": {
+      "NOT_REQUIRED": "ไม่ต้องชำระ",
+      "PENDING": "รอชำระ",
+      "SUBMITTED": "ส่งหลักฐาน",
+      "CONFIRMED": "ยืนยันแล้ว",
+      "REJECTED": "ถูกปฏิเสธ"
+    }
+  },
+  "lang": { "ko": "한국어", "en": "English", "th": "ภาษาไทย" }
+}

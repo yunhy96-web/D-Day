@@ -34,8 +34,6 @@ hauly:
     refresh-ttl-day: 14
   security:
     cors:
-      allowed-origins:
-        - "http://localhost:5173"     # Vite dev server
-        - "http://localhost:3000"     # alternate local frontend
+      allowed-origins: "http://localhost:5173,http://localhost:3000"  # Vite dev server, alternate local frontend
     cookie:
       secure: false

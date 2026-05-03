@@ -1,0 +1,9 @@
+package com.hauly.intake.order.application.command;
+
+import com.hauly.intake.order.domain.model.FulfillmentStatus;
+
+public record ChangeFulfillmentStatusCommand(
+        Long orderId,
+        FulfillmentStatus target,
+        String note
+) {}
