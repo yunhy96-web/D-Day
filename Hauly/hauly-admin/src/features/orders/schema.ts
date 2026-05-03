@@ -35,15 +35,40 @@ export const orderItemSchema = z
     }
   })
 
-export const createOrderSchema = z.object({
-  customerName: z.string().trim().min(1, 'msg.error.required').max(64),
-  customerLineId: z.string().trim().max(64).optional().or(z.literal('')),
-  customerPhone: z.string().trim().max(32).optional().or(z.literal('')),
-  customerMemo: z.string().max(2000).optional().or(z.literal('')),
-  internalMemo: z.string().max(2000).optional().or(z.literal('')),
-  koreanTrackingNo: z.string().trim().max(64).optional().or(z.literal('')),
-  koreanCourier: z.string().trim().max(32).optional().or(z.literal('')),
-  items: z.array(orderItemSchema).min(1, 'msg.error.at_least_one_item'),
-})
+export const ORDER_TYPES = ['INDIVIDUAL', 'SET'] as const
+export type OrderTypeCode = (typeof ORDER_TYPES)[number]
+
+export const createOrderSchema = z
+  .object({
+    customerName: z.string().trim().min(1, 'msg.error.required').max(64),
+    customerLineId: z.string().trim().max(64).optional().or(z.literal('')),
+    customerPhone: z.string().trim().max(32).optional().or(z.literal('')),
+    orderType: z.enum(ORDER_TYPES).default('INDIVIDUAL'),
+    customerMemo: z.string().max(2000).optional().or(z.literal('')),
+    internalMemo: z.string().max(2000).optional().or(z.literal('')),
+    koreanTrackingNo: z.string().trim().max(64).optional().or(z.literal('')),
+    koreanCourier: z.string().trim().max(32).optional().or(z.literal('')),
+    recipientName: z.string().trim().max(64).optional().or(z.literal('')),
+    recipientPhone: z.string().trim().max(32).optional().or(z.literal('')),
+    postalCode: z.string().trim().max(16).optional().or(z.literal('')),
+    addressLine: z.string().trim().max(1000).optional().or(z.literal('')),
+    country: z.string().trim().max(2).optional().or(z.literal('')),
+    items: z.array(orderItemSchema).min(1, 'msg.error.at_least_one_item'),
+  })
+  .superRefine((value, ctx) => {
+    // SET orders ship as one bundle, so all items must share a category.
+    // Skipped for single-item sets — nothing to compare.
+    if (value.orderType !== 'SET' || value.items.length <= 1) return
+    const first = value.items[0]?.categoryId
+    value.items.forEach((it, idx) => {
+      if (it.categoryId !== first) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['items', idx, 'categoryId'],
+          message: 'msg.error.set_category_mismatch',
+        })
+      }
+    })
+  })
 
 export type CreateOrderFormValues = z.infer<typeof createOrderSchema>

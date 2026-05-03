@@ -21,8 +21,8 @@ export default function DashboardPage() {
   const { data: fulfillmentLabels } = useFulfillmentLabels()
 
   return (
-    <div className="container mx-auto py-8 px-4 space-y-4">
-      <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
+    <div className="container mx-auto py-6 md:py-8 px-4 space-y-4">
+      <h1 className="text-xl md:text-2xl font-bold">{t('dashboard.title')}</h1>
 
       {isLoading && (
         <p className="text-sm text-muted-foreground">{t('msg.loading')}</p>

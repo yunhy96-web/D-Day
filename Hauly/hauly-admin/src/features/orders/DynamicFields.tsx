@@ -1,8 +1,9 @@
-import type { UseFormRegister } from 'react-hook-form'
+import type { Control, UseFormRegister } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import type { FieldDefinition } from '@/lib/api/categories'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NumberInput } from '@/components/ui/NumberInput'
 import { Select } from '@/components/ui/select'
 import { useCommonCodeGroup } from './commonCodeHooks'
 
@@ -11,11 +12,13 @@ interface Props {
   fields: FieldDefinition[]
   /** RHF register from the parent form. */
   register: UseFormRegister<any>
+  /** RHF control — required for decimal fields (NumberInput uses Controller). */
+  control: Control<any>
   /** Path prefix in the form, e.g. "items.0.attributes" — keys append to this. */
   pathPrefix: string
 }
 
-export function DynamicFields({ fields, register, pathPrefix }: Props) {
+export function DynamicFields({ fields, register, control, pathPrefix }: Props) {
   if (!fields || fields.length === 0) return null
   return (
     <div className="space-y-3 border-t pt-3">
@@ -24,6 +27,7 @@ export function DynamicFields({ fields, register, pathPrefix }: Props) {
           key={field.key}
           field={field}
           register={register}
+          control={control}
           path={`${pathPrefix}.${field.key}`}
         />
       ))}
@@ -34,10 +38,12 @@ export function DynamicFields({ fields, register, pathPrefix }: Props) {
 function FieldRenderer({
   field,
   register,
+  control,
   path,
 }: {
   field: FieldDefinition
   register: UseFormRegister<any>
+  control: Control<any>
   path: string
 }) {
   const { t } = useTranslation()
@@ -47,12 +53,13 @@ function FieldRenderer({
     return (
       <div className="space-y-2">
         <div className="text-sm font-medium">{label}</div>
-        <div className="grid grid-cols-3 gap-2 pl-3 border-l-2 border-muted">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pl-3 border-l-2 border-muted">
           {field.fields.map((sub) => (
             <FieldRenderer
               key={sub.key}
               field={sub}
               register={register}
+              control={control}
               path={`${path}.${sub.key}`}
             />
           ))}
@@ -66,17 +73,18 @@ function FieldRenderer({
   }
 
   if (field.type === 'decimal') {
+    // step >= 1 → integer-only input; otherwise allow up to 2 decimals.
+    const decimals = field.step != null && field.step >= 1 ? 0 : 2
     return (
       <div className="space-y-1">
         <Label>{label}{field.required && '*'}</Label>
-        <Input
-          type="number"
-          step={field.step ?? 0.01}
+        <NumberInput
+          name={path}
+          control={control}
+          decimals={decimals}
           min={field.min ?? undefined}
           max={field.max ?? undefined}
-          {...register(path, {
-            setValueAs: (v) => (v === '' || v == null ? undefined : Number(v)),
-          })}
+          valueType="number"
         />
       </div>
     )

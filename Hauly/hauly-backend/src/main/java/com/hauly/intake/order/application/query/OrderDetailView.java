@@ -4,6 +4,7 @@ import com.hauly.intake.order.domain.model.FulfillmentStatus;
 import com.hauly.intake.order.domain.model.Order;
 import com.hauly.intake.order.domain.model.OrderItem;
 import com.hauly.intake.order.domain.model.OrderStatusLog;
+import com.hauly.intake.order.domain.model.OrderType;
 import com.hauly.intake.order.domain.model.PaymentStatus;
 import com.hauly.intake.order.domain.model.StatusDimension;
 import com.hauly.platform.storage.domain.BlobStorage;
@@ -29,6 +30,7 @@ public record OrderDetailView(
         String customerName,
         String customerLineId,
         String customerPhone,
+        OrderType orderType,
         FulfillmentStatus fulfillmentStatus,
         PaymentStatus paymentStatus,
         Set<FulfillmentStatus> allowedFulfillmentNext,
@@ -37,6 +39,11 @@ public record OrderDetailView(
         String internalMemo,
         String koreanTrackingNo,
         String koreanCourier,
+        String recipientName,
+        String recipientPhone,
+        String postalCode,
+        String addressLine,
+        String country,
         List<Item> items,
         List<StatusLog> history,
         OffsetDateTime createdAt,
@@ -97,6 +104,7 @@ public record OrderDetailView(
                 customerName,
                 customerLineId,
                 customerPhone,
+                order.getOrderType(),
                 order.getFulfillmentStatus(),
                 order.getPaymentStatus(),
                 order.getFulfillmentStatus().allowedNext(),
@@ -105,6 +113,11 @@ public record OrderDetailView(
                 order.getInternalMemo(),
                 order.getKoreanTrackingNo(),
                 order.getKoreanCourier(),
+                order.getRecipientName(),
+                order.getRecipientPhone(),
+                order.getPostalCode(),
+                order.getAddressLine(),
+                order.getCountry(),
                 order.getItems().stream().map(i -> Item.from(i, storage)).toList(),
                 history.stream().map(StatusLog::from).toList(),
                 order.getCreatedAt(),

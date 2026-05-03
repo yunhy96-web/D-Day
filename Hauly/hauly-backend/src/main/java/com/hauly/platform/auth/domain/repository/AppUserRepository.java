@@ -1,8 +1,9 @@
 package com.hauly.platform.auth.domain.repository;
 
 import com.hauly.platform.auth.domain.model.AppUser;
-import com.hauly.platform.auth.domain.model.Email;
+import com.hauly.platform.auth.domain.model.Username;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -12,9 +13,12 @@ import java.util.Optional;
  */
 public interface AppUserRepository {
 
-    Optional<AppUser> findByEmail(Email email);
+    Optional<AppUser> findByUsername(Username username);
 
     Optional<AppUser> findById(Long id);
+
+    /** Batch lookup — returns rows in arbitrary order; missing ids are simply absent. */
+    List<AppUser> findAllById(Iterable<Long> ids);
 
     AppUser save(AppUser user);
 

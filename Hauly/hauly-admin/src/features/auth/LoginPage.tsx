@@ -37,7 +37,7 @@ export default function LoginPage() {
 
   function onSubmit(values: LoginFormValues) {
     loginMutation.mutate(
-      { email: values.email, password: values.password },
+      { username: values.username, password: values.password },
       { onSuccess: () => navigate(redirectTo, { replace: true }) }
     )
   }
@@ -74,16 +74,18 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">{t('field.email.label')}</Label>
+              <Label htmlFor="username">{t('field.username.label')}</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder={t('field.email.placeholder')}
-                autoComplete="email"
-                {...register('email')}
+                id="username"
+                type="text"
+                placeholder={t('field.username.placeholder')}
+                autoComplete="username"
+                autoCapitalize="off"
+                spellCheck={false}
+                {...register('username')}
               />
-              {errors.email && (
-                <p className="text-sm text-destructive">{t(errors.email.message ?? '')}</p>
+              {errors.username && (
+                <p className="text-sm text-destructive">{t(errors.username.message ?? '')}</p>
               )}
             </div>
 

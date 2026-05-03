@@ -7,6 +7,7 @@ import com.hauly.intake.order.application.query.OrderDetailView;
 import com.hauly.intake.order.application.query.OrderListItemView;
 import com.hauly.intake.order.domain.model.FulfillmentStatus;
 import com.hauly.intake.order.domain.model.Order;
+import com.hauly.intake.order.domain.model.OrderType;
 import com.hauly.intake.order.domain.model.OrderStatusLog;
 import com.hauly.intake.order.domain.model.OrderItem;
 import com.hauly.intake.order.domain.repository.OrderRepository;
@@ -56,6 +57,19 @@ public class IntakeOrderService {
             throw new IllegalArgumentException("At least one item is required");
         }
 
+        // SET orders bundle items that ship together (e.g. 2+1 promo) — all items
+        // must therefore share the same categoryId. INDIVIDUAL orders have no such constraint.
+        OrderType orderType = cmd.orderType() == null ? OrderType.INDIVIDUAL : cmd.orderType();
+        if (orderType == OrderType.SET && cmd.items().size() > 1) {
+            Long firstCategory = cmd.items().get(0).categoryId();
+            for (CreateOrderCommand.Item item : cmd.items()) {
+                if (item.categoryId() == null || !item.categoryId().equals(firstCategory)) {
+                    throw new IllegalArgumentException(
+                            "set_items_must_share_category: all items in a SET order must use the same category");
+                }
+            }
+        }
+
         // Validate that any temp image keys belong to the caller — prevents one user from
         // attaching another user's uploads. Keys are namespaced as `temp/{userId}/...`.
         String tempPrefix = "temp/" + createdBy + "/";
@@ -73,11 +87,19 @@ public class IntakeOrderService {
 
         Order order = Order.createIntake(
                 customer.getId(),
+                orderType,
                 cmd.customerMemo(),
                 cmd.internalMemo(),
                 cmd.koreanTrackingNo(),
                 cmd.koreanCourier(),
                 createdBy);
+
+        order.setShippingAddress(
+                cmd.recipientName(),
+                cmd.recipientPhone(),
+                cmd.postalCode(),
+                cmd.addressLine(),
+                cmd.country());
 
         for (CreateOrderCommand.Item item : cmd.items()) {
             order.addItem(item.productName(), item.productUrl(), item.quantity(),

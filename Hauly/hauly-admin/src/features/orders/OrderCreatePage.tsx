@@ -18,12 +18,14 @@ import { useCategories } from './categoryHooks'
 import { useCommonCodeGroup } from './commonCodeHooks'
 import { DynamicFields } from './DynamicFields'
 import { ImageUploader, type UploadedImage } from './ImageUploader'
+import { NumberInput } from '@/components/ui/NumberInput'
 import { createOrderSchema, type CreateOrderFormValues, type CurrencyCode } from './schema'
 import type { CategoryView } from '@/lib/api/categories'
 import { ApiError } from '@/lib/api/types'
+import { COUNTRY_CODES, countryDisplayName } from './countries'
 
 export default function OrderCreatePage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const mutation = useCreateOrder()
   const { data: categories } = useCategories()
@@ -46,10 +48,16 @@ export default function OrderCreatePage() {
       customerName: '',
       customerLineId: '',
       customerPhone: '',
+      orderType: 'INDIVIDUAL',
       customerMemo: '',
       internalMemo: '',
       koreanTrackingNo: '',
       koreanCourier: '',
+      recipientName: '',
+      recipientPhone: '',
+      postalCode: '',
+      addressLine: '',
+      country: 'TH',
       items: [{
         categoryId: 0,
         productName: '',
@@ -61,6 +69,10 @@ export default function OrderCreatePage() {
       }],
     },
   })
+
+  const orderType = useWatch({ control, name: 'orderType' })
+  const isSet = orderType === 'SET'
+  const firstItemCategory = useWatch({ control, name: 'items.0.categoryId' })
 
   // Once categories load, fold the default category id into the (still-empty) form
   // so the user doesn't have to pick before submitting.
@@ -99,10 +111,16 @@ export default function OrderCreatePage() {
         customerName: values.customerName,
         customerLineId: values.customerLineId || undefined,
         customerPhone: values.customerPhone || undefined,
+        orderType: values.orderType,
         customerMemo: values.customerMemo || undefined,
         internalMemo: values.internalMemo || undefined,
         koreanTrackingNo: values.koreanTrackingNo || undefined,
         koreanCourier: values.koreanCourier || undefined,
+        recipientName: values.recipientName || undefined,
+        recipientPhone: values.recipientPhone || undefined,
+        postalCode: values.postalCode || undefined,
+        addressLine: values.addressLine || undefined,
+        country: values.country || undefined,
         items: values.items.map((i, idx) => {
           const tempImageKeys = (imagesByItemId[fields[idx].id] ?? []).map((img) => img.tempKey)
           return {
@@ -139,8 +157,8 @@ export default function OrderCreatePage() {
   const errorMsg = getErrorMessage()
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-4">
-      <h1 className="text-2xl font-semibold">{t('order.create.title')}</h1>
+    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-4">
+      <h1 className="text-xl md:text-2xl font-semibold">{t('order.create.title')}</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {errorMsg && (
@@ -161,10 +179,17 @@ export default function OrderCreatePage() {
                 <p className="text-xs text-destructive">{t(errors.customerName.message ?? '')}</p>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="customerLineId">{t('field.line_id.label')}</Label>
-                <Input id="customerLineId" {...register('customerLineId')} />
+                <Input
+                  id="customerLineId"
+                  placeholder={t('field.line_id.placeholder')}
+                  {...register('customerLineId')}
+                />
+                {errors.customerLineId && (
+                  <p className="text-xs text-destructive">{t(errors.customerLineId.message ?? '')}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="customerPhone">{t('field.phone.label')}</Label>
@@ -176,15 +201,50 @@ export default function OrderCreatePage() {
         </Card>
 
         <Card>
+          <CardContent className="py-4 space-y-2">
+            <div className="text-sm font-medium">{t('order.create.order_type')}</div>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  value="INDIVIDUAL"
+                  className="cursor-pointer"
+                  {...register('orderType')}
+                />
+                <span className="text-sm">{t('order.type.individual')}</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  value="SET"
+                  className="cursor-pointer"
+                  {...register('orderType')}
+                />
+                <span className="text-sm">{t('order.type.set')}</span>
+              </label>
+            </div>
+            {isSet && (
+              <p className="text-xs text-muted-foreground">
+                {t('order.type.set_help')}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">{t('order.create.items')}</CardTitle>
+            <CardTitle className="text-base">
+              {isSet ? t('order.set_items.title') : t('order.create.items')}
+            </CardTitle>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() =>
                 append({
-                  categoryId: defaultCategoryId,
+                  categoryId: isSet && firstItemCategory
+                    ? firstItemCategory
+                    : defaultCategoryId,
                   productName: '',
                   productUrl: '',
                   quantity: 1,
@@ -213,7 +273,7 @@ export default function OrderCreatePage() {
                     </Button>
                   )}
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1.5">
                     <Label>{t('field.category.label')}*</Label>
                     <Select {...register(`items.${index}.categoryId` as const)}>
@@ -239,27 +299,28 @@ export default function OrderCreatePage() {
                     )}
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="col-span-2 space-y-1.5">
                     <Label>{t('field.product_url.label')}</Label>
                     <Input {...register(`items.${index}.productUrl` as const)} />
                   </div>
                   <div className="space-y-1.5">
                     <Label>{t('field.quantity.label')}*</Label>
-                    <Input
-                      type="number"
+                    <NumberInput
+                      name={`items.${index}.quantity` as const}
+                      control={control}
                       min={1}
-                      {...register(`items.${index}.quantity` as const)}
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="col-span-2 space-y-1.5">
                     <Label>{t('field.unit_price.label')}</Label>
-                    <Input
-                      inputMode="decimal"
+                    <NumberInput
+                      name={`items.${index}.unitPriceAmount` as const}
+                      control={control}
+                      decimals={2}
                       placeholder="0"
-                      {...register(`items.${index}.unitPriceAmount` as const)}
                     />
                     {errors.items?.[index]?.unitPriceAmount && (
                       <p className="text-xs text-destructive">
@@ -291,7 +352,7 @@ export default function OrderCreatePage() {
                   categories={categories}
                 />
                 <div className="space-y-1.5">
-                  <Label>참고 이미지</Label>
+                  <Label>{t('field.images.label')}</Label>
                   <ImageUploader
                     value={imagesByItemId[field.id] ?? []}
                     onChange={(next) =>
@@ -309,10 +370,49 @@ export default function OrderCreatePage() {
 
         <Card>
           <CardHeader>
+            <CardTitle className="text-base">{t('order.create.shipping_address')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="recipientName">{t('field.recipient_name.label')}</Label>
+                <Input id="recipientName" {...register('recipientName')} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="recipientPhone">{t('field.recipient_phone.label')}</Label>
+                <Input id="recipientPhone" {...register('recipientPhone')} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="postalCode">{t('field.postal_code.label')}</Label>
+                <Input id="postalCode" {...register('postalCode')} />
+              </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor="country">{t('field.country.label')}</Label>
+                <Select id="country" {...register('country')}>
+                  <option value="">—</option>
+                  {COUNTRY_CODES.map((code) => (
+                    <option key={code} value={code}>
+                      {countryDisplayName(code, i18n.resolvedLanguage)}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="addressLine">{t('field.address_line.label')}</Label>
+              <Textarea id="addressLine" rows={3} {...register('addressLine')} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle className="text-base">{t('order.create.tracking')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="koreanTrackingNo">{t('field.tracking_no.label')}</Label>
                 <Input id="koreanTrackingNo" {...register('koreanTrackingNo')} />
@@ -383,6 +483,7 @@ function ItemDynamicFields({
     <DynamicFields
       fields={cat.fields}
       register={register as any}
+      control={control as any}
       pathPrefix={`items.${index}.attributes`}
     />
   )

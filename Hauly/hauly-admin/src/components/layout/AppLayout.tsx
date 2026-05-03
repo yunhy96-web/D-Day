@@ -1,17 +1,52 @@
-import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { LayoutDashboard, Package, PlusCircle, KeyRound } from 'lucide-react'
-import { useLogout } from '@/features/auth/hooks'
+import {
+  KeyRound,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Package,
+  PlusCircle,
+  Globe,
+} from 'lucide-react'
+import { useLogout, useMe } from '@/features/auth/hooks'
 import { ChangePasswordModal } from '@/features/auth/ChangePasswordModal'
 import { Button } from '@/components/ui/button'
-import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 
+const LANGUAGES = [
+  { code: 'ko', key: 'lang.ko' },
+  { code: 'en', key: 'lang.en' },
+  { code: 'th', key: 'lang.th' },
+] as const
+
 export default function AppLayout() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const logoutMutation = useLogout()
+  const { data: me } = useMe()
+  const location = useLocation()
   const [pwOpen, setPwOpen] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // Close mobile drawer whenever the route changes (link click) so the user
+  // doesn't land on the new page with the menu still covering it.
+  useEffect(() => {
+    setDrawerOpen(false)
+  }, [location.pathname])
 
   const navItem = (to: string, label: string, Icon: typeof LayoutDashboard) => (
     <NavLink
@@ -22,7 +57,7 @@ export default function AppLayout() {
           'flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors',
           isActive
             ? 'bg-primary text-primary-foreground'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground',
         )
       }
     >
@@ -31,45 +66,112 @@ export default function AppLayout() {
     </NavLink>
   )
 
-  return (
-    <div className="min-h-screen flex">
-      {/* Sidebar */}
-      <aside className="w-60 border-r bg-background flex flex-col">
-        <div className="h-14 border-b flex items-center px-4 font-semibold text-lg">
-          Hauly Admin
-        </div>
-        <nav className="flex-1 p-3 space-y-1">
-          {navItem('/dashboard', t('menu.dashboard'), LayoutDashboard)}
-          {navItem('/orders', t('menu.orders'), Package)}
-          {navItem('/orders/new', t('menu.orders_new'), PlusCircle)}
-        </nav>
-        <div className="p-3 border-t space-y-2">
-          <LanguageSwitcher className="justify-center" />
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => setPwOpen(true)}
-          >
-            <KeyRound className="h-4 w-4 mr-1" />
-            비밀번호 변경
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => logoutMutation.mutate()}
-            disabled={logoutMutation.isPending}
-          >
-            {t('btn.logout')}
-          </Button>
-        </div>
-      </aside>
+  const navContent = (
+    <nav className="flex-1 p-3 space-y-1">
+      {navItem('/dashboard', t('menu.dashboard'), LayoutDashboard)}
+      {navItem('/orders', t('menu.orders'), Package)}
+      {navItem('/orders/new', t('menu.orders_new'), PlusCircle)}
+    </nav>
+  )
 
-      {/* Main content */}
-      <main className="flex-1 bg-muted/20 overflow-auto">
-        <Outlet />
-      </main>
+  const avatarLetter = me?.username?.[0]?.toUpperCase() ?? '?'
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <header className="h-14 border-b bg-background flex items-center px-3 md:px-4 gap-2 sticky top-0 z-30">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          onClick={() => setDrawerOpen(true)}
+          aria-label={t('aria.menu_open')}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+        <div className="font-semibold text-lg">Hauly Admin</div>
+        <div className="flex-1" />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full bg-muted text-sm font-medium"
+              aria-label={t('aria.account_menu')}
+            >
+              {avatarLetter}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            {me?.username && (
+              <>
+                <DropdownMenuLabel className="truncate">
+                  {me.displayName ? `${me.displayName} (${me.username})` : me.username}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Globe className="h-4 w-4 mr-2" />
+                {t('menu.language')}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuRadioGroup
+                  value={i18n.resolvedLanguage}
+                  onValueChange={(v: string) => i18n.changeLanguage(v)}
+                >
+                  {LANGUAGES.map(({ code, key }) => (
+                    <DropdownMenuRadioItem key={code} value={code}>
+                      {t(key)}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            <DropdownMenuItem onSelect={() => setPwOpen(true)}>
+              <KeyRound className="h-4 w-4 mr-2" />
+              {t('menu.password_change')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() => logoutMutation.mutate()}
+              disabled={logoutMutation.isPending}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              {t('btn.logout')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </header>
+
+      <div className="flex-1 flex overflow-hidden">
+        {/* Desktop sidebar — md+ only */}
+        <aside className="hidden md:flex md:w-60 border-r bg-background flex-col">
+          {navContent}
+        </aside>
+
+        {/* Mobile drawer + backdrop — only when open */}
+        {drawerOpen && (
+          <div className="md:hidden fixed inset-0 z-40 flex">
+            <div
+              className="absolute inset-0 bg-black/50"
+              onClick={() => setDrawerOpen(false)}
+              aria-label={t('aria.menu_close')}
+            />
+            <aside className="relative w-64 max-w-[80%] bg-background border-r flex flex-col shadow-xl">
+              <div className="h-14 border-b flex items-center px-4 font-semibold">
+                {t('menu.title')}
+              </div>
+              {navContent}
+            </aside>
+          </div>
+        )}
+
+        <main className="flex-1 bg-muted/20 overflow-auto">
+          <Outlet />
+        </main>
+      </div>
 
       <ChangePasswordModal open={pwOpen} onClose={() => setPwOpen(false)} />
     </div>

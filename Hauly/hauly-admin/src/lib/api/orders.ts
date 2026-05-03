@@ -23,11 +23,14 @@ export type StatusDimension = 'FULFILLMENT' | 'PAYMENT'
 
 export type CurrencyCode = 'KRW' | 'THB' | 'USD'
 
+export type OrderType = 'INDIVIDUAL' | 'SET'
+
 export interface OrderListItem {
   id: number
   orderNo: string
   customerId: number
   customerName: string
+  orderType: OrderType
   fulfillmentStatus: FulfillmentStatus
   paymentStatus: PaymentStatus
   itemCount: number
@@ -65,6 +68,7 @@ export interface OrderDetail {
   customerName: string
   customerLineId: string | null
   customerPhone: string | null
+  orderType: OrderType
   fulfillmentStatus: FulfillmentStatus
   paymentStatus: PaymentStatus
   allowedFulfillmentNext: FulfillmentStatus[]
@@ -73,6 +77,11 @@ export interface OrderDetail {
   internalMemo: string | null
   koreanTrackingNo: string | null
   koreanCourier: string | null
+  recipientName: string | null
+  recipientPhone: string | null
+  postalCode: string | null
+  addressLine: string | null
+  country: string | null
   items: OrderItemDetail[]
   history: OrderStatusLogEntry[]
   createdAt: string
@@ -91,10 +100,16 @@ export interface CreateOrderInput {
   customerName: string
   customerLineId?: string
   customerPhone?: string
+  orderType?: OrderType
   customerMemo?: string
   internalMemo?: string
   koreanTrackingNo?: string
   koreanCourier?: string
+  recipientName?: string
+  recipientPhone?: string
+  postalCode?: string
+  addressLine?: string
+  country?: string
   items: Array<{
     productName: string
     productUrl?: string
@@ -176,4 +191,43 @@ export async function changePaymentStatus(
     { target, note }
   )
   return data
+}
+
+export interface OrderNote {
+  id: number
+  authorId: number
+  authorName: string
+  body: string
+  createdAt: string
+  updatedAt: string
+  edited: boolean
+}
+
+export async function listOrderNotes(orderId: number): Promise<OrderNote[]> {
+  const { data } = await apiClient.get<OrderNote[]>(`/intake/orders/${orderId}/notes`)
+  return data
+}
+
+export async function createOrderNote(orderId: number, body: string): Promise<OrderNote> {
+  const { data } = await apiClient.post<OrderNote>(
+    `/intake/orders/${orderId}/notes`,
+    { body }
+  )
+  return data
+}
+
+export async function updateOrderNote(
+  orderId: number,
+  noteId: number,
+  body: string
+): Promise<OrderNote> {
+  const { data } = await apiClient.patch<OrderNote>(
+    `/intake/orders/${orderId}/notes/${noteId}`,
+    { body }
+  )
+  return data
+}
+
+export async function deleteOrderNote(orderId: number, noteId: number): Promise<void> {
+  await apiClient.delete(`/intake/orders/${orderId}/notes/${noteId}`)
 }

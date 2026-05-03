@@ -5,6 +5,7 @@ import com.hauly.intake.order.application.command.ChangeFulfillmentStatusCommand
 import com.hauly.intake.order.application.command.ChangePaymentStatusCommand;
 import com.hauly.intake.order.application.command.CreateOrderCommand;
 import com.hauly.intake.order.application.query.OrderDetailView;
+import com.hauly.intake.order.domain.model.OrderType;
 import com.hauly.intake.order.application.query.OrderListItemView;
 import com.hauly.intake.order.domain.model.FulfillmentStatus;
 import com.hauly.intake.order.presentation.dto.ChangeFulfillmentStatusRequest;
@@ -52,14 +53,24 @@ public class IntakeOrderController {
                         i.tempImageKeys()))
                 .toList();
 
+        OrderType orderType = (request.orderType() == null || request.orderType().isBlank())
+                ? OrderType.INDIVIDUAL
+                : OrderType.valueOf(request.orderType());
+
         OrderDetailView detail = intakeOrderService.createOrder(new CreateOrderCommand(
                 request.customerName(),
                 request.customerLineId(),
                 request.customerPhone(),
+                orderType,
                 request.customerMemo(),
                 request.internalMemo(),
                 request.koreanTrackingNo(),
                 request.koreanCourier(),
+                request.recipientName(),
+                request.recipientPhone(),
+                request.postalCode(),
+                request.addressLine(),
+                request.country(),
                 items
         ), userId);
         return ResponseEntity.ok(detail);

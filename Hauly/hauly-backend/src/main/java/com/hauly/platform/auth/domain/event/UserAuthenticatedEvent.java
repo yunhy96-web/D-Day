@@ -9,11 +9,11 @@ import java.time.OffsetDateTime;
  */
 public record UserAuthenticatedEvent(
         Long userId,
-        String email,
+        String username,
         String role,
         OffsetDateTime authenticatedAt
 ) {
-    public static UserAuthenticatedEvent of(Long userId, String email, String role) {
-        return new UserAuthenticatedEvent(userId, email, role, OffsetDateTime.now());
+    public static UserAuthenticatedEvent of(Long userId, String username, String role) {
+        return new UserAuthenticatedEvent(userId, username, role, OffsetDateTime.now());
     }
 }

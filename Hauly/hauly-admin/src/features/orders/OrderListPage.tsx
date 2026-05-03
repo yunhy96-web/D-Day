@@ -41,12 +41,12 @@ export default function OrderListPage() {
   const { data: paymentLabels } = usePaymentLabels()
 
   return (
-    <div className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">{t('menu.orders')}</h1>
+    <div className="p-4 md:p-6 space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-xl md:text-2xl font-semibold">{t('menu.orders')}</h1>
         <Link
           to="/orders/new"
-          className="inline-flex items-center justify-center rounded-md bg-primary px-3 h-9 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="inline-flex items-center justify-center rounded-md bg-primary px-3 h-9 text-sm font-medium text-primary-foreground hover:bg-primary/90 whitespace-nowrap"
         >
           + {t('menu.orders_new')}
         </Link>
@@ -55,8 +55,8 @@ export default function OrderListPage() {
       <Card>
         <CardHeader className="space-y-3">
           <CardTitle className="text-base">{t('order.list.title')}</CardTitle>
-          <div className="flex gap-3 items-center">
-            <div className="relative flex-1 max-w-md">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:items-center">
+            <div className="relative flex-1 sm:max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={query}
@@ -66,13 +66,13 @@ export default function OrderListPage() {
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
                 {t('order.list.sort.label')}
               </span>
               <Select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as OrderSortOption)}
-                className="w-44"
+                className="flex-1 sm:w-44 sm:flex-none"
               >
                 {SORT_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
@@ -97,68 +97,126 @@ export default function OrderListPage() {
             <p className="text-sm text-muted-foreground">{t('order.list.empty')}</p>
           )}
           {data && data.content.length > 0 && (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="text-xs uppercase text-muted-foreground border-b">
-                  <tr>
-                    <th className="text-left py-2 px-2">{t('order.col.no')}</th>
-                    <th className="text-left py-2 px-2">{t('order.col.customer')}</th>
-                    <th className="text-left py-2 px-2">{t('order.col.items')}</th>
-                    <th className="text-left py-2 px-2">{t('order.col.amount')}</th>
-                    <th className="text-left py-2 px-2">{t('order.col.fulfillment')}</th>
-                    <th className="text-left py-2 px-2">{t('order.col.payment')}</th>
-                    <th className="text-left py-2 px-2">{t('order.col.created_at')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.content.map((o) => (
-                    <tr
-                      key={o.id}
-                      className="border-b hover:bg-muted/40 cursor-pointer"
-                      onClick={() => navigate(`/orders/${o.id}`)}
-                    >
-                      <td className="py-2 px-2 font-mono text-xs">
-                        <Link
-                          to={`/orders/${o.id}`}
-                          className="text-primary hover:underline"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {o.orderNo}
-                        </Link>
-                      </td>
-                      <td className="py-2 px-2">{o.customerName}</td>
-                      <td className="py-2 px-2">{o.itemCount}</td>
-                      <td className="py-2 px-2 whitespace-nowrap">
-                        {Object.keys(o.totalsByCurrency).length === 0 ? (
-                          <span className="text-muted-foreground">—</span>
-                        ) : (
-                          <div className="flex flex-col">
-                            {Object.entries(o.totalsByCurrency).map(([cur, amount]) => (
-                              <span key={cur} className="text-xs">
-                                {formatMoney(amount, cur, i18n.resolvedLanguage)}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-2 px-2">
-                        <Badge tone={fulfillmentTone(o.fulfillmentStatus)}>
-                          {findLabel(fulfillmentLabels, o.fulfillmentStatus)}
-                        </Badge>
-                      </td>
-                      <td className="py-2 px-2">
-                        <Badge tone={paymentTone(o.paymentStatus)}>
-                          {findLabel(paymentLabels, o.paymentStatus)}
-                        </Badge>
-                      </td>
-                      <td className="py-2 px-2 text-muted-foreground">
-                        {new Date(o.createdAt).toLocaleString(i18n.resolvedLanguage)}
-                      </td>
+            <>
+              {/* Desktop / tablet: table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="text-xs uppercase text-muted-foreground border-b">
+                    <tr>
+                      <th className="text-left py-2 px-2">{t('order.col.no')}</th>
+                      <th className="text-left py-2 px-2">{t('order.col.customer')}</th>
+                      <th className="text-left py-2 px-2">{t('order.col.items')}</th>
+                      <th className="text-left py-2 px-2">{t('order.col.amount')}</th>
+                      <th className="text-left py-2 px-2">{t('order.col.fulfillment')}</th>
+                      <th className="text-left py-2 px-2">{t('order.col.payment')}</th>
+                      <th className="text-left py-2 px-2">{t('order.col.created_at')}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {data.content.map((o) => (
+                      <tr
+                        key={o.id}
+                        className="border-b hover:bg-muted/40 cursor-pointer"
+                        onClick={() => navigate(`/orders/${o.id}`)}
+                      >
+                        <td className="py-2 px-2 font-mono text-xs">
+                          <div className="flex items-center gap-1.5">
+                            <Link
+                              to={`/orders/${o.id}`}
+                              className="text-primary hover:underline"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {o.orderNo}
+                            </Link>
+                            {o.orderType === 'SET' && (
+                              <span className="text-[10px] font-sans font-medium px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">
+                                {t('badge.set')}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-2 px-2">{o.customerName}</td>
+                        <td className="py-2 px-2">{o.itemCount}</td>
+                        <td className="py-2 px-2 whitespace-nowrap">
+                          {Object.keys(o.totalsByCurrency).length === 0 ? (
+                            <span className="text-muted-foreground">—</span>
+                          ) : (
+                            <div className="flex flex-col">
+                              {Object.entries(o.totalsByCurrency).map(([cur, amount]) => (
+                                <span key={cur} className="text-xs">
+                                  {formatMoney(amount, cur, i18n.resolvedLanguage)}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-2 px-2">
+                          <Badge tone={fulfillmentTone(o.fulfillmentStatus)}>
+                            {findLabel(fulfillmentLabels, o.fulfillmentStatus)}
+                          </Badge>
+                        </td>
+                        <td className="py-2 px-2">
+                          <Badge tone={paymentTone(o.paymentStatus)}>
+                            {findLabel(paymentLabels, o.paymentStatus)}
+                          </Badge>
+                        </td>
+                        <td className="py-2 px-2 text-muted-foreground">
+                          {new Date(o.createdAt).toLocaleString(i18n.resolvedLanguage)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile: card list */}
+              <ul className="md:hidden space-y-2">
+                {data.content.map((o) => (
+                  <li
+                    key={o.id}
+                    onClick={() => navigate(`/orders/${o.id}`)}
+                    className="border rounded-md p-3 bg-background hover:bg-muted/30 cursor-pointer space-y-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-xs text-primary">{o.orderNo}</span>
+                        {o.orderType === 'SET' && (
+                          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">
+                            {t('badge.set')}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-muted-foreground">
+                        {new Date(o.createdAt).toLocaleDateString(i18n.resolvedLanguage)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium truncate">{o.customerName}</span>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {o.itemCount} {t('order.col.items')}
+                      </span>
+                    </div>
+                    {Object.keys(o.totalsByCurrency).length > 0 && (
+                      <div className="text-xs flex flex-wrap gap-x-3 gap-y-0.5">
+                        {Object.entries(o.totalsByCurrency).map(([cur, amount]) => (
+                          <span key={cur}>
+                            {formatMoney(amount, cur, i18n.resolvedLanguage)}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex flex-wrap gap-1.5">
+                      <Badge tone={fulfillmentTone(o.fulfillmentStatus)}>
+                        {findLabel(fulfillmentLabels, o.fulfillmentStatus)}
+                      </Badge>
+                      <Badge tone={paymentTone(o.paymentStatus)}>
+                        {findLabel(paymentLabels, o.paymentStatus)}
+                      </Badge>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </CardContent>
       </Card>

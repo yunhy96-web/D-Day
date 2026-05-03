@@ -2,7 +2,7 @@ package com.hauly.platform.category;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hauly.platform.auth.domain.model.AppUser;
-import com.hauly.platform.auth.domain.model.Email;
+import com.hauly.platform.auth.domain.model.Username;
 import com.hauly.platform.auth.domain.model.Role;
 import com.hauly.platform.auth.domain.repository.AppUserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 class CategoryIT {
 
-    private static final String TEST_EMAIL = "cat-it@hauly.local";
+    private static final String TEST_USERNAME = "cat-it-user";
     private static final String TEST_PASSWORD = "changeme-12345";
 
     @Autowired
@@ -49,16 +49,16 @@ class CategoryIT {
 
     @BeforeEach
     void setUp() {
-        if (userRepository.findByEmail(Email.of(TEST_EMAIL)).isEmpty()) {
+        if (userRepository.findByUsername(Username.of(TEST_USERNAME)).isEmpty()) {
             AppUser user = AppUser.create(
-                    Email.of(TEST_EMAIL), TEST_PASSWORD, Role.INTAKE, "Cat IT User",
+                    Username.of(TEST_USERNAME), TEST_PASSWORD, Role.INTAKE, "Cat IT User",
                     rawPwd -> passwordEncoder.encode(rawPwd));
             userRepository.save(user);
         }
     }
 
     private String obtainToken() throws Exception {
-        Map<String, String> body = Map.of("email", TEST_EMAIL, "password", TEST_PASSWORD);
+        Map<String, String> body = Map.of("username", TEST_USERNAME, "password", TEST_PASSWORD);
         MvcResult result = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))

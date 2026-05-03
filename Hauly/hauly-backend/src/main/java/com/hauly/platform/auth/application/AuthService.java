@@ -7,7 +7,7 @@ import com.hauly.platform.auth.application.command.RefreshCommand;
 import com.hauly.platform.auth.application.query.CurrentUserView;
 import com.hauly.platform.auth.domain.event.UserAuthenticatedEvent;
 import com.hauly.platform.auth.domain.model.AppUser;
-import com.hauly.platform.auth.domain.model.Email;
+import com.hauly.platform.auth.domain.model.Username;
 import com.hauly.platform.auth.domain.repository.AppUserRepository;
 import com.hauly.platform.auth.domain.service.PasswordPolicyService;
 import com.hauly.platform.auth.domain.service.TokenService;
@@ -44,18 +44,18 @@ public class AuthService {
 
     /**
      * Authenticate a user and return tokens.
-     * Throws BadCredentialsException on failure (email not found or wrong password).
+     * Throws BadCredentialsException on failure (username not found or wrong password).
      */
     @Transactional(readOnly = true)
     public LoginResult login(LoginCommand command) {
-        Email email;
+        Username username;
         try {
-            email = Email.of(command.email());
+            username = Username.of(command.username());
         } catch (IllegalArgumentException e) {
             throw new BadCredentialsException("Invalid credentials");
         }
 
-        AppUser user = userRepository.findByEmail(email)
+        AppUser user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
 
         boolean matches = user.verifyPassword(command.password(),
@@ -68,7 +68,7 @@ public class AuthService {
         String refreshToken = tokenService.issueRefreshToken(user.getId(), user.getRole().name());
 
         eventPublisher.publishEvent(
-                UserAuthenticatedEvent.of(user.getId(), user.getEmailValue(), user.getRole().name()));
+                UserAuthenticatedEvent.of(user.getId(), user.getUsernameValue(), user.getRole().name()));
 
         return new LoginResult(accessToken, refreshToken, CurrentUserView.from(user));
     }
@@ -116,9 +116,9 @@ public class AuthService {
      */
     public AppUser bootstrapUser(BootstrapUserCommand command) {
         passwordPolicyService.validate(command.rawPassword());
-        Email email = Email.of(command.email());
+        Username username = Username.of(command.username());
         AppUser user = AppUser.create(
-                email,
+                username,
                 command.rawPassword(),
                 command.role(),
                 command.displayName(),
@@ -126,6 +126,24 @@ public class AuthService {
         );
         return userRepository.save(user);
     }
+
+    /**
+     * Atomic idempotent variant — find-by-username-or-create — for bootstrap callers.
+     * The single transaction closes the TOCTOU window between the existence check and
+     * the insert, and the unique constraint on username remains the ultimate safety net
+     * against a race with a concurrently-starting JVM.
+     *
+     * Returns a result describing whether the user was newly created (so callers can
+     * record the freshly generated password) or already existed (so they skip recording).
+     */
+    public BootstrapResult ensureUser(BootstrapUserCommand command) {
+        Username username = Username.of(command.username());
+        return userRepository.findByUsername(username)
+                .map(existing -> new BootstrapResult(existing, false))
+                .orElseGet(() -> new BootstrapResult(bootstrapUser(command), true));
+    }
+
+    public record BootstrapResult(AppUser user, boolean created) {}
 
     /**
      * Result record for login use case.

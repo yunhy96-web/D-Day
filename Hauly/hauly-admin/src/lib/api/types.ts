@@ -1,6 +1,6 @@
 export interface UserInfo {
   id: number
-  email: string
+  username: string
   role: 'INTAKE' | 'BUYER' | 'ADMIN'
   displayName: string | null
 }

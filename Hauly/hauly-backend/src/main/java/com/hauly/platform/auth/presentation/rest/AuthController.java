@@ -59,7 +59,7 @@ public class AuthController {
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request,
                                                HttpServletResponse response) {
         AuthService.LoginResult result = authService.login(
-                new LoginCommand(request.email(), request.password()));
+                new LoginCommand(request.username(), request.password()));
 
         addAccessCookie(response, result.accessToken());
         addRefreshCookie(response, result.refreshToken());

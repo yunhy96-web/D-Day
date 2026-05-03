@@ -1,8 +1,8 @@
 import { apiClient } from './client'
 import type { LoginResponse, MeResponse } from './types'
 
-export async function login(email: string, password: string): Promise<LoginResponse> {
-  const { data } = await apiClient.post<LoginResponse>('/auth/login', { email, password })
+export async function login(username: string, password: string): Promise<LoginResponse> {
+  const { data } = await apiClient.post<LoginResponse>('/auth/login', { username, password })
   return data
 }
 

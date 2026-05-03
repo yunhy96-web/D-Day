@@ -3,6 +3,7 @@ package com.hauly.intake.order.application.query;
 import com.hauly.intake.order.domain.model.FulfillmentStatus;
 import com.hauly.intake.order.domain.model.Order;
 import com.hauly.intake.order.domain.model.OrderItem;
+import com.hauly.intake.order.domain.model.OrderType;
 import com.hauly.intake.order.domain.model.PaymentStatus;
 
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ public record OrderListItemView(
         String orderNo,
         Long customerId,
         String customerName,
+        OrderType orderType,
         FulfillmentStatus fulfillmentStatus,
         PaymentStatus paymentStatus,
         int itemCount,
@@ -40,6 +42,7 @@ public record OrderListItemView(
                 order.getOrderNo(),
                 order.getCustomerId(),
                 customerName,
+                order.getOrderType(),
                 order.getFulfillmentStatus(),
                 order.getPaymentStatus(),
                 order.getItems().size(),

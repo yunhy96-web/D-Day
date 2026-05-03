@@ -18,10 +18,19 @@ public record CreateOrderRequest(
         @NotBlank @Size(max = 64) String customerName,
         @Size(max = 64)            String customerLineId,
         @Size(max = 32)            String customerPhone,
+        @Pattern(regexp = "^(INDIVIDUAL|SET)?$")
+                                   String orderType,
                                    String customerMemo,
                                    String internalMemo,
         @Size(max = 64)            String koreanTrackingNo,
         @Size(max = 32)            String koreanCourier,
+        // Shipping address (all optional)
+        @Size(max = 64)            String recipientName,
+        @Size(max = 32)            String recipientPhone,
+        @Size(max = 16)            String postalCode,
+        @Size(max = 1000)          String addressLine,
+        @Pattern(regexp = "^[A-Za-z]{0,2}$")
+                                   String country,
         @NotEmpty @Valid           List<Item> items
 ) {
     public record Item(

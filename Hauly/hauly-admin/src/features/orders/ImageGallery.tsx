@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   urls: string[]
 }
 
 export function ImageGallery({ urls }: Props) {
+  const { t } = useTranslation()
   const [openAt, setOpenAt] = useState<number | null>(null)
 
   useEffect(() => {
@@ -31,7 +33,7 @@ export function ImageGallery({ urls }: Props) {
             type="button"
             onClick={() => setOpenAt(i)}
             className="w-20 h-20 rounded-md border overflow-hidden bg-muted hover:opacity-80"
-            aria-label={`이미지 ${i + 1} 확대`}
+            aria-label={t('image.aria.zoom', { n: i + 1 })}
           >
             <img src={url} alt="" className="w-full h-full object-cover" />
           </button>
@@ -50,7 +52,7 @@ export function ImageGallery({ urls }: Props) {
               setOpenAt(null)
             }}
             className="absolute top-4 right-4 text-white p-2 rounded-full hover:bg-white/10"
-            aria-label="닫기"
+            aria-label={t('btn.close')}
           >
             <X className="h-6 w-6" />
           </button>
@@ -63,7 +65,7 @@ export function ImageGallery({ urls }: Props) {
                   setOpenAt((i) => (i == null ? i : (i - 1 + urls.length) % urls.length))
                 }}
                 className="absolute left-4 text-white p-2 rounded-full hover:bg-white/10"
-                aria-label="이전"
+                aria-label={t('btn.prev')}
               >
                 <ChevronLeft className="h-8 w-8" />
               </button>
@@ -74,7 +76,7 @@ export function ImageGallery({ urls }: Props) {
                   setOpenAt((i) => (i == null ? i : (i + 1) % urls.length))
                 }}
                 className="absolute right-4 text-white p-2 rounded-full hover:bg-white/10"
-                aria-label="다음"
+                aria-label={t('btn.next')}
               >
                 <ChevronRight className="h-8 w-8" />
               </button>

@@ -50,6 +50,10 @@ public class Order {
     private Origin origin;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "order_type", nullable = false, length = 16)
+    private OrderType orderType;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "fulfillment_status", nullable = false, length = 32)
     private FulfillmentStatus fulfillmentStatus;
 
@@ -68,6 +72,22 @@ public class Order {
 
     @Column(name = "korean_courier", length = 32)
     private String koreanCourier;
+
+    @Column(name = "recipient_name", length = 64)
+    private String recipientName;
+
+    @Column(name = "recipient_phone", length = 32)
+    private String recipientPhone;
+
+    @Column(name = "postal_code", length = 16)
+    private String postalCode;
+
+    @Column(name = "address_line", columnDefinition = "TEXT")
+    private String addressLine;
+
+    /** ISO 3166-1 alpha-2 (TH/KR/US/...). */
+    @Column(length = 2)
+    private String country;
 
     @Column(name = "created_by")
     private Long createdBy;
@@ -94,11 +114,13 @@ public class Order {
     /** JPA only. */
     protected Order() {}
 
-    private Order(Long customerId, Origin origin, FulfillmentStatus fulfillmentStatus,
+    private Order(Long customerId, Origin origin, OrderType orderType,
+                  FulfillmentStatus fulfillmentStatus,
                   PaymentStatus paymentStatus, String customerMemo, String internalMemo,
                   Long createdBy) {
         this.customerId = customerId;
         this.origin = origin;
+        this.orderType = orderType;
         this.fulfillmentStatus = fulfillmentStatus;
         this.paymentStatus = paymentStatus;
         this.customerMemo = customerMemo;
@@ -114,7 +136,8 @@ public class Order {
      * Factory: ADMIN_INTAKE order created by an INTAKE user (girlfriend).
      * Defaults: fulfillment_status=REQUESTED, payment_status=NOT_REQUIRED.
      */
-    public static Order createIntake(Long customerId, String customerMemo, String internalMemo,
+    public static Order createIntake(Long customerId, OrderType orderType,
+                                     String customerMemo, String internalMemo,
                                      String koreanTrackingNo, String koreanCourier,
                                      Long createdBy) {
         if (customerId == null) {
@@ -126,6 +149,7 @@ public class Order {
         Order order = new Order(
                 customerId,
                 Origin.ADMIN_INTAKE,
+                orderType == null ? OrderType.INDIVIDUAL : orderType,
                 FulfillmentStatus.REQUESTED,
                 PaymentStatus.NOT_REQUIRED,
                 customerMemo,
@@ -141,6 +165,21 @@ public class Order {
 
     private static String blankToNull(String s) {
         return (s == null || s.isBlank()) ? null : s.trim();
+    }
+
+    /**
+     * Sets the recipient delivery address. All fields optional and trimmed; blank → null.
+     * Country is uppercased (ISO 3166-1 alpha-2 convention) for consistency.
+     */
+    public void setShippingAddress(String recipientName, String recipientPhone,
+                                   String postalCode, String addressLine, String country) {
+        this.recipientName = blankToNull(recipientName);
+        this.recipientPhone = blankToNull(recipientPhone);
+        this.postalCode = blankToNull(postalCode);
+        this.addressLine = blankToNull(addressLine);
+        String c = blankToNull(country);
+        this.country = c == null ? null : c.toUpperCase();
+        this.updatedAt = OffsetDateTime.now();
     }
 
     public OrderItem addItem(String productName, String productUrl, Integer quantity,
@@ -203,12 +242,18 @@ public class Order {
     public String getOrderNo() { return orderNo; }
     public Long getCustomerId() { return customerId; }
     public Origin getOrigin() { return origin; }
+    public OrderType getOrderType() { return orderType; }
     public FulfillmentStatus getFulfillmentStatus() { return fulfillmentStatus; }
     public PaymentStatus getPaymentStatus() { return paymentStatus; }
     public String getCustomerMemo() { return customerMemo; }
     public String getInternalMemo() { return internalMemo; }
     public String getKoreanTrackingNo() { return koreanTrackingNo; }
     public String getKoreanCourier() { return koreanCourier; }
+    public String getRecipientName() { return recipientName; }
+    public String getRecipientPhone() { return recipientPhone; }
+    public String getPostalCode() { return postalCode; }
+    public String getAddressLine() { return addressLine; }
+    public String getCountry() { return country; }
     public Long getCreatedBy() { return createdBy; }
     public Long getPurchasedBy() { return purchasedBy; }
     public OffsetDateTime getCreatedAt() { return createdAt; }

@@ -19,6 +19,8 @@ import { useCategories } from './categoryHooks'
 import { useCommonCodeGroup } from './commonCodeHooks'
 import { formatMoney } from './money'
 import { ImageGallery } from './ImageGallery'
+import { countryDisplayName } from './countries'
+import { OrderNotesCard } from './OrderNotesCard'
 import { useMe } from '@/features/auth/hooks'
 import {
   findLabel,
@@ -63,12 +65,17 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-4">
+    <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-4">
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="sm" onClick={() => navigate('/orders')}>
           <ArrowLeft className="h-4 w-4 mr-1" /> {t('menu.orders')}
         </Button>
-        <h1 className="text-2xl font-semibold ml-2">{order.orderNo}</h1>
+        <h1 className="text-lg md:text-2xl font-semibold ml-2 truncate">{order.orderNo}</h1>
+        {order.orderType === 'SET' && (
+          <span className="text-xs font-medium px-2 py-0.5 rounded bg-purple-100 text-purple-700 whitespace-nowrap">
+            {t('badge.set_order')}
+          </span>
+        )}
         {me?.role === 'ADMIN' && (
           <Button
             variant="destructive"
@@ -77,10 +84,7 @@ export default function OrderDetailPage() {
             disabled={deleteMutation.isPending}
             onClick={() => {
               const ok = window.confirm(
-                `주문 ${order.orderNo} 을(를) 영구 삭제합니다.\n\n` +
-                `⚠ 이 작업은 복구할 수 없습니다.\n` +
-                `주문 항목, 상태 변경 이력까지 모두 함께 삭제됩니다.\n\n` +
-                `정말 삭제하시겠습니까?`,
+                t('order.delete.confirm', { orderNo: order.orderNo }),
               )
               if (!ok) return
               deleteMutation.mutate(order.id, {
@@ -89,7 +93,7 @@ export default function OrderDetailPage() {
             }}
           >
             <Trash2 className="h-4 w-4 mr-1" />
-            {deleteMutation.isPending ? '삭제 중…' : '삭제'}
+            {deleteMutation.isPending ? t('btn.deleting') : t('btn.delete')}
           </Button>
         )}
       </div>
@@ -98,13 +102,13 @@ export default function OrderDetailPage() {
         <Alert variant="destructive">
           <AlertDescription>
             {deleteMutation.error instanceof ApiError
-              ? `삭제에 실패했습니다 (${deleteMutation.error.code}): ${deleteMutation.error.message}`
-              : '삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.'}
+              ? t('order.delete.error.with_code', { code: deleteMutation.error.code, message: deleteMutation.error.message })
+              : t('order.delete.error.generic')}
           </AlertDescription>
         </Alert>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <StatusCard
           orderId={order.id}
           dimension="FULFILLMENT"
@@ -125,17 +129,23 @@ export default function OrderDetailPage() {
         </CardHeader>
         <CardContent className="text-sm space-y-1">
           <KV label={t('field.customer_name.label')} value={order.customerName} />
-          <KV label={t('field.line_id.label')} value={order.customerLineId ?? '-'} />
+          <KV
+            label={t('field.line_id.label')}
+            value={order.customerLineId ?? '-'}
+            href={isUrl(order.customerLineId) ? order.customerLineId! : undefined}
+          />
           <KV label={t('field.phone.label')} value={order.customerPhone ?? '-'} />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t('order.detail.items')}</CardTitle>
+          <CardTitle className="text-base">
+            {order.orderType === 'SET' ? t('order.set_items.title') : t('order.detail.items')}
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <table className="w-full text-sm">
+        <CardContent className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[640px]">
             <thead className="text-xs uppercase text-muted-foreground border-b">
               <tr>
                 <th className="text-left py-2 px-2">#</th>
@@ -195,6 +205,39 @@ export default function OrderDetailPage() {
         </CardContent>
       </Card>
 
+      {(order.recipientName || order.recipientPhone || order.postalCode || order.addressLine || order.country) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t('order.detail.shipping_address')}</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm space-y-1">
+            {order.recipientName && (
+              <KV label={t('field.recipient_name.label')} value={order.recipientName} />
+            )}
+            {order.recipientPhone && (
+              <KV label={t('field.recipient_phone.label')} value={order.recipientPhone} />
+            )}
+            {order.postalCode && (
+              <KV label={t('field.postal_code.label')} value={order.postalCode} />
+            )}
+            {order.country && (
+              <KV
+                label={t('field.country.label')}
+                value={countryDisplayName(order.country, i18n.resolvedLanguage)}
+              />
+            )}
+            {order.addressLine && (
+              <div className="flex gap-2">
+                <span className="w-24 text-muted-foreground shrink-0">
+                  {t('field.address_line.label')}
+                </span>
+                <span className="whitespace-pre-wrap">{order.addressLine}</span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {(order.koreanTrackingNo || order.koreanCourier) && (
         <Card>
           <CardHeader>
@@ -229,6 +272,8 @@ export default function OrderDetailPage() {
         </Card>
       )}
 
+      <OrderNotesCard orderId={order.id} />
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">{t('order.detail.history')}</CardTitle>
@@ -257,13 +302,28 @@ export default function OrderDetailPage() {
   )
 }
 
-function KV({ label, value }: { label: string; value: string }) {
+function KV({ label, value, href }: { label: string; value: string; href?: string }) {
   return (
     <div className="flex gap-2">
       <span className="w-24 text-muted-foreground">{label}</span>
-      <span>{value}</span>
+      {href ? (
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          className="text-primary hover:underline truncate max-w-md"
+        >
+          {value}
+        </a>
+      ) : (
+        <span>{value}</span>
+      )}
     </div>
   )
+}
+
+function isUrl(v: string | null | undefined): boolean {
+  return !!v && /^https?:\/\//i.test(v)
 }
 
 /**

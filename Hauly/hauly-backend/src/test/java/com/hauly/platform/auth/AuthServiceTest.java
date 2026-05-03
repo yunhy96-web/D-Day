@@ -5,8 +5,8 @@ import com.hauly.platform.auth.application.command.LoginCommand;
 import com.hauly.platform.auth.application.command.RefreshCommand;
 import com.hauly.platform.auth.application.query.CurrentUserView;
 import com.hauly.platform.auth.domain.model.AppUser;
-import com.hauly.platform.auth.domain.model.Email;
 import com.hauly.platform.auth.domain.model.Role;
+import com.hauly.platform.auth.domain.model.Username;
 import com.hauly.platform.auth.domain.repository.AppUserRepository;
 import com.hauly.platform.auth.domain.service.TokenService;
 import com.hauly.platform.auth.infrastructure.security.JwtTokenProvider;
@@ -57,14 +57,14 @@ class AuthServiceTest {
 
     @Test
     void login_success() {
-        AppUser user = buildUserWithId("intake@hauly.local", RAW_PASSWORD, Role.INTAKE, TEST_USER_ID);
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
+        AppUser user = buildUserWithId("intake", RAW_PASSWORD, Role.INTAKE, TEST_USER_ID);
+        when(userRepository.findByUsername(any(Username.class))).thenReturn(Optional.of(user));
 
-        AuthService.LoginResult result = authService.login(new LoginCommand("intake@hauly.local", RAW_PASSWORD));
+        AuthService.LoginResult result = authService.login(new LoginCommand("intake", RAW_PASSWORD));
 
         assertThat(result.accessToken()).isNotBlank();
         assertThat(result.refreshToken()).isNotBlank();
-        assertThat(result.user().email()).isEqualTo("intake@hauly.local");
+        assertThat(result.user().username()).isEqualTo("intake");
         assertThat(result.user().role()).isEqualTo("INTAKE");
 
         verify(eventPublisher).publishEvent(any(Object.class));
@@ -72,18 +72,18 @@ class AuthServiceTest {
 
     @Test
     void login_wrongPassword_throwsBadCredentials() {
-        AppUser user = buildUserWithId("intake@hauly.local", RAW_PASSWORD, Role.INTAKE, TEST_USER_ID);
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
+        AppUser user = buildUserWithId("intake", RAW_PASSWORD, Role.INTAKE, TEST_USER_ID);
+        when(userRepository.findByUsername(any(Username.class))).thenReturn(Optional.of(user));
 
-        assertThatThrownBy(() -> authService.login(new LoginCommand("intake@hauly.local", "wrong-password-12345")))
+        assertThatThrownBy(() -> authService.login(new LoginCommand("intake", "wrong-password-12345")))
                 .isInstanceOf(BadCredentialsException.class);
     }
 
     @Test
-    void login_unknownEmail_throwsBadCredentials() {
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.empty());
+    void login_unknownUsername_throwsBadCredentials() {
+        when(userRepository.findByUsername(any(Username.class))).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> authService.login(new LoginCommand("nobody@hauly.local", RAW_PASSWORD)))
+        assertThatThrownBy(() -> authService.login(new LoginCommand("nobody", RAW_PASSWORD)))
                 .isInstanceOf(BadCredentialsException.class);
     }
 
@@ -102,12 +102,12 @@ class AuthServiceTest {
 
     @Test
     void currentUser_success() {
-        AppUser user = buildUserWithId("admin@hauly.local", RAW_PASSWORD, Role.ADMIN, TEST_USER_ID);
+        AppUser user = buildUserWithId("admin", RAW_PASSWORD, Role.ADMIN, TEST_USER_ID);
         when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(user));
 
         CurrentUserView view = authService.currentUser(TEST_USER_ID);
 
-        assertThat(view.email()).isEqualTo("admin@hauly.local");
+        assertThat(view.username()).isEqualTo("admin");
         assertThat(view.role()).isEqualTo("ADMIN");
     }
 
@@ -117,9 +117,9 @@ class AuthServiceTest {
      * Creates an AppUser and sets its ID via Mockito spy.
      * JPA would normally set the ID after persist; we simulate it here.
      */
-    private AppUser buildUserWithId(String email, String rawPassword, Role role, Long id) {
+    private AppUser buildUserWithId(String username, String rawPassword, Role role, Long id) {
         AppUser user = AppUser.create(
-                Email.of(email),
+                Username.of(username),
                 rawPassword,
                 role,
                 "Test User",

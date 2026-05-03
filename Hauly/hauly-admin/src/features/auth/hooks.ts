@@ -16,8 +16,8 @@ export function useMe() {
 export function useLogin() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ email, password }: { email: string; password: string }) =>
-      login(email, password),
+    mutationFn: ({ username, password }: { username: string; password: string }) =>
+      login(username, password),
     onSuccess: (data) => {
       // Cache the user from the login response body (in-memory only, no localStorage)
       queryClient.setQueryData(ME_QUERY_KEY, data.user)

@@ -2,8 +2,8 @@ package com.hauly.platform.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hauly.platform.auth.domain.model.AppUser;
-import com.hauly.platform.auth.domain.model.Email;
 import com.hauly.platform.auth.domain.model.Role;
+import com.hauly.platform.auth.domain.model.Username;
 import com.hauly.platform.auth.domain.repository.AppUserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -28,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Integration test using the local 'hauly' Docker Postgres.
  * Uses @Transactional rollback to avoid polluting the DB between tests.
- * Note: unique test emails avoid conflicts with any bootstrapped users.
+ * Note: unique test usernames avoid conflicts with any bootstrapped users.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -36,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 class AuthControllerIT {
 
-    private static final String TEST_EMAIL    = "it-test@hauly.local";
+    private static final String TEST_USERNAME = "it-test-user";
     private static final String TEST_PASSWORD = "changeme-12345";
 
     @Autowired
@@ -53,10 +52,9 @@ class AuthControllerIT {
 
     @BeforeEach
     void setUp() {
-        // Create a test user inline (BCrypt cost 4 via test profile if configured, falls back to 12)
-        if (userRepository.findByEmail(Email.of(TEST_EMAIL)).isEmpty()) {
+        if (userRepository.findByUsername(Username.of(TEST_USERNAME)).isEmpty()) {
             AppUser user = AppUser.create(
-                    Email.of(TEST_EMAIL),
+                    Username.of(TEST_USERNAME),
                     TEST_PASSWORD,
                     Role.INTAKE,
                     "IT Test User",
@@ -80,7 +78,7 @@ class AuthControllerIT {
 
     @Test
     void login_success_returns200WithTokens() throws Exception {
-        Map<String, String> body = Map.of("email", TEST_EMAIL, "password", TEST_PASSWORD);
+        Map<String, String> body = Map.of("username", TEST_USERNAME, "password", TEST_PASSWORD);
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -88,13 +86,13 @@ class AuthControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.refreshToken").isNotEmpty())
-                .andExpect(jsonPath("$.user.email").value(TEST_EMAIL))
+                .andExpect(jsonPath("$.user.username").value(TEST_USERNAME))
                 .andExpect(jsonPath("$.user.role").value("INTAKE"));
     }
 
     @Test
     void login_wrongPassword_returns401() throws Exception {
-        Map<String, String> body = Map.of("email", TEST_EMAIL, "password", "wrong-password-12345");
+        Map<String, String> body = Map.of("username", TEST_USERNAME, "password", "wrong-password-12345");
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -104,8 +102,7 @@ class AuthControllerIT {
 
     @Test
     void me_withValidToken_returns200() throws Exception {
-        // Login to get token
-        Map<String, String> loginBody = Map.of("email", TEST_EMAIL, "password", TEST_PASSWORD);
+        Map<String, String> loginBody = Map.of("username", TEST_USERNAME, "password", TEST_PASSWORD);
         MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginBody)))
@@ -115,11 +112,10 @@ class AuthControllerIT {
         String responseJson = loginResult.getResponse().getContentAsString();
         String accessToken = objectMapper.readTree(responseJson).get("accessToken").asText();
 
-        // Use token to access /me
         mockMvc.perform(get("/api/auth/me")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value(TEST_EMAIL))
+                .andExpect(jsonPath("$.username").value(TEST_USERNAME))
                 .andExpect(jsonPath("$.role").value("INTAKE"));
     }
 
@@ -132,7 +128,7 @@ class AuthControllerIT {
 
     @Test
     void login_shortPassword_returns400() throws Exception {
-        Map<String, String> body = Map.of("email", TEST_EMAIL, "password", "short");
+        Map<String, String> body = Map.of("username", TEST_USERNAME, "password", "short");
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

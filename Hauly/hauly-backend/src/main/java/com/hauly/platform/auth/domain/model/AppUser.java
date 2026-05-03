@@ -16,9 +16,6 @@ import java.util.function.Function;
  * AppUser aggregate root.
  * Pragmatic DDD: JPA annotations on the domain class (kept in domain/model/).
  * Domain logic lives here; infrastructure wires persistence.
- *
- * NOTE: Spring imports (ApplicationEventPublisher) are intentionally excluded
- * from this class. Event publishing is done in AuthService (application layer).
  */
 @Entity
 @Table(name = "app_user")
@@ -28,8 +25,8 @@ public class AppUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 128)
-    private String email;
+    @Column(nullable = false, unique = true, length = 64)
+    private String username;
 
     @Column(name = "password_hash", nullable = false, length = 128)
     private String passwordHash;
@@ -50,8 +47,8 @@ public class AppUser {
     /** Protected no-args constructor for JPA only. */
     protected AppUser() {}
 
-    private AppUser(String email, String passwordHash, Role role, String displayName) {
-        this.email = email;
+    private AppUser(String username, String passwordHash, Role role, String displayName) {
+        this.username = username;
         this.passwordHash = passwordHash;
         this.role = role;
         this.displayName = displayName;
@@ -61,28 +58,19 @@ public class AppUser {
 
     /**
      * Factory method — hashes raw password before creating the instance.
-     *
-     * @param email         validated Email VO
-     * @param rawPassword   plain text password (min 12 chars enforced by PasswordPolicyService)
-     * @param role          assigned role
-     * @param displayName   optional display name
-     * @param passwordEncoder BiFunction: (rawPassword, strength) -> hash (injected from infra)
      */
     public static AppUser create(
-            Email email,
+            Username username,
             String rawPassword,
             Role role,
             String displayName,
             Function<String, String> passwordEncoder) {
         String hash = passwordEncoder.apply(rawPassword);
-        return new AppUser(email.value(), hash, role, displayName);
+        return new AppUser(username.value(), hash, role, displayName);
     }
 
     /**
      * Verify raw password against stored hash.
-     *
-     * @param rawPassword plain text attempt
-     * @param matcher     BiFunction: (raw, hash) -> matches (injected from infra)
      */
     public boolean verifyPassword(String rawPassword, java.util.function.BiFunction<String, String, Boolean> matcher) {
         return matcher.apply(rawPassword, this.passwordHash);
@@ -101,9 +89,9 @@ public class AppUser {
 
     public Long getId() { return id; }
 
-    public Email getEmail() { return Email.of(email); }
+    public Username getUsername() { return Username.of(username); }
 
-    public String getEmailValue() { return email; }
+    public String getUsernameValue() { return username; }
 
     String getPasswordHash() { return passwordHash; }
 

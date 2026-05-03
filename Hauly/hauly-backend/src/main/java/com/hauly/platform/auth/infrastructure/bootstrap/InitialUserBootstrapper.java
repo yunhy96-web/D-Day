@@ -2,76 +2,125 @@ package com.hauly.platform.auth.infrastructure.bootstrap;
 
 import com.hauly.platform.auth.application.AuthService;
 import com.hauly.platform.auth.application.command.BootstrapUserCommand;
-import com.hauly.platform.auth.domain.model.AppUser;
 import com.hauly.platform.auth.domain.model.Role;
-import com.hauly.platform.auth.domain.repository.AppUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.security.SecureRandom;
+import java.time.OffsetDateTime;
+import java.util.Base64;
+import java.util.List;
+
 /**
- * Bootstrap initial users on first startup.
- * Activates only when HAULY_BOOTSTRAP=true AND app_user table is empty.
- * Reads user credentials from environment variables (fail-fast if missing).
+ * Bootstraps the two operator accounts (selim, union) on startup.
+ *
+ * Idempotent: a user that already exists is skipped, so this runner is safe to leave
+ * enabled across restarts. New users get a random 24-char password that is appended to
+ * a sealed secrets file ({@code hauly.bootstrap.passwords-file}, default
+ * {@code /opt/hauly/secrets/new-users.txt}) which the operator reads once over SSH and
+ * then deletes. If the file cannot be written we fall back to a WARN-level log line so
+ * the credentials are never silently lost.
  */
 @Component
 public class InitialUserBootstrapper implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(InitialUserBootstrapper.class);
 
-    private final AppUserRepository userRepository;
-    private final AuthService authService;
+    /** Spec for users that should always exist. Add here, never remove. */
+    private static final List<UserSpec> SPECS = List.of(
+            new UserSpec("selim", Role.ADMIN, "Selim"),
+            new UserSpec("union", Role.ADMIN, "Union")
+    );
 
-    public InitialUserBootstrapper(AppUserRepository userRepository, AuthService authService) {
-        this.userRepository = userRepository;
+    private final AuthService authService;
+    private final Path passwordsFile;
+    private final SecureRandom random = new SecureRandom();
+
+    public InitialUserBootstrapper(
+            AuthService authService,
+            @Value("${hauly.bootstrap.passwords-file:/opt/hauly/secrets/new-users.txt}") String passwordsFilePath) {
         this.authService = authService;
+        this.passwordsFile = Path.of(passwordsFilePath);
     }
 
     @Override
     public void run(String... args) {
-        String bootstrapEnabled = System.getenv("HAULY_BOOTSTRAP");
-        if (!"true".equalsIgnoreCase(bootstrapEnabled)) {
-            log.info("Bootstrap disabled. Set HAULY_BOOTSTRAP=true to seed initial users.");
+        for (UserSpec spec : SPECS) {
+            try {
+                ensureUser(spec);
+            } catch (Exception ex) {
+                // Don't kill the boot — one bad spec shouldn't block the whole app.
+                log.error("Failed to bootstrap user '{}': {}", spec.username(), ex.getMessage(), ex);
+            }
+        }
+    }
+
+    private void ensureUser(UserSpec spec) {
+        // Generate a candidate password up-front so the find-or-create call is a single
+        // transaction; ensureUser() drops the candidate if the user already existed.
+        String rawPassword = generatePassword();
+        AuthService.BootstrapResult result = authService.ensureUser(new BootstrapUserCommand(
+                spec.username(), rawPassword, spec.role(), spec.displayName()));
+
+        if (!result.created()) {
+            log.debug("Bootstrap: user '{}' already exists, skipping.", spec.username());
             return;
         }
 
-        if (userRepository.count() > 0) {
-            log.warn("Bootstrap skipped: app_user table already has users. " +
-                     "Disable HAULY_BOOTSTRAP after first run.");
-            return;
-        }
-
-        log.info("Bootstrap enabled — creating initial users...");
-
-        String adminEmail     = requireEnv("HAULY_BOOTSTRAP_ADMIN_EMAIL");
-        String adminPassword  = requireEnv("HAULY_BOOTSTRAP_ADMIN_PASSWORD");
-        String intakeEmail    = requireEnv("HAULY_BOOTSTRAP_INTAKE_EMAIL");
-        String intakePassword = requireEnv("HAULY_BOOTSTRAP_INTAKE_PASSWORD");
-        String buyerEmail     = requireEnv("HAULY_BOOTSTRAP_BUYER_EMAIL");
-        String buyerPassword  = requireEnv("HAULY_BOOTSTRAP_BUYER_PASSWORD");
-
-        AppUser adminUser = authService.bootstrapUser(
-                new BootstrapUserCommand(adminEmail, adminPassword, Role.ADMIN, "Admin User"));
-        log.info("Created user: email={}, role={}", adminUser.getEmailValue(), adminUser.getRole());
-
-        AppUser intakeUser = authService.bootstrapUser(
-                new BootstrapUserCommand(intakeEmail, intakePassword, Role.INTAKE, "Intake User"));
-        log.info("Created user: email={}, role={}", intakeUser.getEmailValue(), intakeUser.getRole());
-
-        AppUser buyerUser = authService.bootstrapUser(
-                new BootstrapUserCommand(buyerEmail, buyerPassword, Role.BUYER, "Buyer User"));
-        log.info("Created user: email={}, role={}", buyerUser.getEmailValue(), buyerUser.getRole());
-
-        log.warn("Bootstrap complete. DISABLE HAULY_BOOTSTRAP after verifying users were created correctly.");
+        log.info("Bootstrap: created user id={} username={} role={}",
+                result.user().getId(), result.user().getUsernameValue(), result.user().getRole());
+        recordPassword(spec.username(), rawPassword);
     }
 
-    private String requireEnv(String name) {
-        String value = System.getenv(name);
-        if (value == null || value.isBlank()) {
-            throw new IllegalStateException(
-                    "Bootstrap env var '" + name + "' is required when HAULY_BOOTSTRAP=true but was not set.");
-        }
-        return value;
+    /** Generates a 24-char URL-safe random password (≈144 bits of entropy). */
+    private String generatePassword() {
+        byte[] bytes = new byte[18];
+        random.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
+
+    /**
+     * Append (username, password) to the sealed secrets file. Creates parent dirs and
+     * sets owner-only permissions on the file so it isn't world-readable. If anything
+     * fails we log the password ourselves rather than dropping it on the floor.
+     */
+    private void recordPassword(String username, String rawPassword) {
+        String line = String.format(
+                "%s  username=%s  password=%s%n",
+                OffsetDateTime.now(), username, rawPassword);
+        try {
+            if (passwordsFile.getParent() != null) {
+                Files.createDirectories(passwordsFile.getParent());
+            }
+            Files.writeString(passwordsFile, line,
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            // Best-effort permission tightening — ignored on non-POSIX file systems.
+            try {
+                Files.setPosixFilePermissions(passwordsFile,
+                        PosixFilePermissions.fromString("rw-------"));
+            } catch (UnsupportedOperationException | IOException ignored) {
+                // Windows/dev box — fine.
+            }
+            log.warn("Bootstrap: password for '{}' written to {}. " +
+                    "Read it once and delete the line after the user changes it.",
+                    username, passwordsFile.toAbsolutePath());
+        } catch (IOException e) {
+            // Fallback: don't lose the credential, but keep it OUT of the structured logger
+            // (log aggregators / alert channels would otherwise persist the password).
+            // System.err goes to systemd's journal in plaintext only on this specific host.
+            log.warn("Bootstrap: could not write {} ({}). Password for '{}' printed to stderr.",
+                    passwordsFile, e.getMessage(), username);
+            System.err.printf("[BOOTSTRAP-PASSWORD] username=%s password=%s%n", username, rawPassword);
+        }
+    }
+
+    private record UserSpec(String username, Role role, String displayName) {}
 }

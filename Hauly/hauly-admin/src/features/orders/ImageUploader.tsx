@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback } from 'react'
 import imageCompression from 'browser-image-compression'
 import { ImagePlus, X, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { uploadTempImage, deleteTempImage } from '@/lib/api/uploads'
@@ -29,6 +30,7 @@ interface Props {
  * the resulting tempKeys via {@code onChange}. Up to 5 images per item.
  */
 export function ImageUploader({ value, onChange }: Props) {
+  const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(0)
   const [error, setError] = useState<string | null>(null)
@@ -40,7 +42,7 @@ export function ImageUploader({ value, onChange }: Props) {
 
       const remaining = MAX_IMAGES - value.length
       if (remaining <= 0) {
-        setError(`최대 ${MAX_IMAGES}장까지 업로드 가능합니다.`)
+        setError(t('image.error.max', { n: MAX_IMAGES }))
         return
       }
 
@@ -63,14 +65,14 @@ export function ImageUploader({ value, onChange }: Props) {
           const { tempKey, url } = await uploadTempImage(file)
           uploaded.push({ tempKey, url, previewUrl })
         } catch (e: any) {
-          setError(`업로드 실패: ${raw.name} (${e?.message ?? 'unknown'})`)
+          setError(t('image.error.upload_failed', { name: raw.name, reason: e?.message ?? 'unknown' }))
         } finally {
           setBusy((n) => n - 1)
         }
       }
       if (uploaded.length > 0) onChange([...value, ...uploaded])
     },
-    [value, onChange],
+    [value, onChange, t],
   )
 
   async function remove(idx: number) {
@@ -100,7 +102,7 @@ export function ImageUploader({ value, onChange }: Props) {
               type="button"
               onClick={() => remove(i)}
               className="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full p-0.5 hover:bg-black/80"
-              aria-label="삭제"
+              aria-label={t('btn.delete')}
             >
               <X className="h-3 w-3" />
             </button>

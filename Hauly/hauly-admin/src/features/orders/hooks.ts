@@ -3,9 +3,13 @@ import {
   changeFulfillmentStatus,
   changePaymentStatus,
   createOrder,
+  createOrderNote,
   deleteOrder,
+  deleteOrderNote,
   getOrder,
+  listOrderNotes,
   listOrders,
+  updateOrderNote,
   type CreateOrderInput,
   type FulfillmentStatus,
   type OrderSortOption,
@@ -13,6 +17,7 @@ import {
 } from '@/lib/api/orders'
 
 const ORDERS_KEY = 'orders' as const
+const NOTES_KEY = 'order-notes' as const
 
 export function useOrders(params: {
   status?: FulfillmentStatus
@@ -79,5 +84,38 @@ export function useChangePaymentStatus(orderId: number) {
       qc.setQueryData([ORDERS_KEY, 'detail', orderId], data)
       qc.invalidateQueries({ queryKey: [ORDERS_KEY, 'list'] })
     },
+  })
+}
+
+export function useOrderNotes(orderId: number | null) {
+  return useQuery({
+    queryKey: [NOTES_KEY, orderId],
+    queryFn: () => listOrderNotes(orderId!),
+    enabled: orderId != null,
+  })
+}
+
+export function useCreateOrderNote(orderId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: string) => createOrderNote(orderId, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [NOTES_KEY, orderId] }),
+  })
+}
+
+export function useUpdateOrderNote(orderId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ noteId, body }: { noteId: number; body: string }) =>
+      updateOrderNote(orderId, noteId, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [NOTES_KEY, orderId] }),
+  })
+}
+
+export function useDeleteOrderNote(orderId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (noteId: number) => deleteOrderNote(orderId, noteId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [NOTES_KEY, orderId] }),
   })
 }
