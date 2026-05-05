@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -33,6 +34,70 @@ export default function DashboardPage() {
 
       {data && (
         <div className="grid gap-4 md:grid-cols-3">
+          <Card className="md:col-span-3">
+            <CardHeader>
+              <CardTitle className="text-base">{t('dashboard.net_profit.title')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {(() => {
+                const v = Number(data.totalNetProfitKrw)
+                const negative = Number.isFinite(v) && v < 0
+                return (
+                  <>
+                    <p
+                      className={
+                        negative
+                          ? 'text-3xl font-semibold text-destructive'
+                          : 'text-3xl font-semibold text-emerald-700'
+                      }
+                    >
+                      {formatMoney(data.totalNetProfitKrw, 'KRW', i18n.resolvedLanguage)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {t('dashboard.net_profit.help')}
+                    </p>
+                  </>
+                )
+              })()}
+            </CardContent>
+          </Card>
+
+          <Card className="md:col-span-3">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
+              <CardTitle className="text-base">{t('deposit.balance.label')}</CardTitle>
+              <Link
+                to="/deposits"
+                className="text-xs text-primary hover:underline whitespace-nowrap"
+              >
+                {t('menu.deposits')} →
+              </Link>
+            </CardHeader>
+            <CardContent>
+              {(() => {
+                const v = Number(data.depositBalanceKrw)
+                const negative = Number.isFinite(v) && v < 0
+                return (
+                  <>
+                    <p
+                      className={
+                        negative
+                          ? 'text-3xl font-semibold text-destructive'
+                          : 'text-3xl font-semibold'
+                      }
+                    >
+                      {formatMoney(data.depositBalanceKrw, 'KRW', i18n.resolvedLanguage)}
+                    </p>
+                    {negative && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {t('deposit.negative_hint')}
+                      </p>
+                    )}
+                  </>
+                )
+              })()}
+            </CardContent>
+          </Card>
+
           <Card className="md:col-span-1">
             <CardHeader>
               <CardTitle className="text-base">{t('dashboard.totals.title')}</CardTitle>

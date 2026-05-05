@@ -4,13 +4,21 @@ import com.hauly.intake.order.application.IntakeOrderService;
 import com.hauly.intake.order.application.command.ChangeFulfillmentStatusCommand;
 import com.hauly.intake.order.application.command.ChangePaymentStatusCommand;
 import com.hauly.intake.order.application.command.CreateOrderCommand;
+import com.hauly.intake.order.application.command.ForceFulfillmentStatusCommand;
+import com.hauly.intake.order.application.command.ForcePaymentStatusCommand;
 import com.hauly.intake.order.application.query.OrderDetailView;
 import com.hauly.intake.order.domain.model.OrderType;
 import com.hauly.intake.order.application.query.OrderListItemView;
 import com.hauly.intake.order.domain.model.FulfillmentStatus;
+import com.hauly.intake.order.presentation.dto.AddPurchaseProofsRequest;
 import com.hauly.intake.order.presentation.dto.ChangeFulfillmentStatusRequest;
 import com.hauly.intake.order.presentation.dto.ChangePaymentStatusRequest;
 import com.hauly.intake.order.presentation.dto.CreateOrderRequest;
+import com.hauly.intake.order.presentation.dto.ForceFulfillmentStatusRequest;
+import com.hauly.intake.order.presentation.dto.ForcePaymentStatusRequest;
+import com.hauly.intake.order.presentation.dto.UpdateFinancialsRequest;
+import com.hauly.intake.order.presentation.dto.UpdatePaidAmountRequest;
+import com.hauly.intake.order.presentation.dto.UpdateTrackingRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +51,7 @@ public class IntakeOrderController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OrderDetailView> create(@Valid @RequestBody CreateOrderRequest request,
                                                   @AuthenticationPrincipal Long userId) {
         List<CreateOrderCommand.Item> items = request.items().stream()
@@ -71,6 +80,7 @@ public class IntakeOrderController {
                 request.postalCode(),
                 request.addressLine(),
                 request.country(),
+                request.shippingAddressLabel(),
                 items
         ), userId);
         return ResponseEntity.ok(detail);
@@ -93,12 +103,16 @@ public class IntakeOrderController {
     }
 
     @PatchMapping("/{id}/fulfillment-status")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OrderDetailView> changeFulfillment(
             @PathVariable Long id,
             @Valid @RequestBody ChangeFulfillmentStatusRequest request,
             @AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(intakeOrderService.changeFulfillmentStatus(
-                new ChangeFulfillmentStatusCommand(id, request.target(), request.note()), userId));
+                new ChangeFulfillmentStatusCommand(
+                        id, request.target(), request.note(),
+                        request.paidAmountKrw(), request.proofTempKeys()),
+                userId));
     }
 
     /** Hard delete — irreversible. ADMIN-only, intended for purging test data. */
@@ -110,11 +124,80 @@ public class IntakeOrderController {
     }
 
     @PatchMapping("/{id}/payment-status")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OrderDetailView> changePayment(
             @PathVariable Long id,
             @Valid @RequestBody ChangePaymentStatusRequest request,
             @AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(intakeOrderService.changePaymentStatus(
                 new ChangePaymentStatusCommand(id, request.target(), request.note()), userId));
+    }
+
+    /** PURCHASED 이후에도 호출 가능한 트래킹 정보 후속 입력/수정. */
+    @PatchMapping("/{id}/tracking")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<OrderDetailView> updateTracking(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateTrackingRequest request) {
+        return ResponseEntity.ok(intakeOrderService.updateTracking(
+                id, request.koreanCourier(), request.koreanTrackingNo()));
+    }
+
+    /** 재무 필드 일괄 수정 (고객입금/물류비/태국배송비/환율). */
+    @PatchMapping("/{id}/financials")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<OrderDetailView> updateFinancials(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateFinancialsRequest request) {
+        return ResponseEntity.ok(intakeOrderService.updateFinancials(
+                id,
+                request.customerRevenueAmount(), request.customerRevenueCurrency(),
+                request.logisticsKrToThAmount(), request.logisticsKrToThCurrency(),
+                request.logisticsThDomesticAmount(), request.logisticsThDomesticCurrency(),
+                request.krwPerThb()));
+    }
+
+    /** paidAmountKrw 직접 수정. 차액만큼 디파짓 원장에 ADJUSTMENT 자동 기록. */
+    @PatchMapping("/{id}/paid-amount")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<OrderDetailView> updatePaidAmount(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdatePaidAmountRequest request,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(intakeOrderService.updatePaidAmount(
+                id, request.paidAmountKrw(), userId));
+    }
+
+    /** PURCHASED 이후 결제 증빙 사진 후속 추가. 누적 저장. */
+    @PostMapping("/{id}/proof")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<OrderDetailView> addProof(
+            @PathVariable Long id,
+            @Valid @RequestBody AddPurchaseProofsRequest request,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(intakeOrderService.addPurchaseProofs(
+                id, request.proofTempKeys(), userId));
+    }
+
+    /** ADMIN-only override: jump fulfillment to any status, bypassing the state machine. */
+    @PatchMapping("/{id}/fulfillment-status/force")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<OrderDetailView> forceFulfillment(
+            @PathVariable Long id,
+            @Valid @RequestBody ForceFulfillmentStatusRequest request,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(intakeOrderService.forceChangeFulfillmentStatus(
+                new ForceFulfillmentStatusCommand(id, request.target(), request.reason()), userId));
+    }
+
+    /** ADMIN-only override: jump payment to any status, bypassing the state machine. */
+    @PatchMapping("/{id}/payment-status/force")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<OrderDetailView> forcePayment(
+            @PathVariable Long id,
+            @Valid @RequestBody ForcePaymentStatusRequest request,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(intakeOrderService.forceChangePaymentStatus(
+                new ForcePaymentStatusCommand(id, request.target(), request.reason()), userId));
     }
 }

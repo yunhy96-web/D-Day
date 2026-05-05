@@ -10,7 +10,7 @@ export const loginSchema = z.object({
   password: z
     .string()
     .min(1, { message: 'msg.error.required' })
-    .min(12, { message: 'msg.error.password_too_short' }),
+    .min(4, { message: 'msg.error.password_too_short' }),
 })
 
 export type LoginFormValues = z.infer<typeof loginSchema>

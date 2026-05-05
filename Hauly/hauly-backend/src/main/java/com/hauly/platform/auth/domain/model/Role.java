@@ -9,7 +9,8 @@ import java.util.Set;
 public enum Role {
     INTAKE,
     BUYER,
-    ADMIN;
+    ADMIN,
+    VIEWER;
 
     /**
      * Returns Spring Security-style authority strings for this role.

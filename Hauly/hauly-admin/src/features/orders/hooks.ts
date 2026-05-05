@@ -1,19 +1,26 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  addPurchaseProofs,
   changeFulfillmentStatus,
   changePaymentStatus,
   createOrder,
   createOrderNote,
   deleteOrder,
   deleteOrderNote,
+  forceFulfillmentStatus,
+  forcePaymentStatus,
   getOrder,
   listOrderNotes,
   listOrders,
+  updateFinancials,
   updateOrderNote,
+  updatePaidAmount,
+  updateTracking,
   type CreateOrderInput,
   type FulfillmentStatus,
   type OrderSortOption,
   type PaymentStatus,
+  type UpdateFinancialsInput,
 } from '@/lib/api/orders'
 
 const ORDERS_KEY = 'orders' as const
@@ -66,11 +73,71 @@ export function useDeleteOrder() {
 export function useChangeFulfillmentStatus(orderId: number) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ target, note }: { target: FulfillmentStatus; note?: string }) =>
-      changeFulfillmentStatus(orderId, target, note),
+    mutationFn: ({
+      target,
+      note,
+      paidAmountKrw,
+      proofTempKeys,
+    }: {
+      target: FulfillmentStatus
+      note?: string
+      /** Required when target === 'PURCHASED' — debited from the deposit ledger. */
+      paidAmountKrw?: string
+      /** Optional payment proof images uploaded via /uploads/temp. */
+      proofTempKeys?: string[]
+    }) => changeFulfillmentStatus(orderId, target, note, paidAmountKrw, proofTempKeys),
     onSuccess: (data) => {
       qc.setQueryData([ORDERS_KEY, 'detail', orderId], data)
       qc.invalidateQueries({ queryKey: [ORDERS_KEY, 'list'] })
+      qc.invalidateQueries({ queryKey: ['dashboard', 'summary'] })
+      qc.invalidateQueries({ queryKey: ['deposits'] })
+    },
+  })
+}
+
+export function useUpdateTracking(orderId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ courier, trackingNo }: { courier: string | null; trackingNo: string | null }) =>
+      updateTracking(orderId, courier, trackingNo),
+    onSuccess: (data) => {
+      qc.setQueryData([ORDERS_KEY, 'detail', orderId], data)
+      qc.invalidateQueries({ queryKey: [ORDERS_KEY, 'list'] })
+    },
+  })
+}
+
+export function useUpdateFinancials(orderId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: UpdateFinancialsInput) => updateFinancials(orderId, input),
+    onSuccess: (data) => {
+      qc.setQueryData([ORDERS_KEY, 'detail', orderId], data)
+      qc.invalidateQueries({ queryKey: [ORDERS_KEY, 'list'] })
+      qc.invalidateQueries({ queryKey: ['dashboard', 'summary'] })
+    },
+  })
+}
+
+export function useUpdatePaidAmount(orderId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (paidAmountKrw: string) => updatePaidAmount(orderId, paidAmountKrw),
+    onSuccess: (data) => {
+      qc.setQueryData([ORDERS_KEY, 'detail', orderId], data)
+      qc.invalidateQueries({ queryKey: [ORDERS_KEY, 'list'] })
+      qc.invalidateQueries({ queryKey: ['dashboard', 'summary'] })
+      qc.invalidateQueries({ queryKey: ['deposits'] })
+    },
+  })
+}
+
+export function useAddPurchaseProofs(orderId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (proofTempKeys: string[]) => addPurchaseProofs(orderId, proofTempKeys),
+    onSuccess: (data) => {
+      qc.setQueryData([ORDERS_KEY, 'detail', orderId], data)
     },
   })
 }
@@ -80,6 +147,30 @@ export function useChangePaymentStatus(orderId: number) {
   return useMutation({
     mutationFn: ({ target, note }: { target: PaymentStatus; note?: string }) =>
       changePaymentStatus(orderId, target, note),
+    onSuccess: (data) => {
+      qc.setQueryData([ORDERS_KEY, 'detail', orderId], data)
+      qc.invalidateQueries({ queryKey: [ORDERS_KEY, 'list'] })
+    },
+  })
+}
+
+export function useForceFulfillmentStatus(orderId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ target, reason }: { target: FulfillmentStatus; reason: string }) =>
+      forceFulfillmentStatus(orderId, target, reason),
+    onSuccess: (data) => {
+      qc.setQueryData([ORDERS_KEY, 'detail', orderId], data)
+      qc.invalidateQueries({ queryKey: [ORDERS_KEY, 'list'] })
+    },
+  })
+}
+
+export function useForcePaymentStatus(orderId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ target, reason }: { target: PaymentStatus; reason: string }) =>
+      forcePaymentStatus(orderId, target, reason),
     onSuccess: (data) => {
       qc.setQueryData([ORDERS_KEY, 'detail', orderId], data)
       qc.invalidateQueries({ queryKey: [ORDERS_KEY, 'list'] })

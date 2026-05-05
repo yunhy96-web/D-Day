@@ -128,7 +128,8 @@ class AuthControllerIT {
 
     @Test
     void login_shortPassword_returns400() throws Exception {
-        Map<String, String> body = Map.of("username", TEST_USERNAME, "password", "short");
+        // 정책 변경: 최소 길이가 4자로 완화되었으므로 1자(min=4 미만)로 검증.
+        Map<String, String> body = Map.of("username", TEST_USERNAME, "password", "x");
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

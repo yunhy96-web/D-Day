@@ -26,6 +26,7 @@ public record CreateOrderCommand(
         String postalCode,
         String addressLine,
         String country,
+        String shippingAddressLabel,
         List<Item> items
 ) {
     public record Item(

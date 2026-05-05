@@ -9,8 +9,9 @@ import {
   Package,
   PlusCircle,
   Globe,
+  Wallet,
 } from 'lucide-react'
-import { useLogout, useMe } from '@/features/auth/hooks'
+import { useIsAdmin, useLogout, useMe, useUpdateLanguagePreference } from '@/features/auth/hooks'
 import { ChangePasswordModal } from '@/features/auth/ChangePasswordModal'
 import { Button } from '@/components/ui/button'
 import {
@@ -38,6 +39,8 @@ export default function AppLayout() {
   const { t, i18n } = useTranslation()
   const logoutMutation = useLogout()
   const { data: me } = useMe()
+  const isAdmin = useIsAdmin()
+  const langMutation = useUpdateLanguagePreference()
   const location = useLocation()
   const [pwOpen, setPwOpen] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -47,6 +50,21 @@ export default function AppLayout() {
   useEffect(() => {
     setDrawerOpen(false)
   }, [location.pathname])
+
+  // 계정 디폴트 언어가 설정되어 있고 현재 i18n과 다르면 동기화 (로그인 직후 1회).
+  useEffect(() => {
+    if (me?.preferredLanguage && me.preferredLanguage !== i18n.resolvedLanguage) {
+      i18n.changeLanguage(me.preferredLanguage)
+    }
+    // me.preferredLanguage 변경 시에만 트리거.
+  }, [me?.preferredLanguage]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function changeLanguage(code: string) {
+    i18n.changeLanguage(code)
+    if (code === 'ko' || code === 'en' || code === 'th') {
+      langMutation.mutate(code)
+    }
+  }
 
   const navItem = (to: string, label: string, Icon: typeof LayoutDashboard) => (
     <NavLink
@@ -70,7 +88,8 @@ export default function AppLayout() {
     <nav className="flex-1 p-3 space-y-1">
       {navItem('/dashboard', t('menu.dashboard'), LayoutDashboard)}
       {navItem('/orders', t('menu.orders'), Package)}
-      {navItem('/orders/new', t('menu.orders_new'), PlusCircle)}
+      {isAdmin && navItem('/orders/new', t('menu.orders_new'), PlusCircle)}
+      {navItem('/deposits', t('menu.deposits'), Wallet)}
     </nav>
   )
 
@@ -119,7 +138,7 @@ export default function AppLayout() {
               <DropdownMenuSubContent>
                 <DropdownMenuRadioGroup
                   value={i18n.resolvedLanguage}
-                  onValueChange={(v: string) => i18n.changeLanguage(v)}
+                  onValueChange={changeLanguage}
                 >
                   {LANGUAGES.map(({ code, key }) => (
                     <DropdownMenuRadioItem key={code} value={code}>

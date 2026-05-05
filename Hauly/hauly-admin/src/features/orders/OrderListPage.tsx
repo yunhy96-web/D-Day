@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { useOrders } from './hooks'
+import { useCommonCodeGroup } from './commonCodeHooks'
+import { useIsAdmin } from '@/features/auth/hooks'
 import {
   findLabel,
   fulfillmentTone,
@@ -17,6 +19,7 @@ import {
 } from './statusLabels'
 import { useDebounced } from './useDebounced'
 import { formatMoney } from './money'
+import { ImageLightbox } from './ImageLightbox'
 import type { OrderSortOption } from '@/lib/api/orders'
 
 const SORT_OPTIONS: Array<{ value: OrderSortOption; labelKey: string }> = [
@@ -29,8 +32,10 @@ const SORT_OPTIONS: Array<{ value: OrderSortOption; labelKey: string }> = [
 export default function OrderListPage() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
+  const isAdmin = useIsAdmin()
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<OrderSortOption>('createdAt-desc')
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
   const debouncedQuery = useDebounced(query, 300)
 
   // Memoize so the query key stays referentially stable across re-renders —
@@ -43,17 +48,20 @@ export default function OrderListPage() {
   const { data, isLoading, isError, refetch, isFetching } = useOrders(queryParams)
   const { data: fulfillmentLabels } = useFulfillmentLabels()
   const { data: paymentLabels } = usePaymentLabels()
+  const { data: courierLabels } = useCommonCodeGroup('COURIER_KR')
 
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl md:text-2xl font-semibold">{t('menu.orders')}</h1>
-        <Link
-          to="/orders/new"
-          className="inline-flex items-center justify-center rounded-md bg-primary px-3 h-9 text-sm font-medium text-primary-foreground hover:bg-primary/90 whitespace-nowrap"
-        >
-          + {t('menu.orders_new')}
-        </Link>
+        {isAdmin && (
+          <Link
+            to="/orders/new"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-3 h-9 text-sm font-medium text-primary-foreground hover:bg-primary/90 whitespace-nowrap"
+          >
+            + {t('menu.orders_new')}
+          </Link>
+        )}
       </div>
 
       <Card>
@@ -109,8 +117,9 @@ export default function OrderListPage() {
                     <tr>
                       <th className="text-left py-2 px-2">{t('order.col.no')}</th>
                       <th className="text-left py-2 px-2">{t('order.col.customer')}</th>
-                      <th className="text-left py-2 px-2">{t('order.col.items')}</th>
+                      <th className="text-left py-2 px-2">{t('order.col.product')}</th>
                       <th className="text-left py-2 px-2">{t('order.col.amount')}</th>
+                      <th className="text-left py-2 px-2">{t('order.col.tracking')}</th>
                       <th className="text-left py-2 px-2">{t('order.col.fulfillment')}</th>
                       <th className="text-left py-2 px-2">{t('order.col.payment')}</th>
                       <th className="text-left py-2 px-2">{t('order.col.created_at')}</th>
@@ -139,19 +148,82 @@ export default function OrderListPage() {
                             )}
                           </div>
                         </td>
-                        <td className="py-2 px-2">{o.customerName}</td>
-                        <td className="py-2 px-2">{o.itemCount}</td>
+                        <td className="py-2 px-2">
+                          <div>{o.customerName}</div>
+                          {o.shippingAddressLabel && (
+                            <div className="text-[10px] text-muted-foreground truncate max-w-[160px]">
+                              → {o.shippingAddressLabel}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-2 px-2 max-w-[280px]">
+                          <div className="flex items-start gap-2">
+                            {o.firstImageUrl ? (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setLightboxUrl(o.firstImageUrl)
+                                }}
+                                className="w-10 h-10 shrink-0 rounded border overflow-hidden bg-muted hover:opacity-80"
+                                aria-label={t('image.aria.zoom', { n: 1 })}
+                              >
+                                <img
+                                  src={o.firstImageUrl}
+                                  alt=""
+                                  loading="lazy"
+                                  decoding="async"
+                                  className="w-full h-full object-cover"
+                                />
+                              </button>
+                            ) : (
+                              <div className="w-10 h-10 shrink-0 rounded border bg-muted/30" />
+                            )}
+                            <div className="min-w-0">
+                              <div className="truncate" title={o.firstProductName ?? ''}>
+                                {o.firstProductName ?? <span className="text-muted-foreground">—</span>}
+                              </div>
+                              {o.itemCount > 1 && (
+                                <div className="text-[10px] text-muted-foreground">
+                                  + {o.itemCount - 1} {t('order.col.items.more')}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
                         <td className="py-2 px-2 whitespace-nowrap">
-                          {Object.keys(o.totalsByCurrency).length === 0 ? (
+                          {Object.keys(o.totalsByCurrency).length === 0 && !o.paidAmountKrw ? (
                             <span className="text-muted-foreground">—</span>
                           ) : (
                             <div className="flex flex-col">
                               {Object.entries(o.totalsByCurrency).map(([cur, amount]) => (
                                 <span key={cur} className="text-xs">
+                                  <span className="text-muted-foreground">{t('field.expected.short')}:</span>{' '}
                                   {formatMoney(amount, cur, i18n.resolvedLanguage)}
                                 </span>
                               ))}
+                              {o.paidAmountKrw && (
+                                <span className="text-[11px] text-emerald-700 font-medium">
+                                  {t('field.actual.short')}: {formatMoney(o.paidAmountKrw, 'KRW', i18n.resolvedLanguage)}
+                                </span>
+                              )}
                             </div>
+                          )}
+                        </td>
+                        <td className="py-2 px-2 text-xs">
+                          {o.koreanCourier || o.koreanTrackingNo ? (
+                            <div className="flex flex-col">
+                              {o.koreanCourier && (
+                                <span>{findLabel(courierLabels, o.koreanCourier)}</span>
+                              )}
+                              {o.koreanTrackingNo && (
+                                <span className="font-mono text-[11px] text-muted-foreground truncate max-w-[140px]">
+                                  {o.koreanTrackingNo}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
                           )}
                         </td>
                         <td className="py-2 px-2">
@@ -200,13 +272,67 @@ export default function OrderListPage() {
                         {o.itemCount} {t('order.col.items')}
                       </span>
                     </div>
-                    {Object.keys(o.totalsByCurrency).length > 0 && (
+                    {o.shippingAddressLabel && (
+                      <div className="text-[11px] text-muted-foreground truncate">
+                        {t('order.col.shipping_to')}: {o.shippingAddressLabel}
+                      </div>
+                    )}
+                    {(o.firstProductName || o.firstImageUrl) && (
+                      <div className="flex items-start gap-2">
+                        {o.firstImageUrl && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setLightboxUrl(o.firstImageUrl)
+                            }}
+                            className="w-12 h-12 shrink-0 rounded border overflow-hidden bg-muted hover:opacity-80"
+                            aria-label={t('image.aria.zoom', { n: 1 })}
+                          >
+                            <img
+                              src={o.firstImageUrl}
+                              alt=""
+                              loading="lazy"
+                              decoding="async"
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        )}
+                        {o.firstProductName && (
+                          <div className="text-xs truncate min-w-0" title={o.firstProductName}>
+                            {o.firstProductName}
+                            {o.itemCount > 1 && (
+                              <span className="text-muted-foreground">
+                                {' '}+ {o.itemCount - 1} {t('order.col.items.more')}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {(o.koreanCourier || o.koreanTrackingNo) && (
+                      <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                        {o.koreanCourier && (
+                          <span>{findLabel(courierLabels, o.koreanCourier)}</span>
+                        )}
+                        {o.koreanTrackingNo && (
+                          <span className="font-mono truncate">{o.koreanTrackingNo}</span>
+                        )}
+                      </div>
+                    )}
+                    {(Object.keys(o.totalsByCurrency).length > 0 || o.paidAmountKrw) && (
                       <div className="text-xs flex flex-wrap gap-x-3 gap-y-0.5">
                         {Object.entries(o.totalsByCurrency).map(([cur, amount]) => (
                           <span key={cur}>
+                            <span className="text-muted-foreground">{t('field.expected.short')}:</span>{' '}
                             {formatMoney(amount, cur, i18n.resolvedLanguage)}
                           </span>
                         ))}
+                        {o.paidAmountKrw && (
+                          <span className="text-emerald-700 font-medium">
+                            {t('field.actual.short')}: {formatMoney(o.paidAmountKrw, 'KRW', i18n.resolvedLanguage)}
+                          </span>
+                        )}
                       </div>
                     )}
                     <div className="flex flex-wrap gap-1.5">
@@ -224,6 +350,8 @@ export default function OrderListPage() {
           )}
         </CardContent>
       </Card>
+
+      <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
     </div>
   )
 }

@@ -12,6 +12,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -67,11 +69,20 @@ public class Order {
     @Column(name = "internal_memo", columnDefinition = "TEXT")
     private String internalMemo;
 
-    @Column(name = "korean_tracking_no", length = 64)
+    @Column(name = "korean_tracking_no", length = 500)
     private String koreanTrackingNo;
 
     @Column(name = "korean_courier", length = 32)
     private String koreanCourier;
+
+    /** PURCHASED 시점에 기록되는 실제 결제 금액 (KRW). NULL 가능. */
+    @Column(name = "paid_amount_krw", precision = 15, scale = 2)
+    private java.math.BigDecimal paidAmountKrw;
+
+    /** PURCHASED 후 캡처한 결제 증빙 이미지 키 목록. NULL 가능. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "purchase_proof_keys", columnDefinition = "jsonb")
+    private List<String> purchaseProofKeys;
 
     @Column(name = "recipient_name", length = 64)
     private String recipientName;
@@ -88,6 +99,37 @@ public class Order {
     /** ISO 3166-1 alpha-2 (TH/KR/US/...). */
     @Column(length = 2)
     private String country;
+
+    /** 배송지 템플릿 별칭 (선택). 템플릿이 삭제돼도 라벨 텍스트는 남도록 비정규화. */
+    @Column(name = "shipping_address_label", length = 64)
+    private String shippingAddressLabel;
+
+    // --- 재무 필드 (순수익 계산용. 모두 nullable, 단계적 입력 허용.) ---
+
+    /** 고객이 송금한 금액 (KRW or THB). */
+    @Column(name = "customer_revenue_amount", precision = 12, scale = 2)
+    private java.math.BigDecimal customerRevenueAmount;
+
+    @Column(name = "customer_revenue_currency", length = 3)
+    private String customerRevenueCurrency;
+
+    /** 한→태 국제 물류비. */
+    @Column(name = "logistics_kr_to_th_amount", precision = 12, scale = 2)
+    private java.math.BigDecimal logisticsKrToThAmount;
+
+    @Column(name = "logistics_kr_to_th_currency", length = 3)
+    private String logisticsKrToThCurrency;
+
+    /** 태국 내 배송비. */
+    @Column(name = "logistics_th_domestic_amount", precision = 12, scale = 2)
+    private java.math.BigDecimal logisticsThDomesticAmount;
+
+    @Column(name = "logistics_th_domestic_currency", length = 3)
+    private String logisticsThDomesticCurrency;
+
+    /** 주문별 환율 (1 THB = N KRW). THB 값 환산용. */
+    @Column(name = "krw_per_thb", precision = 10, scale = 4)
+    private java.math.BigDecimal krwPerThb;
 
     @Column(name = "created_by")
     private Long createdBy;
@@ -159,7 +201,7 @@ public class Order {
         order.koreanCourier = blankToNull(koreanCourier);
         order.pendingLogs.add(new PendingLog(
                 StatusDimension.FULFILLMENT, null, FulfillmentStatus.REQUESTED.name(),
-                createdBy, "Order registered"));
+                createdBy, "Order registered", false));
         return order;
     }
 
@@ -180,6 +222,10 @@ public class Order {
         String c = blankToNull(country);
         this.country = c == null ? null : c.toUpperCase();
         this.updatedAt = OffsetDateTime.now();
+    }
+
+    public void setShippingAddressLabel(String label) {
+        this.shippingAddressLabel = blankToNull(label);
     }
 
     public OrderItem addItem(String productName, String productUrl, Integer quantity,
@@ -213,7 +259,7 @@ public class Order {
         this.fulfillmentStatus = target;
         this.updatedAt = OffsetDateTime.now();
         pendingLogs.add(new PendingLog(
-                StatusDimension.FULFILLMENT, from.name(), target.name(), changedBy, note));
+                StatusDimension.FULFILLMENT, from.name(), target.name(), changedBy, note, false));
     }
 
     public void changePaymentStatus(PaymentStatus target, Long changedBy, String note) {
@@ -226,7 +272,37 @@ public class Order {
         this.paymentStatus = target;
         this.updatedAt = OffsetDateTime.now();
         pendingLogs.add(new PendingLog(
-                StatusDimension.PAYMENT, from.name(), target.name(), changedBy, note));
+                StatusDimension.PAYMENT, from.name(), target.name(), changedBy, note, false));
+    }
+
+    /**
+     * ADMIN-only override: jump to any other fulfillment status, bypassing the state machine.
+     * Used to reverse mistakes (e.g. roll back from PURCHASED when the upstream brand cancels).
+     * The reason is stored in the audit log and is required upstream.
+     */
+    public void forceChangeFulfillmentStatus(FulfillmentStatus target, Long changedBy, String reason) {
+        if (target == null) throw new IllegalArgumentException("target status required");
+        if (target == fulfillmentStatus) {
+            throw new IllegalArgumentException("force_same_status");
+        }
+        FulfillmentStatus from = this.fulfillmentStatus;
+        this.fulfillmentStatus = target;
+        this.updatedAt = OffsetDateTime.now();
+        pendingLogs.add(new PendingLog(
+                StatusDimension.FULFILLMENT, from.name(), target.name(), changedBy, reason, true));
+    }
+
+    /** ADMIN-only override mirror of {@link #forceChangeFulfillmentStatus} for the payment dimension. */
+    public void forceChangePaymentStatus(PaymentStatus target, Long changedBy, String reason) {
+        if (target == null) throw new IllegalArgumentException("target status required");
+        if (target == paymentStatus) {
+            throw new IllegalArgumentException("force_same_status");
+        }
+        PaymentStatus from = this.paymentStatus;
+        this.paymentStatus = target;
+        this.updatedAt = OffsetDateTime.now();
+        pendingLogs.add(new PendingLog(
+                StatusDimension.PAYMENT, from.name(), target.name(), changedBy, reason, true));
     }
 
     /** Drains the pending log list — called by the application service after save. */
@@ -249,18 +325,113 @@ public class Order {
     public String getInternalMemo() { return internalMemo; }
     public String getKoreanTrackingNo() { return koreanTrackingNo; }
     public String getKoreanCourier() { return koreanCourier; }
+    public java.math.BigDecimal getPaidAmountKrw() { return paidAmountKrw; }
+    public void recordPaidAmountKrw(java.math.BigDecimal amount) { this.paidAmountKrw = amount; }
+    public List<String> getPurchaseProofKeys() {
+        return purchaseProofKeys == null ? List.of() : Collections.unmodifiableList(purchaseProofKeys);
+    }
+    public void recordPurchaseProofKeys(List<String> keys) {
+        this.purchaseProofKeys = (keys == null || keys.isEmpty()) ? null : new ArrayList<>(keys);
+    }
+    /** 트래킹 정보 갱신 (PURCHASED 이후에도 호출 가능). 빈 문자열은 null로 정규화. */
+    public void updateTracking(String courier, String trackingNo) {
+        this.koreanCourier = blankToNull(courier);
+        this.koreanTrackingNo = blankToNull(trackingNo);
+        this.updatedAt = OffsetDateTime.now();
+    }
     public String getRecipientName() { return recipientName; }
     public String getRecipientPhone() { return recipientPhone; }
     public String getPostalCode() { return postalCode; }
     public String getAddressLine() { return addressLine; }
     public String getCountry() { return country; }
+    public String getShippingAddressLabel() { return shippingAddressLabel; }
     public Long getCreatedBy() { return createdBy; }
     public Long getPurchasedBy() { return purchasedBy; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
     public List<OrderItem> getItems() { return Collections.unmodifiableList(items); }
 
+    public java.math.BigDecimal getCustomerRevenueAmount() { return customerRevenueAmount; }
+    public String getCustomerRevenueCurrency() { return customerRevenueCurrency; }
+    public java.math.BigDecimal getLogisticsKrToThAmount() { return logisticsKrToThAmount; }
+    public String getLogisticsKrToThCurrency() { return logisticsKrToThCurrency; }
+    public java.math.BigDecimal getLogisticsThDomesticAmount() { return logisticsThDomesticAmount; }
+    public String getLogisticsThDomesticCurrency() { return logisticsThDomesticCurrency; }
+    public java.math.BigDecimal getKrwPerThb() { return krwPerThb; }
+
+    /**
+     * 재무 필드 일괄 업데이트. null/빈값은 해당 필드 클리어.
+     * amount-currency 쌍은 함께 또는 둘 다 비어있어야 함 (정합성).
+     */
+    public void updateFinancials(
+            java.math.BigDecimal customerRevenueAmount, String customerRevenueCurrency,
+            java.math.BigDecimal logisticsKrToThAmount, String logisticsKrToThCurrency,
+            java.math.BigDecimal logisticsThDomesticAmount, String logisticsThDomesticCurrency,
+            java.math.BigDecimal krwPerThb) {
+        validatePair(customerRevenueAmount, customerRevenueCurrency, "customer_revenue");
+        validatePair(logisticsKrToThAmount, logisticsKrToThCurrency, "logistics_kr_to_th");
+        validatePair(logisticsThDomesticAmount, logisticsThDomesticCurrency, "logistics_th_domestic");
+        this.customerRevenueAmount = customerRevenueAmount;
+        this.customerRevenueCurrency = blankToNull(customerRevenueCurrency);
+        this.logisticsKrToThAmount = logisticsKrToThAmount;
+        this.logisticsKrToThCurrency = blankToNull(logisticsKrToThCurrency);
+        this.logisticsThDomesticAmount = logisticsThDomesticAmount;
+        this.logisticsThDomesticCurrency = blankToNull(logisticsThDomesticCurrency);
+        this.krwPerThb = krwPerThb;
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    private static void validatePair(java.math.BigDecimal amount, String currency, String fieldName) {
+        boolean hasAmount = amount != null;
+        boolean hasCurrency = currency != null && !currency.isBlank();
+        if (hasAmount != hasCurrency) {
+            throw new IllegalArgumentException(fieldName + "_amount_currency_mismatch");
+        }
+        if (hasCurrency && !"KRW".equals(currency) && !"THB".equals(currency)) {
+            throw new IllegalArgumentException(fieldName + "_invalid_currency");
+        }
+    }
+
+    /**
+     * 순수익 (KRW) 계산. 4개 monetary 입력값이 모두 채워져 있고, THB값이 있을 때 환율도 입력되어
+     * 있어야 계산 가능. 그렇지 않으면 null 반환 (UI가 적절한 메시지로 fallback).
+     *
+     *   profit_krw = customer_revenue_krw - paid_amount_krw - logistics_kr_th_krw - logistics_th_dom_krw
+     */
+    public java.math.BigDecimal getNetProfitKrw() {
+        if (paidAmountKrw == null
+                || customerRevenueAmount == null
+                || logisticsKrToThAmount == null
+                || logisticsThDomesticAmount == null) {
+            return null;
+        }
+        java.math.BigDecimal revenueKrw = toKrw(customerRevenueAmount, customerRevenueCurrency);
+        java.math.BigDecimal logisticsKr = toKrw(logisticsKrToThAmount, logisticsKrToThCurrency);
+        java.math.BigDecimal logisticsTh = toKrw(logisticsThDomesticAmount, logisticsThDomesticCurrency);
+        if (revenueKrw == null || logisticsKr == null || logisticsTh == null) return null;
+        return revenueKrw.subtract(paidAmountKrw).subtract(logisticsKr).subtract(logisticsTh);
+    }
+
+    private java.math.BigDecimal toKrw(java.math.BigDecimal amount, String currency) {
+        if (amount == null || currency == null) return null;
+        if ("KRW".equals(currency)) return amount;
+        if ("THB".equals(currency)) {
+            if (krwPerThb == null) return null;
+            return amount.multiply(krwPerThb).setScale(2, java.math.RoundingMode.HALF_UP);
+        }
+        return null;
+    }
+
+    /** PURCHASED 이후 결제 금액 직접 수정 (디파짓 보정은 service 레이어에서 처리). */
+    public void overridePaidAmountKrw(java.math.BigDecimal newAmount) {
+        if (newAmount == null || newAmount.signum() <= 0) {
+            throw new IllegalArgumentException("paid_amount_required");
+        }
+        this.paidAmountKrw = newAmount;
+        this.updatedAt = OffsetDateTime.now();
+    }
+
     /** Carrier for a status change waiting to be written to order_status_log. */
     public record PendingLog(StatusDimension dimension, String fromCode, String toCode,
-                             Long changedBy, String note) {}
+                             Long changedBy, String note, boolean forced) {}
 }

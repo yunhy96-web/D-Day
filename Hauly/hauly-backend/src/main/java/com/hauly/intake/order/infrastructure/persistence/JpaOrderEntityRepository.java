@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -109,4 +110,24 @@ interface JpaOrderEntityRepository extends JpaRepository<Order, Long> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("DELETE FROM Order o WHERE o.id = :id")
     int deleteOrderById(@Param("id") Long id);
+
+    /**
+     * Resolves order_no for a batch of ids — used by the deposit ledger view to label
+     * PURCHASE / REFUND rows without N+1 lookups.
+     */
+    @Query("SELECT o.id, o.orderNo FROM Order o WHERE o.id IN :ids")
+    List<Object[]> findOrderNosByIds(@Param("ids") Collection<Long> ids);
+
+    /**
+     * 재무 입력이 완료된 주문들 — 4개 monetary 필드 모두 NOT NULL.
+     * 환율 조건은 service 레이어에서 추가 필터링 (THB 사용 시에만 환율 필요).
+     */
+    @Query("""
+            SELECT o FROM Order o
+            WHERE o.paidAmountKrw IS NOT NULL
+              AND o.customerRevenueAmount IS NOT NULL
+              AND o.logisticsKrToThAmount IS NOT NULL
+              AND o.logisticsThDomesticAmount IS NOT NULL
+            """)
+    List<Order> findAllWithCompleteFinancials();
 }

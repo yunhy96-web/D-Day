@@ -1,8 +1,11 @@
 package com.hauly.intake.order.application;
 
+import com.hauly.intake.deposit.application.DepositService;
 import com.hauly.intake.order.application.command.ChangeFulfillmentStatusCommand;
 import com.hauly.intake.order.application.command.ChangePaymentStatusCommand;
 import com.hauly.intake.order.application.command.CreateOrderCommand;
+import com.hauly.intake.order.application.command.ForceFulfillmentStatusCommand;
+import com.hauly.intake.order.application.command.ForcePaymentStatusCommand;
 import com.hauly.intake.order.application.query.OrderDetailView;
 import com.hauly.intake.order.application.query.OrderListItemView;
 import com.hauly.intake.order.domain.model.FulfillmentStatus;
@@ -41,15 +44,18 @@ public class IntakeOrderService {
     private final CustomerLookupService customerLookupService;
     private final OrderNoGenerator orderNoGenerator;
     private final BlobStorage blobStorage;
+    private final DepositService depositService;
 
     public IntakeOrderService(OrderRepository orderRepository,
                               CustomerLookupService customerLookupService,
                               OrderNoGenerator orderNoGenerator,
-                              BlobStorage blobStorage) {
+                              BlobStorage blobStorage,
+                              DepositService depositService) {
         this.orderRepository = orderRepository;
         this.customerLookupService = customerLookupService;
         this.orderNoGenerator = orderNoGenerator;
         this.blobStorage = blobStorage;
+        this.depositService = depositService;
     }
 
     public OrderDetailView createOrder(CreateOrderCommand cmd, Long createdBy) {
@@ -100,6 +106,7 @@ public class IntakeOrderService {
                 cmd.postalCode(),
                 cmd.addressLine(),
                 cmd.country());
+        order.setShippingAddressLabel(cmd.shippingAddressLabel());
 
         for (CreateOrderCommand.Item item : cmd.items()) {
             order.addItem(item.productName(), item.productUrl(), item.quantity(),
@@ -163,7 +170,7 @@ public class IntakeOrderService {
         }
         return orders.map(o -> {
             Customer c = customerLookupService.getById(o.getCustomerId());
-            return OrderListItemView.from(o, c.getName());
+            return OrderListItemView.from(o, c.getName(), blobStorage);
         });
     }
 
@@ -193,9 +200,112 @@ public class IntakeOrderService {
     public OrderDetailView changeFulfillmentStatus(ChangeFulfillmentStatusCommand cmd, Long actorId) {
         Order order = loadOrder(cmd.orderId());
         order.changeFulfillmentStatus(cmd.target(), actorId, cmd.note());
+        if (cmd.target() == FulfillmentStatus.PURCHASED) {
+            if (cmd.paidAmountKrw() != null) {
+                order.recordPaidAmountKrw(cmd.paidAmountKrw());
+            }
+            // 결제 증빙 임시 키 → 영구 키 이동.
+            List<String> proofTemp = cmd.proofTempKeys();
+            if (proofTemp != null && !proofTemp.isEmpty()) {
+                List<String> permanent = new ArrayList<>(proofTemp.size());
+                for (String tempKey : proofTemp) {
+                    String ext = extractExt(tempKey);
+                    String permanentKey = "orders/" + order.getId() + "/proof/"
+                            + UUID.randomUUID() + "." + ext;
+                    blobStorage.copy(tempKey, permanentKey);
+                    blobStorage.delete(tempKey);
+                    permanent.add(permanentKey);
+                }
+                // 기존 키와 합쳐서 누적 (재차 PURCHASED 진입 시 추가만).
+                List<String> existing = new ArrayList<>(order.getPurchaseProofKeys());
+                existing.addAll(permanent);
+                order.recordPurchaseProofKeys(existing);
+            }
+        }
         order = orderRepository.save(order);
         flushPendingLogs(order);
+        applyDepositSideEffects(order.getId(), cmd.target(), cmd.paidAmountKrw(), actorId);
         return getOrder(order.getId());
+    }
+
+    /**
+     * 재무 필드 일괄 업데이트 (고객입금/물류비/태국배송비/환율). PURCHASED 전이여도 입력 가능.
+     */
+    public OrderDetailView updateFinancials(
+            Long orderId,
+            java.math.BigDecimal customerRevenueAmount, String customerRevenueCurrency,
+            java.math.BigDecimal logisticsKrToThAmount, String logisticsKrToThCurrency,
+            java.math.BigDecimal logisticsThDomesticAmount, String logisticsThDomesticCurrency,
+            java.math.BigDecimal krwPerThb) {
+        Order order = loadOrder(orderId);
+        order.updateFinancials(
+                customerRevenueAmount, customerRevenueCurrency,
+                logisticsKrToThAmount, logisticsKrToThCurrency,
+                logisticsThDomesticAmount, logisticsThDomesticCurrency,
+                krwPerThb);
+        orderRepository.save(order);
+        return getOrder(orderId);
+    }
+
+    /**
+     * paidAmountKrw 직접 수정. 기존 값과의 차액만큼 디파짓 원장에 ADJUSTMENT 트랜잭션을 자동 추가.
+     * 기존 PURCHASE 트랜잭션은 건드리지 않고 append-only 유지.
+     *
+     * <p>oldPaid가 null인 경우 (V20 디파짓 도입 전 등록된 옛 주문 또는 데이터 마이그레이션):
+     * PURCHASE 트랜잭션을 신규 작성하여 정상 상태로 복구.
+     */
+    public OrderDetailView updatePaidAmount(Long orderId, java.math.BigDecimal newPaidAmount, Long actorId) {
+        Order order = loadOrder(orderId);
+        java.math.BigDecimal oldPaid = order.getPaidAmountKrw();
+        order.overridePaidAmountKrw(newPaidAmount);
+        orderRepository.save(order);
+        if (oldPaid == null) {
+            depositService.recordPurchase(orderId, newPaidAmount, actorId);
+        } else if (oldPaid.compareTo(newPaidAmount) != 0) {
+            String note = "Order " + order.getOrderNo()
+                    + ": paidAmountKrw " + oldPaid.toPlainString() + " → " + newPaidAmount.toPlainString();
+            depositService.recordPaidAmountAdjustment(orderId, oldPaid, newPaidAmount, note, actorId);
+        }
+        return getOrder(orderId);
+    }
+
+    /** 트래킹 정보 후속 입력/수정. PURCHASED 이후에도 호출 가능. */
+    public OrderDetailView updateTracking(Long orderId, String courier, String trackingNo) {
+        Order order = loadOrder(orderId);
+        order.updateTracking(courier, trackingNo);
+        orderRepository.save(order);
+        return getOrder(orderId);
+    }
+
+    /**
+     * PURCHASED 이후 결제 증빙 사진 후속 추가. 기존 키와 누적 저장.
+     * temp 키 소유권 검증은 controller 또는 호출자에서 별도 처리.
+     */
+    public OrderDetailView addPurchaseProofs(Long orderId, List<String> proofTempKeys, Long actorId) {
+        if (proofTempKeys == null || proofTempKeys.isEmpty()) {
+            throw new IllegalArgumentException("proof_keys_required");
+        }
+        Order order = loadOrder(orderId);
+        String tempPrefix = "temp/" + actorId + "/";
+        for (String key : proofTempKeys) {
+            if (key == null || !key.startsWith(tempPrefix)) {
+                throw new IllegalArgumentException("invalid temp image key: " + key);
+            }
+        }
+        List<String> permanent = new ArrayList<>(proofTempKeys.size());
+        for (String tempKey : proofTempKeys) {
+            String ext = extractExt(tempKey);
+            String permanentKey = "orders/" + order.getId() + "/proof/"
+                    + UUID.randomUUID() + "." + ext;
+            blobStorage.copy(tempKey, permanentKey);
+            blobStorage.delete(tempKey);
+            permanent.add(permanentKey);
+        }
+        List<String> existing = new ArrayList<>(order.getPurchaseProofKeys());
+        existing.addAll(permanent);
+        order.recordPurchaseProofKeys(existing);
+        orderRepository.save(order);
+        return getOrder(orderId);
     }
 
     /** Hard-delete an order. Irreversible. ADMIN-only — gate enforced at the controller. */
@@ -213,21 +323,72 @@ public class IntakeOrderService {
         return getOrder(order.getId());
     }
 
+    /** ADMIN-only: bypass the state machine and jump fulfillment to any target. Reason mandatory. */
+    public OrderDetailView forceChangeFulfillmentStatus(ForceFulfillmentStatusCommand cmd, Long actorId) {
+        if (cmd.reason() == null || cmd.reason().isBlank()) {
+            throw new IllegalArgumentException("force_reason_required");
+        }
+        Order order = loadOrder(cmd.orderId());
+        order.forceChangeFulfillmentStatus(cmd.target(), actorId, cmd.reason().trim());
+        order = orderRepository.save(order);
+        flushPendingLogs(order);
+        // Force jumps don't carry a paid amount — only the auto-refund-on-cancel hook fires.
+        applyDepositSideEffects(order.getId(), cmd.target(), null, actorId);
+        return getOrder(order.getId());
+    }
+
+    /** ADMIN-only: bypass the state machine and jump payment to any target. Reason mandatory. */
+    public OrderDetailView forceChangePaymentStatus(ForcePaymentStatusCommand cmd, Long actorId) {
+        if (cmd.reason() == null || cmd.reason().isBlank()) {
+            throw new IllegalArgumentException("force_reason_required");
+        }
+        Order order = loadOrder(cmd.orderId());
+        order.forceChangePaymentStatus(cmd.target(), actorId, cmd.reason().trim());
+        order = orderRepository.save(order);
+        flushPendingLogs(order);
+        return getOrder(order.getId());
+    }
+
     private Order loadOrder(Long id) {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + id));
     }
 
+    /**
+     * Bridge to the deposit ledger. PURCHASED debits the deposit by the paid amount;
+     * CANCELLED auto-refunds any prior PURCHASE for the same order. Both transitions
+     * happen in the same JPA transaction as the order save.
+     */
+    private void applyDepositSideEffects(Long orderId, FulfillmentStatus target,
+                                         java.math.BigDecimal paidAmountKrw, Long actorId) {
+        if (target == FulfillmentStatus.PURCHASED) {
+            if (paidAmountKrw == null || paidAmountKrw.signum() <= 0) {
+                throw new IllegalArgumentException("paid_amount_required");
+            }
+            depositService.recordPurchase(orderId, paidAmountKrw, actorId);
+        } else if (target == FulfillmentStatus.CANCELLED) {
+            depositService.refundIfPurchased(orderId, actorId, "Auto-refund on cancel");
+        }
+    }
+
     private void flushPendingLogs(Order order) {
         for (Order.PendingLog pending : order.drainPendingLogs()) {
-            orderRepository.saveStatusLog(OrderStatusLog.record(
-                    order.getId(),
-                    pending.dimension(),
-                    pending.fromCode(),
-                    pending.toCode(),
-                    pending.changedBy(),
-                    pending.note()
-            ));
+            OrderStatusLog log = pending.forced()
+                    ? OrderStatusLog.recordForced(
+                            order.getId(),
+                            pending.dimension(),
+                            pending.fromCode(),
+                            pending.toCode(),
+                            pending.changedBy(),
+                            pending.note())
+                    : OrderStatusLog.record(
+                            order.getId(),
+                            pending.dimension(),
+                            pending.fromCode(),
+                            pending.toCode(),
+                            pending.changedBy(),
+                            pending.note());
+            orderRepository.saveStatusLog(log);
         }
     }
 }

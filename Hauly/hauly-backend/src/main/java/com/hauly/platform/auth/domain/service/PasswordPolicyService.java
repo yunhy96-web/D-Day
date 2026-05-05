@@ -6,7 +6,7 @@ package com.hauly.platform.auth.domain.service;
  */
 public class PasswordPolicyService {
 
-    private static final int MIN_LENGTH = 12;
+    private static final int MIN_LENGTH = 4;
 
     /**
      * Validates a raw password against the policy.

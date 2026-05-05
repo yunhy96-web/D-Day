@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,14 +26,17 @@ export function ChangePasswordModal({ open, onClose }: { open: boolean; onClose:
       setSuccess(false)
       mutation.reset()
     }
-  }, [open, mutation])
+    // mutation 객체는 매 렌더마다 새 참조라 deps에 넣으면 무한 루프가 발생함.
+    // 닫힘 전이 시점에만 reset하면 충분하므로 open만 의존.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
 
   if (!open) return null
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
     setLocalError(null)
-    if (next.length < 12) {
+    if (next.length < 4) {
       setLocalError(t('pw.error.too_short'))
       return
     }
@@ -57,7 +61,7 @@ export function ChangePasswordModal({ open, onClose }: { open: boolean; onClose:
         ? t('pw.error.failed')
         : null
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       onClick={onClose}
@@ -131,6 +135,7 @@ export function ChangePasswordModal({ open, onClose }: { open: boolean; onClose:
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

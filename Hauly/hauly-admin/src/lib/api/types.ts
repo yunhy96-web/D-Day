@@ -1,8 +1,9 @@
 export interface UserInfo {
   id: number
   username: string
-  role: 'INTAKE' | 'BUYER' | 'ADMIN'
+  role: 'INTAKE' | 'BUYER' | 'ADMIN' | 'VIEWER'
   displayName: string | null
+  preferredLanguage: 'ko' | 'en' | 'th' | null
 }
 
 export interface LoginResponse {

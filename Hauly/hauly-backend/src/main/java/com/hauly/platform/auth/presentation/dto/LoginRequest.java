@@ -12,6 +12,6 @@ public record LoginRequest(
         String username,
 
         @NotBlank(message = "Password must not be blank")
-        @Size(min = 12, message = "Password must be at least 12 characters")
+        @Size(min = 4, message = "Password must be at least 4 characters")
         String password
 ) {}

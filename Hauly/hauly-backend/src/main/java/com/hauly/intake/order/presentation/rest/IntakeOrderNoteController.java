@@ -8,6 +8,7 @@ import com.hauly.intake.order.presentation.dto.CreateOrderNoteRequest;
 import com.hauly.intake.order.presentation.dto.UpdateOrderNoteRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,6 +41,7 @@ public class IntakeOrderNoteController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OrderNoteView> create(@PathVariable Long orderId,
                                                 @Valid @RequestBody CreateOrderNoteRequest request,
                                                 @AuthenticationPrincipal Long userId) {
@@ -49,6 +51,7 @@ public class IntakeOrderNoteController {
     }
 
     @PatchMapping("/{noteId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OrderNoteView> update(@PathVariable Long orderId,
                                                 @PathVariable Long noteId,
                                                 @Valid @RequestBody UpdateOrderNoteRequest request,
@@ -59,6 +62,7 @@ public class IntakeOrderNoteController {
     }
 
     @DeleteMapping("/{noteId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long orderId,
                                        @PathVariable Long noteId,
                                        @AuthenticationPrincipal Long userId) {

@@ -12,9 +12,13 @@ import java.util.Map;
  * - totalOrderCount: total number of orders across all statuses.
  * - ordersByFulfillmentStatus: count per fulfillment status (every status key is present,
  *   defaulting to 0 — keeps the chart rendering simple on the frontend).
+ * - depositBalanceKrw: current deposit ledger balance (KRW). Negative = customer owes us.
  */
 public record DashboardSummaryView(
         Map<String, BigDecimal> totalsByCurrency,
         long totalOrderCount,
-        Map<FulfillmentStatus, Long> ordersByFulfillmentStatus
+        Map<FulfillmentStatus, Long> ordersByFulfillmentStatus,
+        BigDecimal depositBalanceKrw,
+        /** 재무 입력이 완료된 주문들의 순수익 합계 (KRW). 한 건도 없으면 0. */
+        BigDecimal totalNetProfitKrw
 ) {}

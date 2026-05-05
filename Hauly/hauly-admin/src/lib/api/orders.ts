@@ -34,6 +34,12 @@ export interface OrderListItem {
   fulfillmentStatus: FulfillmentStatus
   paymentStatus: PaymentStatus
   itemCount: number
+  firstProductName: string | null
+  firstImageUrl: string | null
+  koreanCourier: string | null
+  koreanTrackingNo: string | null
+  shippingAddressLabel: string | null
+  paidAmountKrw: string | null
   totalsByCurrency: Partial<Record<CurrencyCode, string>>
   createdAt: string
 }
@@ -58,6 +64,7 @@ export interface OrderStatusLogEntry {
   toCode: string
   changedBy: number | null
   note: string | null
+  forced: boolean
   createdAt: string
 }
 
@@ -77,11 +84,23 @@ export interface OrderDetail {
   internalMemo: string | null
   koreanTrackingNo: string | null
   koreanCourier: string | null
+  paidAmountKrw: string | null
+  purchaseProofKeys: string[]
+  purchaseProofUrls: string[]
   recipientName: string | null
   recipientPhone: string | null
   postalCode: string | null
   addressLine: string | null
   country: string | null
+  shippingAddressLabel: string | null
+  customerRevenueAmount: string | null
+  customerRevenueCurrency: 'KRW' | 'THB' | null
+  logisticsKrToThAmount: string | null
+  logisticsKrToThCurrency: 'KRW' | 'THB' | null
+  logisticsThDomesticAmount: string | null
+  logisticsThDomesticCurrency: 'KRW' | 'THB' | null
+  krwPerThb: string | null
+  netProfitKrw: string | null
   items: OrderItemDetail[]
   history: OrderStatusLogEntry[]
   createdAt: string
@@ -110,14 +129,15 @@ export interface CreateOrderInput {
   postalCode?: string
   addressLine?: string
   country?: string
+  shippingAddressLabel?: string
   items: Array<{
     productName: string
     productUrl?: string
     quantity: number
     categoryId?: number
     attributes?: Record<string, unknown>
-    unitPriceAmount?: string
-    unitPriceCurrency?: CurrencyCode
+    unitPriceAmount: string
+    unitPriceCurrency: CurrencyCode
     tempImageKeys?: string[]
   }>
 }
@@ -126,6 +146,42 @@ export interface DashboardSummary {
   totalsByCurrency: Partial<Record<CurrencyCode, string>>
   totalOrderCount: number
   ordersByFulfillmentStatus: Partial<Record<FulfillmentStatus, number>>
+  /** Negative = customer owes us. */
+  depositBalanceKrw: string
+  /** 재무 입력이 완료된 주문 합계 순수익 (KRW). */
+  totalNetProfitKrw: string
+}
+
+export interface UpdateFinancialsInput {
+  customerRevenueAmount?: string | null
+  customerRevenueCurrency?: 'KRW' | 'THB' | null
+  logisticsKrToThAmount?: string | null
+  logisticsKrToThCurrency?: 'KRW' | 'THB' | null
+  logisticsThDomesticAmount?: string | null
+  logisticsThDomesticCurrency?: 'KRW' | 'THB' | null
+  krwPerThb?: string | null
+}
+
+export async function updateFinancials(
+  id: number,
+  input: UpdateFinancialsInput,
+): Promise<OrderDetail> {
+  const { data } = await apiClient.patch<OrderDetail>(
+    `/intake/orders/${id}/financials`,
+    input,
+  )
+  return data
+}
+
+export async function updatePaidAmount(
+  id: number,
+  paidAmountKrw: string,
+): Promise<OrderDetail> {
+  const { data } = await apiClient.patch<OrderDetail>(
+    `/intake/orders/${id}/paid-amount`,
+    { paidAmountKrw },
+  )
+  return data
 }
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
@@ -168,11 +224,36 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderDetail>
 export async function changeFulfillmentStatus(
   id: number,
   target: FulfillmentStatus,
-  note?: string
+  note?: string,
+  paidAmountKrw?: string,
+  proofTempKeys?: string[]
 ): Promise<OrderDetail> {
   const { data } = await apiClient.patch<OrderDetail>(
     `/intake/orders/${id}/fulfillment-status`,
-    { target, note }
+    { target, note, paidAmountKrw, proofTempKeys }
+  )
+  return data
+}
+
+export async function updateTracking(
+  id: number,
+  koreanCourier: string | null,
+  koreanTrackingNo: string | null
+): Promise<OrderDetail> {
+  const { data } = await apiClient.patch<OrderDetail>(
+    `/intake/orders/${id}/tracking`,
+    { koreanCourier, koreanTrackingNo }
+  )
+  return data
+}
+
+export async function addPurchaseProofs(
+  id: number,
+  proofTempKeys: string[]
+): Promise<OrderDetail> {
+  const { data } = await apiClient.post<OrderDetail>(
+    `/intake/orders/${id}/proof`,
+    { proofTempKeys }
   )
   return data
 }
@@ -189,6 +270,30 @@ export async function changePaymentStatus(
   const { data } = await apiClient.patch<OrderDetail>(
     `/intake/orders/${id}/payment-status`,
     { target, note }
+  )
+  return data
+}
+
+export async function forceFulfillmentStatus(
+  id: number,
+  target: FulfillmentStatus,
+  reason: string
+): Promise<OrderDetail> {
+  const { data } = await apiClient.patch<OrderDetail>(
+    `/intake/orders/${id}/fulfillment-status/force`,
+    { target, reason }
+  )
+  return data
+}
+
+export async function forcePaymentStatus(
+  id: number,
+  target: PaymentStatus,
+  reason: string
+): Promise<OrderDetail> {
+  const { data } = await apiClient.patch<OrderDetail>(
+    `/intake/orders/${id}/payment-status/force`,
+    { target, reason }
   )
   return data
 }

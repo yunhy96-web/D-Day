@@ -3,6 +3,7 @@ package com.hauly.intake.order.presentation.rest;
 import com.hauly.platform.storage.domain.BlobStorage;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +33,7 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/api/intake/uploads")
+@PreAuthorize("hasRole('ADMIN')")
 public class IntakeUploadController {
 
     private static final Set<String> ALLOWED_TYPES = Set.of(

@@ -1,11 +1,13 @@
 package com.hauly.intake.order.application;
 
+import com.hauly.intake.deposit.domain.repository.DepositRepository;
 import com.hauly.intake.order.application.query.DashboardSummaryView;
 import com.hauly.intake.order.domain.model.FulfillmentStatus;
 import com.hauly.intake.order.domain.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -17,9 +19,11 @@ import java.util.Map;
 public class DashboardQueryService {
 
     private final OrderRepository orders;
+    private final DepositRepository deposits;
 
-    DashboardQueryService(OrderRepository orders) {
+    DashboardQueryService(OrderRepository orders, DepositRepository deposits) {
         this.orders = orders;
+        this.deposits = deposits;
     }
 
     public DashboardSummaryView summary() {
@@ -31,6 +35,11 @@ public class DashboardQueryService {
             filled.put(s, count);
             total += count;
         }
-        return new DashboardSummaryView(orders.sumAmountByCurrency(), total, filled);
+        BigDecimal totalProfit = orders.findAllWithCompleteFinancials().stream()
+                .map(o -> o.getNetProfitKrw())
+                .filter(java.util.Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return new DashboardSummaryView(
+                orders.sumAmountByCurrency(), total, filled, deposits.currentBalance(), totalProfit);
     }
 }

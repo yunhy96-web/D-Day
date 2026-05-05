@@ -39,11 +39,25 @@ public record OrderDetailView(
         String internalMemo,
         String koreanTrackingNo,
         String koreanCourier,
+        BigDecimal paidAmountKrw,
+        List<String> purchaseProofKeys,
+        List<String> purchaseProofUrls,
         String recipientName,
         String recipientPhone,
         String postalCode,
         String addressLine,
         String country,
+        String shippingAddressLabel,
+        // 재무
+        BigDecimal customerRevenueAmount,
+        String customerRevenueCurrency,
+        BigDecimal logisticsKrToThAmount,
+        String logisticsKrToThCurrency,
+        BigDecimal logisticsThDomesticAmount,
+        String logisticsThDomesticCurrency,
+        BigDecimal krwPerThb,
+        /** 계산된 순수익 (KRW). 입력 미완료 시 null. */
+        BigDecimal netProfitKrw,
         List<Item> items,
         List<StatusLog> history,
         OffsetDateTime createdAt,
@@ -83,11 +97,13 @@ public record OrderDetailView(
             String toCode,
             Long changedBy,
             String note,
+            boolean forced,
             OffsetDateTime createdAt
     ) {
         static StatusLog from(OrderStatusLog log) {
             return new StatusLog(log.getId(), log.getDimension(), log.getFromCode(),
-                    log.getToCode(), log.getChangedBy(), log.getNote(), log.getCreatedAt());
+                    log.getToCode(), log.getChangedBy(), log.getNote(), log.isForced(),
+                    log.getCreatedAt());
         }
     }
 
@@ -113,11 +129,25 @@ public record OrderDetailView(
                 order.getInternalMemo(),
                 order.getKoreanTrackingNo(),
                 order.getKoreanCourier(),
+                order.getPaidAmountKrw(),
+                order.getPurchaseProofKeys(),
+                order.getPurchaseProofKeys().stream()
+                        .map(k -> storage.presignedGetUrl(k, IMAGE_URL_TTL))
+                        .toList(),
                 order.getRecipientName(),
                 order.getRecipientPhone(),
                 order.getPostalCode(),
                 order.getAddressLine(),
                 order.getCountry(),
+                order.getShippingAddressLabel(),
+                order.getCustomerRevenueAmount(),
+                order.getCustomerRevenueCurrency(),
+                order.getLogisticsKrToThAmount(),
+                order.getLogisticsKrToThCurrency(),
+                order.getLogisticsThDomesticAmount(),
+                order.getLogisticsThDomesticCurrency(),
+                order.getKrwPerThb(),
+                order.getNetProfitKrw(),
                 order.getItems().stream().map(i -> Item.from(i, storage)).toList(),
                 history.stream().map(StatusLog::from).toList(),
                 order.getCreatedAt(),

@@ -30,7 +30,7 @@ public class Customer {
     @Column(name = "account_status", nullable = false, length = 16)
     private AccountStatus accountStatus;
 
-    @Column(name = "line_id", length = 64)
+    @Column(name = "line_id", length = 500)
     private String lineId;
 
     @Column(length = 32)

@@ -38,6 +38,10 @@ public class AppUser {
     @Column(name = "display_name", length = 64)
     private String displayName;
 
+    /** ISO 639-1; null = 미설정 (전역 디폴트 사용). DB CHECK 제약으로 ko/en/th만 허용. */
+    @Column(name = "preferred_language", length = 2)
+    private String preferredLanguage;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -102,4 +106,15 @@ public class AppUser {
     public OffsetDateTime getCreatedAt() { return createdAt; }
 
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
+
+    public String getPreferredLanguage() { return preferredLanguage; }
+
+    /** 허용값: ko/en/th 또는 null (해제). 그 외에는 IllegalArgumentException. */
+    public void updatePreferredLanguage(String lang) {
+        if (lang != null && !lang.equals("ko") && !lang.equals("en") && !lang.equals("th")) {
+            throw new IllegalArgumentException("invalid_language");
+        }
+        this.preferredLanguage = lang;
+        this.updatedAt = OffsetDateTime.now();
+    }
 }

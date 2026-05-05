@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { login, fetchMe, logout, changePassword } from '@/lib/api/auth'
+import { login, fetchMe, logout, changePassword, updateLanguagePreference } from '@/lib/api/auth'
 import type { MeResponse } from '@/lib/api/types'
 
 export const ME_QUERY_KEY = ['me'] as const
@@ -11,6 +11,11 @@ export function useMe() {
     queryFn: fetchMe,
     retry: false,
   })
+}
+
+export function useIsAdmin() {
+  const { data: me } = useMe()
+  return me?.role === 'ADMIN'
 }
 
 export function useLogin() {
@@ -40,5 +45,15 @@ export function useLogout() {
 export function useChangePassword() {
   return useMutation({
     mutationFn: changePassword,
+  })
+}
+
+export function useUpdateLanguagePreference() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (language: 'ko' | 'en' | 'th') => updateLanguagePreference(language),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(ME_QUERY_KEY, updated)
+    },
   })
 }

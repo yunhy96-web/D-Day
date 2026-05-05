@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -83,6 +85,21 @@ public class OrderRepositoryImpl implements OrderRepository {
         Map<FulfillmentStatus, Long> map = new EnumMap<>(FulfillmentStatus.class);
         for (Object[] row : orders.countByFulfillmentStatus()) {
             map.put((FulfillmentStatus) row[0], ((Number) row[1]).longValue());
+        }
+        return map;
+    }
+
+    @Override
+    public List<Order> findAllWithCompleteFinancials() {
+        return orders.findAllWithCompleteFinancials();
+    }
+
+    @Override
+    public Map<Long, String> findOrderNosByIds(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) return Collections.emptyMap();
+        Map<Long, String> map = new LinkedHashMap<>();
+        for (Object[] row : orders.findOrderNosByIds(ids)) {
+            map.put((Long) row[0], (String) row[1]);
         }
         return map;
     }

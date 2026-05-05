@@ -36,8 +36,10 @@ public class InitialUserBootstrapper implements CommandLineRunner {
 
     /** Spec for users that should always exist. Add here, never remove. */
     private static final List<UserSpec> SPECS = List.of(
-            new UserSpec("selim", Role.ADMIN, "Selim"),
-            new UserSpec("union", Role.ADMIN, "Union")
+            new UserSpec("selim", Role.ADMIN,  "Selim",   null),
+            new UserSpec("union", Role.ADMIN,  "Union",   null),
+            // 방문자용 조회 전용 계정 — 고정 비밀번호로 공유 가능.
+            new UserSpec("user",  Role.VIEWER, "Visitor", "1234")
     );
 
     private final AuthService authService;
@@ -66,7 +68,8 @@ public class InitialUserBootstrapper implements CommandLineRunner {
     private void ensureUser(UserSpec spec) {
         // Generate a candidate password up-front so the find-or-create call is a single
         // transaction; ensureUser() drops the candidate if the user already existed.
-        String rawPassword = generatePassword();
+        // fixedPassword가 지정된 spec(예: 공유용 viewer)은 랜덤 대신 그것을 사용.
+        String rawPassword = spec.fixedPassword() != null ? spec.fixedPassword() : generatePassword();
         AuthService.BootstrapResult result = authService.ensureUser(new BootstrapUserCommand(
                 spec.username(), rawPassword, spec.role(), spec.displayName()));
 
@@ -77,7 +80,10 @@ public class InitialUserBootstrapper implements CommandLineRunner {
 
         log.info("Bootstrap: created user id={} username={} role={}",
                 result.user().getId(), result.user().getUsernameValue(), result.user().getRole());
-        recordPassword(spec.username(), rawPassword);
+        // fixedPassword는 코드에 이미 노출되어 있으므로 secrets file에 기록하지 않음.
+        if (spec.fixedPassword() == null) {
+            recordPassword(spec.username(), rawPassword);
+        }
     }
 
     /** Generates a 24-char URL-safe random password (≈144 bits of entropy). */
@@ -122,5 +128,5 @@ public class InitialUserBootstrapper implements CommandLineRunner {
         }
     }
 
-    private record UserSpec(String username, Role role, String displayName) {}
+    private record UserSpec(String username, Role role, String displayName, String fixedPassword) {}
 }

@@ -10,6 +10,7 @@ import DashboardPage from '@/features/dashboard/DashboardPage'
 import OrderListPage from '@/features/orders/OrderListPage'
 import OrderCreatePage from '@/features/orders/OrderCreatePage'
 import OrderDetailPage from '@/features/orders/OrderDetailPage'
+import DepositPage from '@/features/deposits/DepositPage'
 import NotFoundPage from '@/features/NotFoundPage'
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
                   <Route path="/orders" element={<OrderListPage />} />
                   <Route path="/orders/new" element={<OrderCreatePage />} />
                   <Route path="/orders/:id" element={<OrderDetailPage />} />
+                  <Route path="/deposits" element={<DepositPage />} />
                 </Route>
               </Route>
 

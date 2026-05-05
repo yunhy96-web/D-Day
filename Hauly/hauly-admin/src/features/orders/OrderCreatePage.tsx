@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { useFieldArray, useForm, useWatch, type Control } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -14,6 +15,7 @@ import { Select } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 import { useCreateOrder } from './hooks'
+import { useIsAdmin, useMe } from '@/features/auth/hooks'
 import { useCategories } from './categoryHooks'
 import { useCommonCodeGroup } from './commonCodeHooks'
 import { DynamicFields } from './DynamicFields'
@@ -23,11 +25,19 @@ import { createOrderSchema, type CreateOrderFormValues, type CurrencyCode } from
 import type { CategoryView } from '@/lib/api/categories'
 import { ApiError } from '@/lib/api/types'
 import { COUNTRY_CODES, countryDisplayName } from './countries'
+import {
+  useCreateShippingTemplate,
+  useDeleteShippingTemplate,
+  useShippingTemplates,
+} from './shippingTemplateHooks'
 
 export default function OrderCreatePage() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
+  const { data: me } = useMe()
+  const isAdmin = useIsAdmin()
   const mutation = useCreateOrder()
+
   const { data: categories } = useCategories()
   const { data: currencyCodes } = useCommonCodeGroup('CURRENCY')
   const { data: courierCodes } = useCommonCodeGroup('COURIER_KR')
@@ -41,6 +51,8 @@ export default function OrderCreatePage() {
     control,
     handleSubmit,
     reset,
+    setValue,
+    getValues,
     formState: { errors },
   } = useForm<CreateOrderFormValues>({
     resolver: zodResolver(createOrderSchema),
@@ -58,6 +70,7 @@ export default function OrderCreatePage() {
       postalCode: '',
       addressLine: '',
       country: 'TH',
+      shippingAddressLabel: '',
       items: [{
         categoryId: 0,
         productName: '',
@@ -76,6 +89,13 @@ export default function OrderCreatePage() {
 
   // Once categories load, fold the default category id into the (still-empty) form
   // so the user doesn't have to pick before submitting.
+  // VIEWER 등 비-ADMIN이 직접 URL로 들어오는 경우 목록으로 보냄.
+  useEffect(() => {
+    if (me && !isAdmin) {
+      navigate('/orders', { replace: true })
+    }
+  }, [me, isAdmin, navigate])
+
   useEffect(() => {
     if (defaultCategoryId) {
       reset((current) => ({
@@ -93,6 +113,22 @@ export default function OrderCreatePage() {
   // Tracked outside react-hook-form because uploads are transient (object URLs, server temp keys)
   // and don't participate in zod validation. Keyed by the rhf field id so it survives re-renders.
   const [imagesByItemId, setImagesByItemId] = useState<Record<string, UploadedImage[]>>({})
+
+  const { data: shippingTemplates } = useShippingTemplates()
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false)
+  const [manageTemplatesOpen, setManageTemplatesOpen] = useState(false)
+
+  function applyTemplate(templateId: string) {
+    if (!templateId) return
+    const tpl = shippingTemplates?.find((x) => String(x.id) === templateId)
+    if (!tpl) return
+    setValue('recipientName', tpl.recipientName ?? '', { shouldDirty: true })
+    setValue('recipientPhone', tpl.recipientPhone ?? '', { shouldDirty: true })
+    setValue('postalCode', tpl.postalCode ?? '', { shouldDirty: true })
+    setValue('addressLine', tpl.addressLine ?? '', { shouldDirty: true })
+    setValue('country', tpl.country ?? '', { shouldDirty: true })
+    setValue('shippingAddressLabel', tpl.label, { shouldDirty: true })
+  }
 
   function removeItem(index: number) {
     const id = fields[index].id
@@ -121,6 +157,7 @@ export default function OrderCreatePage() {
         postalCode: values.postalCode || undefined,
         addressLine: values.addressLine || undefined,
         country: values.country || undefined,
+        shippingAddressLabel: values.shippingAddressLabel || undefined,
         items: values.items.map((i, idx) => {
           const tempImageKeys = (imagesByItemId[fields[idx].id] ?? []).map((img) => img.tempKey)
           return {
@@ -131,8 +168,8 @@ export default function OrderCreatePage() {
             attributes: i.attributes && Object.keys(i.attributes).length > 0
               ? pruneEmpty(i.attributes)
               : undefined,
-            unitPriceAmount: i.unitPriceAmount || undefined,
-            unitPriceCurrency: (i.unitPriceCurrency || undefined) as CurrencyCode | undefined,
+            unitPriceAmount: i.unitPriceAmount,
+            unitPriceCurrency: i.unitPriceCurrency as CurrencyCode,
             tempImageKeys: tempImageKeys.length > 0 ? tempImageKeys : undefined,
           }
         }),
@@ -373,6 +410,55 @@ export default function OrderCreatePage() {
             <CardTitle className="text-base">{t('order.create.shipping_address')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-end">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="loadTemplate">{t('shipping.template.load')}</Label>
+                  {shippingTemplates && shippingTemplates.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setManageTemplatesOpen(true)}
+                      className="text-xs text-muted-foreground hover:text-foreground underline"
+                    >
+                      {t('shipping.template.manage')}
+                    </button>
+                  )}
+                </div>
+                <Select
+                  id="loadTemplate"
+                  defaultValue=""
+                  onChange={(e) => {
+                    applyTemplate(e.target.value)
+                    e.target.value = ''
+                  }}
+                >
+                  <option value="">—</option>
+                  {(shippingTemplates ?? []).map((tpl) => (
+                    <option key={tpl.id} value={tpl.id}>
+                      {tpl.label}
+                    </option>
+                  ))}
+                </Select>
+                {shippingTemplates && shippingTemplates.length === 0 && (
+                  <p className="text-xs text-muted-foreground">{t('shipping.template.empty')}</p>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setSaveTemplateOpen(true)}
+              >
+                {t('shipping.template.save')}
+              </Button>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="shippingAddressLabel">{t('field.shipping_label.label')}</Label>
+              <Input id="shippingAddressLabel" {...register('shippingAddressLabel')} />
+              {errors.shippingAddressLabel && (
+                <p className="text-xs text-destructive">{t(errors.shippingAddressLabel.message ?? '')}</p>
+              )}
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="recipientName">{t('field.recipient_name.label')}</Label>
@@ -406,6 +492,26 @@ export default function OrderCreatePage() {
             </div>
           </CardContent>
         </Card>
+
+        {manageTemplatesOpen && (
+          <ManageTemplatesModal onClose={() => setManageTemplatesOpen(false)} />
+        )}
+
+        {saveTemplateOpen && (
+          <SaveTemplateModal
+            initialLabel={getValues('shippingAddressLabel') || ''}
+            recipientName={getValues('recipientName') || ''}
+            recipientPhone={getValues('recipientPhone') || ''}
+            postalCode={getValues('postalCode') || ''}
+            addressLine={getValues('addressLine') || ''}
+            country={getValues('country') || ''}
+            onSaved={(label) => {
+              setValue('shippingAddressLabel', label, { shouldDirty: true })
+              setSaveTemplateOpen(false)
+            }}
+            onClose={() => setSaveTemplateOpen(false)}
+          />
+        )}
 
         <Card>
           <CardHeader>
@@ -486,6 +592,159 @@ function ItemDynamicFields({
       control={control as any}
       pathPrefix={`items.${index}.attributes`}
     />
+  )
+}
+
+function ManageTemplatesModal({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation()
+  const { data: templates } = useShippingTemplates()
+  const deleteMutation = useDeleteShippingTemplate()
+  const [pendingId, setPendingId] = useState<number | null>(null)
+
+  function handleDelete(id: number) {
+    if (!window.confirm(t('shipping.template.delete.confirm'))) return
+    setPendingId(id)
+    deleteMutation.mutate(id, {
+      onSettled: () => setPendingId(null),
+    })
+  }
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-background rounded-md w-full max-w-md p-4 space-y-3"
+      >
+        <div className="text-base font-semibold">{t('shipping.template.manage.title')}</div>
+        {(!templates || templates.length === 0) ? (
+          <p className="text-sm text-muted-foreground">{t('shipping.template.empty')}</p>
+        ) : (
+          <ul className="divide-y border rounded-md">
+            {templates.map((tpl) => (
+              <li key={tpl.id} className="flex items-center justify-between gap-2 px-3 py-2">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium truncate">{tpl.label}</div>
+                  {tpl.recipientName && (
+                    <div className="text-xs text-muted-foreground truncate">
+                      {tpl.recipientName}
+                      {tpl.recipientPhone ? ` · ${tpl.recipientPhone}` : ''}
+                    </div>
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={pendingId === tpl.id}
+                  onClick={() => handleDelete(tpl.id)}
+                >
+                  {pendingId === tpl.id ? t('msg.loading') : t('btn.delete')}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="flex justify-end pt-1">
+          <Button type="button" variant="outline" size="sm" onClick={onClose}>
+            {t('btn.close')}
+          </Button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  )
+}
+
+function SaveTemplateModal({
+  initialLabel,
+  recipientName,
+  recipientPhone,
+  postalCode,
+  addressLine,
+  country,
+  onSaved,
+  onClose,
+}: {
+  initialLabel: string
+  recipientName: string
+  recipientPhone: string
+  postalCode: string
+  addressLine: string
+  country: string
+  onSaved: (label: string) => void
+  onClose: () => void
+}) {
+  const { t } = useTranslation()
+  const [label, setLabel] = useState(initialLabel)
+  const mutation = useCreateShippingTemplate()
+
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    const trimmed = label.trim()
+    if (!trimmed) return
+    mutation.mutate(
+      {
+        label: trimmed,
+        recipientName: recipientName || undefined,
+        recipientPhone: recipientPhone || undefined,
+        postalCode: postalCode || undefined,
+        addressLine: addressLine || undefined,
+        country: country || undefined,
+      },
+      { onSuccess: () => onSaved(trimmed) },
+    )
+  }
+
+  function errorMessage(): string {
+    if (!(mutation.error instanceof ApiError)) return t('msg.error.unexpected')
+    const code = mutation.error.message
+    const key = `msg.error.${code}`
+    const translated = t(key)
+    return translated !== key ? translated : code
+  }
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <form
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={submit}
+        className="bg-background rounded-md w-full max-w-md p-4 space-y-3"
+      >
+        <div className="text-base font-semibold">{t('shipping.template.save.title')}</div>
+        <p className="text-xs text-muted-foreground">{t('shipping.template.label_help')}</p>
+        <div className="space-y-1">
+          <Label htmlFor="tplLabel">{t('field.shipping_label.label')}</Label>
+          <Input
+            id="tplLabel"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            maxLength={64}
+            required
+            autoFocus
+          />
+        </div>
+        {mutation.isError && (
+          <Alert variant="destructive">
+            <AlertDescription>{errorMessage()}</AlertDescription>
+          </Alert>
+        )}
+        <div className="flex justify-end gap-2 pt-1">
+          <Button type="button" variant="outline" size="sm" onClick={onClose}>
+            {t('btn.cancel')}
+          </Button>
+          <Button type="submit" size="sm" disabled={mutation.isPending || !label.trim()}>
+            {mutation.isPending ? t('msg.loading') : t('btn.save')}
+          </Button>
+        </div>
+      </form>
+    </div>,
+    document.body,
   )
 }
 

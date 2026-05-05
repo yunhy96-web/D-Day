@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
@@ -46,7 +47,7 @@ export function ImageGallery({ urls }: Props) {
         ))}
       </div>
 
-      {openAt != null && (
+      {openAt != null && createPortal(
         <div
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
           onClick={() => setOpenAt(null)}
@@ -97,7 +98,8 @@ export function ImageGallery({ urls }: Props) {
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-xs bg-black/50 rounded-full px-3 py-1">
             {openAt + 1} / {urls.length}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   )

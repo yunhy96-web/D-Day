@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,4 +37,13 @@ public interface OrderRepository {
 
     /** Order count grouped by fulfillment status. Statuses with zero rows are absent. */
     Map<FulfillmentStatus, Long> countByFulfillmentStatus();
+
+    /** Bulk lookup of order_no by id — for cross-aggregate read views (e.g. deposit ledger). */
+    Map<Long, String> findOrderNosByIds(Collection<Long> ids);
+
+    /**
+     * 재무 입력이 완료된 주문들 (customer_revenue/logistics 양쪽 + paid_amount 모두 NOT NULL,
+     * THB값 있을 시 환율도 NOT NULL). 순수익 합산용.
+     */
+    List<Order> findAllWithCompleteFinancials();
 }

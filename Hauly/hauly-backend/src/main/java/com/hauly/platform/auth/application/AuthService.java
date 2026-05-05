@@ -93,6 +93,16 @@ public class AuthService {
     }
 
     /**
+     * Persist the user's preferred UI language. Pass null to clear (use global default).
+     */
+    public void updatePreferredLanguage(Long userId, String lang) {
+        AppUser user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadCredentialsException("User not found"));
+        user.updatePreferredLanguage(lang);
+        userRepository.save(user);
+    }
+
+    /**
      * Change password for the currently authenticated user.
      * Verifies the current password, validates the new one against policy, then persists.
      */

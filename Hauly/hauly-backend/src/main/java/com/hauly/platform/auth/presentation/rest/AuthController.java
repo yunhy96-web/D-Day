@@ -10,6 +10,7 @@ import com.hauly.platform.auth.presentation.dto.LoginRequest;
 import com.hauly.platform.auth.presentation.dto.LoginResponse;
 import com.hauly.platform.auth.presentation.dto.MeResponse;
 import com.hauly.platform.auth.presentation.dto.RefreshRequest;
+import com.hauly.platform.auth.presentation.dto.UpdateLanguageRequest;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -105,6 +107,18 @@ public class AuthController {
         clearCookie(response, ACCESS_COOKIE, ACCESS_COOKIE_PATH);
         clearCookie(response, REFRESH_COOKIE, REFRESH_COOKIE_PATH);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * PATCH /api/auth/me/language — persist UI language preference for the user.
+     * Body: { "language": "ko" | "en" | "th" | null }
+     */
+    @PatchMapping("/me/language")
+    public ResponseEntity<MeResponse> updateLanguage(@Valid @RequestBody UpdateLanguageRequest request,
+                                                     @AuthenticationPrincipal Long userId) {
+        String lang = (request.language() == null || request.language().isBlank()) ? null : request.language();
+        authService.updatePreferredLanguage(userId, lang);
+        return ResponseEntity.ok(MeResponse.from(authService.currentUser(userId)));
     }
 
     /**

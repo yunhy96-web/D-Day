@@ -1,4 +1,5 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState, type FormEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Trash2 } from 'lucide-react'
@@ -6,19 +7,28 @@ import { ArrowLeft, Trash2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 import {
+  useAddPurchaseProofs,
   useChangeFulfillmentStatus,
+  useUpdateFinancials,
+  useUpdatePaidAmount,
+  useUpdateTracking,
   useChangePaymentStatus,
   useDeleteOrder,
+  useForceFulfillmentStatus,
+  useForcePaymentStatus,
   useOrder,
 } from './hooks'
 import { useCategories } from './categoryHooks'
 import { useCommonCodeGroup } from './commonCodeHooks'
 import { formatMoney } from './money'
 import { ImageGallery } from './ImageGallery'
+import { ImageUploader, type UploadedImage } from './ImageUploader'
 import { countryDisplayName } from './countries'
 import { OrderNotesCard } from './OrderNotesCard'
 import { useMe } from '@/features/auth/hooks'
@@ -32,6 +42,12 @@ import {
 import type { FulfillmentStatus, PaymentStatus } from '@/lib/api/orders'
 import { ApiError } from '@/lib/api/types'
 
+const POST_PURCHASE_STATUSES = new Set<FulfillmentStatus>([
+  'PURCHASED',
+  'SHIPPED_TO_AGENT',
+  'COMPLETED',
+])
+
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>()
   const orderId = id ? Number(id) : null
@@ -43,6 +59,10 @@ export default function OrderDetailPage() {
   const { data: courierCodes } = useCommonCodeGroup('COURIER_KR')
   const { data: me } = useMe()
   const deleteMutation = useDeleteOrder()
+  const [trackingEditOpen, setTrackingEditOpen] = useState(false)
+  const [addProofOpen, setAddProofOpen] = useState(false)
+  const [financialsEditOpen, setFinancialsEditOpen] = useState(false)
+  const [paidEditOpen, setPaidEditOpen] = useState(false)
   const categoryName = (id: number | null) =>
     id == null ? '-' : t(categories?.find((c) => c.id === id)?.nameKey ?? '-')
   const courierLabel = (code: string | null) =>
@@ -114,12 +134,14 @@ export default function OrderDetailPage() {
           dimension="FULFILLMENT"
           current={order.fulfillmentStatus}
           allowed={order.allowedFulfillmentNext}
+          isAdmin={me?.role === 'ADMIN'}
         />
         <StatusCard
           orderId={order.id}
           dimension="PAYMENT"
           current={order.paymentStatus}
           allowed={order.allowedPaymentNext}
+          isAdmin={me?.role === 'ADMIN'}
         />
       </div>
 
@@ -205,12 +227,15 @@ export default function OrderDetailPage() {
         </CardContent>
       </Card>
 
-      {(order.recipientName || order.recipientPhone || order.postalCode || order.addressLine || order.country) && (
+      {(order.shippingAddressLabel || order.recipientName || order.recipientPhone || order.postalCode || order.addressLine || order.country) && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">{t('order.detail.shipping_address')}</CardTitle>
           </CardHeader>
           <CardContent className="text-sm space-y-1">
+            {order.shippingAddressLabel && (
+              <KV label={t('field.shipping_label.label')} value={order.shippingAddressLabel} />
+            )}
             {order.recipientName && (
               <KV label={t('field.recipient_name.label')} value={order.recipientName} />
             )}
@@ -238,14 +263,99 @@ export default function OrderDetailPage() {
         </Card>
       )}
 
-      {(order.koreanTrackingNo || order.koreanCourier) && (
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
+          <CardTitle className="text-base">{t('order.detail.tracking')}</CardTitle>
+          {me?.role === 'ADMIN' && (
+            <Button variant="outline" size="sm" onClick={() => setTrackingEditOpen(true)}>
+              {t('order.tracking.edit.button')}
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent className="text-sm space-y-1">
+          <KV label={t('field.tracking_no.label')} value={order.koreanTrackingNo ?? '-'} />
+          <KV label={t('field.courier.label')} value={courierLabel(order.koreanCourier)} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
+          <CardTitle className="text-base">{t('order.detail.financials.title')}</CardTitle>
+          {me?.role === 'ADMIN' && (
+            <Button variant="outline" size="sm" onClick={() => setFinancialsEditOpen(true)}>
+              {t('order.detail.financials.edit')}
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent className="text-sm space-y-1">
+          {POST_PURCHASE_STATUSES.has(order.fulfillmentStatus) && (
+            <div className="flex gap-2 items-center">
+              <span className="w-24 text-muted-foreground">{t('field.paid_amount.label')}</span>
+              <span className="flex-1">
+                {order.paidAmountKrw
+                  ? formatMoney(order.paidAmountKrw, 'KRW', i18n.resolvedLanguage)
+                  : '—'}
+              </span>
+              {me?.role === 'ADMIN' && (
+                <Button variant="outline" size="sm" onClick={() => setPaidEditOpen(true)}>
+                  {order.paidAmountKrw
+                    ? t('order.detail.paid_amount.edit')
+                    : t('order.detail.paid_amount.input')}
+                </Button>
+              )}
+            </div>
+          )}
+          <KV
+            label={t('field.customer_revenue.label')}
+            value={fmtAmtCur(order.customerRevenueAmount, order.customerRevenueCurrency, i18n.resolvedLanguage)}
+          />
+          <KV
+            label={t('field.logistics_kr_th.label')}
+            value={fmtAmtCur(order.logisticsKrToThAmount, order.logisticsKrToThCurrency, i18n.resolvedLanguage)}
+          />
+          <KV
+            label={t('field.logistics_th_dom.label')}
+            value={fmtAmtCur(order.logisticsThDomesticAmount, order.logisticsThDomesticCurrency, i18n.resolvedLanguage)}
+          />
+          <KV
+            label={t('field.krw_per_thb.label')}
+            value={order.krwPerThb ? Number(order.krwPerThb).toLocaleString(i18n.resolvedLanguage) : '—'}
+          />
+          <div className="pt-2 mt-2 border-t flex gap-2">
+            <span className="w-24 text-muted-foreground">{t('order.detail.profit.label')}</span>
+            <span className={
+              order.netProfitKrw == null
+                ? 'text-muted-foreground italic'
+                : Number(order.netProfitKrw) >= 0
+                  ? 'font-semibold text-emerald-700'
+                  : 'font-semibold text-red-700'
+            }>
+              {order.netProfitKrw == null
+                ? hasTHB(order) && !order.krwPerThb
+                  ? t('order.detail.profit.missing_fx')
+                  : t('order.detail.profit.incomplete')
+                : formatMoney(order.netProfitKrw, 'KRW', i18n.resolvedLanguage)}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {(POST_PURCHASE_STATUSES.has(order.fulfillmentStatus) || order.purchaseProofUrls.length > 0) && (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t('order.detail.tracking')}</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
+            <CardTitle className="text-base">{t('order.detail.proof.title')}</CardTitle>
+            {me?.role === 'ADMIN' && POST_PURCHASE_STATUSES.has(order.fulfillmentStatus) && (
+              <Button variant="outline" size="sm" onClick={() => setAddProofOpen(true)}>
+                {t('order.proof.add.button')}
+              </Button>
+            )}
           </CardHeader>
-          <CardContent className="text-sm space-y-1">
-            <KV label={t('field.tracking_no.label')} value={order.koreanTrackingNo ?? '-'} />
-            <KV label={t('field.courier.label')} value={courierLabel(order.koreanCourier)} />
+          <CardContent>
+            {order.purchaseProofUrls.length > 0 ? (
+              <ImageGallery urls={order.purchaseProofUrls} />
+            ) : (
+              <p className="text-sm text-muted-foreground">—</p>
+            )}
           </CardContent>
         </Card>
       )}
@@ -288,9 +398,16 @@ export default function OrderDetailPage() {
                     ? t('order.col.fulfillment')
                     : t('order.col.payment')}
                 </div>
-                <div>
-                  {entry.fromCode ? `${entry.fromCode} → ` : ''}
-                  <span className="font-medium">{entry.toCode}</span>
+                <div className="flex items-center gap-1.5">
+                  <span>
+                    {entry.fromCode ? `${entry.fromCode} → ` : ''}
+                    <span className="font-medium">{entry.toCode}</span>
+                  </span>
+                  {entry.forced && (
+                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 uppercase">
+                      {t('order.history.forced_badge')}
+                    </span>
+                  )}
                 </div>
                 {entry.note && <div className="text-xs text-muted-foreground">{entry.note}</div>}
               </li>
@@ -298,7 +415,50 @@ export default function OrderDetailPage() {
           </ol>
         </CardContent>
       </Card>
+
+      {trackingEditOpen && (
+        <EditTrackingModal
+          orderId={order.id}
+          currentCourier={order.koreanCourier}
+          currentTrackingNo={order.koreanTrackingNo}
+          courierCodes={courierCodes ?? []}
+          onClose={() => setTrackingEditOpen(false)}
+        />
+      )}
+
+      {addProofOpen && (
+        <AddProofModal orderId={order.id} onClose={() => setAddProofOpen(false)} />
+      )}
+
+      {financialsEditOpen && (
+        <FinancialsEditModal order={order} onClose={() => setFinancialsEditOpen(false)} />
+      )}
+
+      {paidEditOpen && (
+        <PaidAmountEditModal
+          orderId={order.id}
+          currentPaid={order.paidAmountKrw}
+          onClose={() => setPaidEditOpen(false)}
+        />
+      )}
     </div>
+  )
+}
+
+function fmtAmtCur(
+  amount: string | null,
+  currency: 'KRW' | 'THB' | null,
+  lang: string | undefined,
+): string {
+  if (!amount || !currency) return '—'
+  return formatMoney(amount, currency, lang)
+}
+
+function hasTHB(order: import('@/lib/api/orders').OrderDetail): boolean {
+  return (
+    order.customerRevenueCurrency === 'THB' ||
+    order.logisticsKrToThCurrency === 'THB' ||
+    order.logisticsThDomesticCurrency === 'THB'
   )
 }
 
@@ -363,14 +523,18 @@ function StatusCard({
   dimension,
   current,
   allowed,
+  isAdmin,
 }: {
   orderId: number
   dimension: 'FULFILLMENT' | 'PAYMENT'
   current: FulfillmentStatus | PaymentStatus
   allowed: (FulfillmentStatus | PaymentStatus)[]
+  isAdmin: boolean
 }) {
   const { t } = useTranslation()
   const [note, setNote] = useState('')
+  const [forceOpen, setForceOpen] = useState(false)
+  const [purchasedOpen, setPurchasedOpen] = useState(false)
   const fulfillment = useChangeFulfillmentStatus(orderId)
   const payment = useChangePaymentStatus(orderId)
   const { data: fulfillmentLabels } = useFulfillmentLabels()
@@ -385,6 +549,11 @@ function StatusCard({
   const mutation = isFulfillment ? fulfillment : payment
 
   function transition(target: string) {
+    // PURCHASED requires a paid amount input — open a modal instead of firing the mutation.
+    if (isFulfillment && target === 'PURCHASED') {
+      setPurchasedOpen(true)
+      return
+    }
     if (isFulfillment) {
       fulfillment.mutate(
         { target: target as FulfillmentStatus, note: note || undefined },
@@ -409,7 +578,7 @@ function StatusCard({
         <div>
           <Badge tone={tone}>{currentLabel}</Badge>
         </div>
-        {allowed.length > 0 ? (
+        {isAdmin && allowed.length > 0 ? (
           <>
             <Textarea
               rows={2}
@@ -440,10 +609,601 @@ function StatusCard({
               </Alert>
             )}
           </>
-        ) : (
+        ) : isAdmin ? (
           <p className="text-xs text-muted-foreground">{t('order.detail.terminal')}</p>
+        ) : null}
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() => setForceOpen(true)}
+            className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+          >
+            {t('order.status.force.button')}
+          </button>
         )}
       </CardContent>
+      {isAdmin && forceOpen && (
+        <ForceStatusModal
+          orderId={orderId}
+          dimension={dimension}
+          current={current}
+          onClose={() => setForceOpen(false)}
+        />
+      )}
+      {isFulfillment && purchasedOpen && (
+        <PurchasedModal
+          note={note}
+          mutation={fulfillment}
+          onClose={() => setPurchasedOpen(false)}
+          onSuccess={() => {
+            setNote('')
+            setPurchasedOpen(false)
+          }}
+        />
+      )}
     </Card>
+  )
+}
+
+function PurchasedModal({
+  note,
+  mutation,
+  onClose,
+  onSuccess,
+}: {
+  note: string
+  mutation: ReturnType<typeof useChangeFulfillmentStatus>
+  onClose: () => void
+  onSuccess: () => void
+}) {
+  const { t } = useTranslation()
+  const [paid, setPaid] = useState('')
+  const [proofImages, setProofImages] = useState<UploadedImage[]>([])
+
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    const parsed = Number(paid)
+    if (!Number.isFinite(parsed) || parsed <= 0) return
+    mutation.mutate(
+      {
+        target: 'PURCHASED',
+        note: note || undefined,
+        paidAmountKrw: paid.trim(),
+        proofTempKeys: proofImages.map((i) => i.tempKey),
+      },
+      { onSuccess },
+    )
+  }
+
+  function errorMessage(): string {
+    if (!(mutation.error instanceof ApiError)) return t('msg.error.unexpected')
+    if (mutation.error.message === 'paid_amount_required') {
+      return t('msg.error.paid_amount_required')
+    }
+    return mutation.error.message
+  }
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <form
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={submit}
+        className="bg-background rounded-md w-full max-w-md p-4 space-y-3"
+      >
+        <div className="text-base font-semibold">{t('order.purchased.modal.title')}</div>
+        <p className="text-xs text-muted-foreground">{t('order.purchased.modal.help')}</p>
+        <div className="space-y-1">
+          <label className="text-xs text-muted-foreground">
+            {t('order.purchased.modal.paid')}
+          </label>
+          <Input
+            type="text"
+            inputMode="numeric"
+            value={paid}
+            onChange={(e) => setPaid(e.target.value.replace(/[^\d]/g, ''))}
+            required
+            autoFocus
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs text-muted-foreground">
+            {t('order.purchased.modal.proof')}
+          </label>
+          <ImageUploader value={proofImages} onChange={setProofImages} />
+        </div>
+        {mutation.isError && (
+          <Alert variant="destructive">
+            <AlertDescription>{errorMessage()}</AlertDescription>
+          </Alert>
+        )}
+        <div className="flex justify-end gap-2 pt-1">
+          <Button type="button" variant="outline" size="sm" onClick={onClose}>
+            {t('btn.cancel')}
+          </Button>
+          <Button type="submit" size="sm" disabled={mutation.isPending || !paid}>
+            {mutation.isPending ? t('msg.loading') : t('order.purchased.modal.confirm')}
+          </Button>
+        </div>
+      </form>
+    </div>,
+    document.body,
+  )
+}
+
+function ForceStatusModal({
+  orderId,
+  dimension,
+  current,
+  onClose,
+}: {
+  orderId: number
+  dimension: 'FULFILLMENT' | 'PAYMENT'
+  current: FulfillmentStatus | PaymentStatus
+  onClose: () => void
+}) {
+  const { t } = useTranslation()
+  const isFulfillment = dimension === 'FULFILLMENT'
+  const { data: fulfillmentLabels } = useFulfillmentLabels()
+  const { data: paymentLabels } = usePaymentLabels()
+  const labels = isFulfillment ? fulfillmentLabels : paymentLabels
+  const targets = (labels ?? []).filter((c) => c.code !== current)
+  const [target, setTarget] = useState('')
+  const [reason, setReason] = useState('')
+  const fulfillmentMutation = useForceFulfillmentStatus(orderId)
+  const paymentMutation = useForcePaymentStatus(orderId)
+  const mutation = isFulfillment ? fulfillmentMutation : paymentMutation
+
+  // Once labels load, default the target select to the first non-current option.
+  const firstTargetCode = targets[0]?.code
+  useEffect(() => {
+    if (!target && firstTargetCode) setTarget(firstTargetCode)
+  }, [target, firstTargetCode])
+
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    if (!target) return
+    if (!reason.trim()) return
+    if (isFulfillment) {
+      fulfillmentMutation.mutate(
+        { target: target as FulfillmentStatus, reason: reason.trim() },
+        { onSuccess: onClose },
+      )
+    } else {
+      paymentMutation.mutate(
+        { target: target as PaymentStatus, reason: reason.trim() },
+        { onSuccess: onClose },
+      )
+    }
+  }
+
+  function errorMessage(): string {
+    if (!(mutation.error instanceof ApiError)) return t('msg.error.unexpected')
+    const msg = mutation.error.message
+    if (msg === 'force_reason_required') return t('msg.error.force_reason_required')
+    if (msg === 'force_same_status') return t('msg.error.force_same_status')
+    return msg
+  }
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <form
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={submit}
+        className="bg-background rounded-md w-full max-w-md p-4 space-y-3"
+      >
+        <div className="text-base font-semibold">{t('order.status.force.title')}</div>
+        <p className="text-xs text-muted-foreground">{t('order.status.force.help')}</p>
+        <div className="space-y-1">
+          <label className="text-xs text-muted-foreground">
+            {t('order.status.force.target')}
+          </label>
+          <Select value={target} onChange={(e) => setTarget(e.target.value)}>
+            {targets.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.name}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs text-muted-foreground">
+            {t('order.status.force.reason')}
+          </label>
+          <Textarea
+            rows={3}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            required
+          />
+        </div>
+        {mutation.isError && (
+          <Alert variant="destructive">
+            <AlertDescription>{errorMessage()}</AlertDescription>
+          </Alert>
+        )}
+        <div className="flex justify-end gap-2 pt-1">
+          <Button type="button" variant="outline" size="sm" onClick={onClose}>
+            {t('btn.cancel')}
+          </Button>
+          <Button
+            type="submit"
+            variant="destructive"
+            size="sm"
+            disabled={mutation.isPending || !reason.trim() || !target}
+          >
+            {mutation.isPending ? t('msg.loading') : t('order.status.force.confirm')}
+          </Button>
+        </div>
+      </form>
+    </div>,
+    document.body,
+  )
+}
+
+function EditTrackingModal({
+  orderId,
+  currentCourier,
+  currentTrackingNo,
+  courierCodes,
+  onClose,
+}: {
+  orderId: number
+  currentCourier: string | null
+  currentTrackingNo: string | null
+  courierCodes: { code: string; name: string }[]
+  onClose: () => void
+}) {
+  const { t } = useTranslation()
+  const [courier, setCourier] = useState(currentCourier ?? '')
+  const [trackingNo, setTrackingNo] = useState(currentTrackingNo ?? '')
+  const mutation = useUpdateTracking(orderId)
+
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    mutation.mutate(
+      { courier: courier.trim() || null, trackingNo: trackingNo.trim() || null },
+      { onSuccess: onClose },
+    )
+  }
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <form
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={submit}
+        className="bg-background rounded-md w-full max-w-md p-4 space-y-3"
+      >
+        <div className="text-base font-semibold">{t('order.tracking.edit.title')}</div>
+        <div className="space-y-1">
+          <label className="text-xs text-muted-foreground">{t('field.courier.label')}</label>
+          <Select value={courier} onChange={(e) => setCourier(e.target.value)}>
+            <option value="">—</option>
+            {courierCodes.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.name}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs text-muted-foreground">{t('field.tracking_no.label')}</label>
+          <Input
+            type="text"
+            value={trackingNo}
+            onChange={(e) => setTrackingNo(e.target.value)}
+            maxLength={500}
+          />
+        </div>
+        {mutation.isError && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              {mutation.error instanceof ApiError ? mutation.error.message : t('msg.error.unexpected')}
+            </AlertDescription>
+          </Alert>
+        )}
+        <div className="flex justify-end gap-2 pt-1">
+          <Button type="button" variant="outline" size="sm" onClick={onClose}>
+            {t('btn.cancel')}
+          </Button>
+          <Button type="submit" size="sm" disabled={mutation.isPending}>
+            {mutation.isPending ? t('msg.loading') : t('order.tracking.edit.save')}
+          </Button>
+        </div>
+      </form>
+    </div>,
+    document.body,
+  )
+}
+
+function AddProofModal({ orderId, onClose }: { orderId: number; onClose: () => void }) {
+  const { t } = useTranslation()
+  const [images, setImages] = useState<UploadedImage[]>([])
+  const mutation = useAddPurchaseProofs(orderId)
+
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    if (images.length === 0) return
+    mutation.mutate(
+      images.map((i) => i.tempKey),
+      { onSuccess: onClose },
+    )
+  }
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <form
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={submit}
+        className="bg-background rounded-md w-full max-w-md p-4 space-y-3"
+      >
+        <div className="text-base font-semibold">{t('order.proof.add.title')}</div>
+        <ImageUploader value={images} onChange={setImages} />
+        {mutation.isError && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              {mutation.error instanceof ApiError ? mutation.error.message : t('msg.error.unexpected')}
+            </AlertDescription>
+          </Alert>
+        )}
+        <div className="flex justify-end gap-2 pt-1">
+          <Button type="button" variant="outline" size="sm" onClick={onClose}>
+            {t('btn.cancel')}
+          </Button>
+          <Button type="submit" size="sm" disabled={mutation.isPending || images.length === 0}>
+            {mutation.isPending ? t('msg.loading') : t('btn.save')}
+          </Button>
+        </div>
+      </form>
+    </div>,
+    document.body,
+  )
+}
+
+function FinancialsEditModal({
+  order,
+  onClose,
+}: {
+  order: import('@/lib/api/orders').OrderDetail
+  onClose: () => void
+}) {
+  const { t } = useTranslation()
+  const mutation = useUpdateFinancials(order.id)
+  const [revAmt, setRevAmt] = useState(order.customerRevenueAmount ?? '')
+  const [revCur, setRevCur] = useState<'KRW' | 'THB' | ''>(order.customerRevenueCurrency ?? '')
+  const [logKrAmt, setLogKrAmt] = useState(order.logisticsKrToThAmount ?? '')
+  const [logKrCur, setLogKrCur] = useState<'KRW' | 'THB' | ''>(order.logisticsKrToThCurrency ?? '')
+  const [logThAmt, setLogThAmt] = useState(order.logisticsThDomesticAmount ?? '')
+  const [logThCur, setLogThCur] = useState<'KRW' | 'THB' | ''>(order.logisticsThDomesticCurrency ?? '')
+  const [fx, setFx] = useState(order.krwPerThb ?? '')
+  const [localError, setLocalError] = useState<string | null>(null)
+
+  const anyTHB = revCur === 'THB' || logKrCur === 'THB' || logThCur === 'THB'
+
+  function pair(amt: string, cur: 'KRW' | 'THB' | '') {
+    const trimmed = amt.trim()
+    if (!trimmed && !cur) return [null, null] as const
+    if (!trimmed || !cur) {
+      throw new Error('amount_currency_mismatch')
+    }
+    return [trimmed, cur] as const
+  }
+
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    setLocalError(null)
+    try {
+      const [ra, rc] = pair(revAmt, revCur)
+      const [la, lc] = pair(logKrAmt, logKrCur)
+      const [ta, tc] = pair(logThAmt, logThCur)
+      mutation.mutate(
+        {
+          customerRevenueAmount: ra,
+          customerRevenueCurrency: rc,
+          logisticsKrToThAmount: la,
+          logisticsKrToThCurrency: lc,
+          logisticsThDomesticAmount: ta,
+          logisticsThDomesticCurrency: tc,
+          krwPerThb: fx.trim() || null,
+        },
+        { onSuccess: onClose },
+      )
+    } catch (err) {
+      if (err instanceof Error && err.message === 'amount_currency_mismatch') {
+        setLocalError(t('msg.error.amount_currency_mismatch'))
+      } else {
+        setLocalError(t('msg.error.unexpected'))
+      }
+    }
+  }
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <form
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={submit}
+        className="bg-background rounded-md w-full max-w-md p-4 space-y-3 max-h-[90vh] overflow-y-auto"
+      >
+        <div className="text-base font-semibold">{t('order.detail.financials.edit')}</div>
+
+        <FinancialPair
+          label={t('field.customer_revenue.label')}
+          amount={revAmt}
+          currency={revCur}
+          onAmount={setRevAmt}
+          onCurrency={setRevCur}
+        />
+        <FinancialPair
+          label={t('field.logistics_kr_th.label')}
+          amount={logKrAmt}
+          currency={logKrCur}
+          onAmount={setLogKrAmt}
+          onCurrency={setLogKrCur}
+        />
+        <FinancialPair
+          label={t('field.logistics_th_dom.label')}
+          amount={logThAmt}
+          currency={logThCur}
+          onAmount={setLogThAmt}
+          onCurrency={setLogThCur}
+        />
+        <div className="space-y-1">
+          <label className="text-xs text-muted-foreground">{t('field.krw_per_thb.label')}</label>
+          <Input
+            type="text"
+            inputMode="decimal"
+            value={fx}
+            onChange={(e) => setFx(e.target.value.replace(/[^0-9.]/g, ''))}
+            placeholder="38.5"
+          />
+          {anyTHB && !fx.trim() && (
+            <p className="text-xs text-amber-600">
+              {t('order.detail.financials.fx_required_hint')}
+            </p>
+          )}
+        </div>
+
+        {localError && (
+          <Alert variant="destructive">
+            <AlertDescription>{localError}</AlertDescription>
+          </Alert>
+        )}
+        {mutation.isError && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              {mutation.error instanceof ApiError ? mutation.error.message : t('msg.error.unexpected')}
+            </AlertDescription>
+          </Alert>
+        )}
+        <div className="flex justify-end gap-2 pt-1">
+          <Button type="button" variant="outline" size="sm" onClick={onClose}>
+            {t('btn.cancel')}
+          </Button>
+          <Button type="submit" size="sm" disabled={mutation.isPending}>
+            {mutation.isPending ? t('msg.loading') : t('btn.save')}
+          </Button>
+        </div>
+      </form>
+    </div>,
+    document.body,
+  )
+}
+
+function FinancialPair({
+  label,
+  amount,
+  currency,
+  onAmount,
+  onCurrency,
+}: {
+  label: string
+  amount: string
+  currency: 'KRW' | 'THB' | ''
+  onAmount: (v: string) => void
+  onCurrency: (v: 'KRW' | 'THB' | '') => void
+}) {
+  return (
+    <div className="space-y-1">
+      <label className="text-xs text-muted-foreground">{label}</label>
+      <div className="flex gap-2">
+        <Input
+          type="text"
+          inputMode="decimal"
+          value={amount}
+          onChange={(e) => onAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+          placeholder="0"
+          className="flex-1"
+        />
+        <Select
+          value={currency}
+          onChange={(e) => onCurrency(e.target.value as 'KRW' | 'THB' | '')}
+          className="w-24"
+        >
+          <option value="">—</option>
+          <option value="KRW">KRW</option>
+          <option value="THB">THB</option>
+        </Select>
+      </div>
+    </div>
+  )
+}
+
+function PaidAmountEditModal({
+  orderId,
+  currentPaid,
+  onClose,
+}: {
+  orderId: number
+  currentPaid: string | null
+  onClose: () => void
+}) {
+  const { t } = useTranslation()
+  const [paid, setPaid] = useState(currentPaid ?? '')
+  const mutation = useUpdatePaidAmount(orderId)
+
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    if (!paid.trim()) return
+    mutation.mutate(paid.trim(), { onSuccess: onClose })
+  }
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <form
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={submit}
+        className="bg-background rounded-md w-full max-w-md p-4 space-y-3"
+      >
+        <div className="text-base font-semibold">
+          {currentPaid ? t('order.detail.paid_amount.edit') : t('order.detail.paid_amount.input')}
+        </div>
+        {currentPaid && (
+          <p className="text-xs text-muted-foreground">{t('msg.deposit.paid_amount_correction')}</p>
+        )}
+        <div className="space-y-1">
+          <label className="text-xs text-muted-foreground">{t('field.paid_amount.label')} (KRW)</label>
+          <Input
+            type="text"
+            inputMode="numeric"
+            value={paid}
+            onChange={(e) => setPaid(e.target.value.replace(/[^\d]/g, ''))}
+            autoFocus
+          />
+        </div>
+        {mutation.isError && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              {mutation.error instanceof ApiError ? mutation.error.message : t('msg.error.unexpected')}
+            </AlertDescription>
+          </Alert>
+        )}
+        <div className="flex justify-end gap-2 pt-1">
+          <Button type="button" variant="outline" size="sm" onClick={onClose}>
+            {t('btn.cancel')}
+          </Button>
+          <Button type="submit" size="sm" disabled={mutation.isPending || !paid.trim()}>
+            {mutation.isPending ? t('msg.loading') : t('btn.save')}
+          </Button>
+        </div>
+      </form>
+    </div>,
+    document.body,
   )
 }

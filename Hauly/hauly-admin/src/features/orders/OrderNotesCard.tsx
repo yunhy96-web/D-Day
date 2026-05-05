@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useMe } from '@/features/auth/hooks'
+import { useIsAdmin, useMe } from '@/features/auth/hooks'
 import { ApiError } from '@/lib/api/types'
 import {
   useCreateOrderNote,
@@ -21,6 +21,7 @@ const MAX_LEN = 2000
 export function OrderNotesCard({ orderId }: { orderId: number }) {
   const { t, i18n } = useTranslation()
   const { data: me } = useMe()
+  const isAdmin = useIsAdmin()
   const { data: notes, isLoading, isError } = useOrderNotes(orderId)
   const createMutation = useCreateOrderNote(orderId)
 
@@ -40,36 +41,38 @@ export function OrderNotesCard({ orderId }: { orderId: number }) {
         <CardTitle className="text-base">{t('order.detail.notes.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="space-y-2">
-          <Textarea
-            rows={3}
-            placeholder={t('order.notes.placeholder')}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            maxLength={MAX_LEN}
-          />
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-muted-foreground">
-              {draft.length}/{MAX_LEN}
-            </span>
-            <Button
-              size="sm"
-              onClick={submit}
-              disabled={createMutation.isPending || !draft.trim()}
-            >
-              {t('order.notes.add')}
-            </Button>
+        {isAdmin && (
+          <div className="space-y-2">
+            <Textarea
+              rows={3}
+              placeholder={t('order.notes.placeholder')}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              maxLength={MAX_LEN}
+            />
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-muted-foreground">
+                {draft.length}/{MAX_LEN}
+              </span>
+              <Button
+                size="sm"
+                onClick={submit}
+                disabled={createMutation.isPending || !draft.trim()}
+              >
+                {t('order.notes.add')}
+              </Button>
+            </div>
+            {createMutation.isError && (
+              <Alert variant="destructive">
+                <AlertDescription>
+                  {createMutation.error instanceof ApiError
+                    ? createMutation.error.message
+                    : t('msg.error.unexpected')}
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
-          {createMutation.isError && (
-            <Alert variant="destructive">
-              <AlertDescription>
-                {createMutation.error instanceof ApiError
-                  ? createMutation.error.message
-                  : t('msg.error.unexpected')}
-              </AlertDescription>
-            </Alert>
-          )}
-        </div>
+        )}
 
         {isLoading && (
           <p className="text-sm text-muted-foreground">{t('msg.loading')}</p>

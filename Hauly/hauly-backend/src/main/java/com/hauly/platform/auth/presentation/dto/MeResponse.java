@@ -5,9 +5,11 @@ import com.hauly.platform.auth.application.query.CurrentUserView;
 /**
  * Response body for GET /api/auth/me.
  */
-public record MeResponse(Long id, String username, String role, String displayName) {
+public record MeResponse(Long id, String username, String role, String displayName,
+                         String preferredLanguage) {
 
     public static MeResponse from(CurrentUserView view) {
-        return new MeResponse(view.id(), view.username(), view.role(), view.displayName());
+        return new MeResponse(view.id(), view.username(), view.role(), view.displayName(),
+                view.preferredLanguage());
     }
 }

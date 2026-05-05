@@ -25,3 +25,10 @@ export async function changePassword(input: {
 }): Promise<void> {
   await apiClient.post('/auth/password', input)
 }
+
+export async function updateLanguagePreference(
+  language: 'ko' | 'en' | 'th'
+): Promise<MeResponse> {
+  const { data } = await apiClient.patch<MeResponse>('/auth/me/language', { language })
+  return data
+}
