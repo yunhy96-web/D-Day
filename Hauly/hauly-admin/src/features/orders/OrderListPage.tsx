@@ -192,7 +192,7 @@ export default function OrderListPage() {
                           </div>
                         </td>
                         <td className="py-2 px-2 whitespace-nowrap">
-                          {Object.keys(o.totalsByCurrency).length === 0 && !o.paidAmountKrw ? (
+                          {Object.keys(o.totalsByCurrency).length === 0 && !o.paidAmountKrw && !o.netProfitKrw ? (
                             <span className="text-muted-foreground">—</span>
                           ) : (
                             <div className="flex flex-col">
@@ -205,6 +205,20 @@ export default function OrderListPage() {
                               {o.paidAmountKrw && (
                                 <span className="text-[11px] text-emerald-700 font-medium">
                                   {t('field.actual.short')}: {formatMoney(o.paidAmountKrw, 'KRW', i18n.resolvedLanguage)}
+                                </span>
+                              )}
+                              {o.netProfitKrw != null && (
+                                <span className={
+                                  Number(o.netProfitKrw) >= 0
+                                    ? 'text-[11px] text-blue-700 font-medium'
+                                    : 'text-[11px] text-red-700 font-medium'
+                                }>
+                                  {t('field.income.short')}: {formatMoney(o.netProfitKrw, 'KRW', i18n.resolvedLanguage)}
+                                  {o.netProfitThb != null && (
+                                    <span className="ml-1 font-normal text-muted-foreground">
+                                      ≈ {formatMoney(o.netProfitThb, 'THB', i18n.resolvedLanguage)}
+                                    </span>
+                                  )}
                                 </span>
                               )}
                             </div>
@@ -320,7 +334,7 @@ export default function OrderListPage() {
                         )}
                       </div>
                     )}
-                    {(Object.keys(o.totalsByCurrency).length > 0 || o.paidAmountKrw) && (
+                    {(Object.keys(o.totalsByCurrency).length > 0 || o.paidAmountKrw || o.netProfitKrw != null) && (
                       <div className="text-xs flex flex-wrap gap-x-3 gap-y-0.5">
                         {Object.entries(o.totalsByCurrency).map(([cur, amount]) => (
                           <span key={cur}>
@@ -331,6 +345,16 @@ export default function OrderListPage() {
                         {o.paidAmountKrw && (
                           <span className="text-emerald-700 font-medium">
                             {t('field.actual.short')}: {formatMoney(o.paidAmountKrw, 'KRW', i18n.resolvedLanguage)}
+                          </span>
+                        )}
+                        {o.netProfitKrw != null && (
+                          <span className={Number(o.netProfitKrw) >= 0 ? 'text-blue-700 font-medium' : 'text-red-700 font-medium'}>
+                            {t('field.income.short')}: {formatMoney(o.netProfitKrw, 'KRW', i18n.resolvedLanguage)}
+                            {o.netProfitThb != null && (
+                              <span className="ml-1 font-normal text-muted-foreground">
+                                ≈ {formatMoney(o.netProfitThb, 'THB', i18n.resolvedLanguage)}
+                              </span>
+                            )}
                           </span>
                         )}
                       </div>

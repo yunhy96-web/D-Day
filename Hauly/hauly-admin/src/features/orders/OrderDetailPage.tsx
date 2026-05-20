@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState, type FormEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Trash2 } from 'lucide-react'
+import { ArrowLeft, Trash2, X } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -334,7 +334,16 @@ export default function OrderDetailPage() {
                 ? hasTHB(order) && !order.krwPerThb
                   ? t('order.detail.profit.missing_fx')
                   : t('order.detail.profit.incomplete')
-                : formatMoney(order.netProfitKrw, 'KRW', i18n.resolvedLanguage)}
+                : (
+                  <>
+                    {formatMoney(order.netProfitKrw, 'KRW', i18n.resolvedLanguage)}
+                    {order.krwPerThb && Number(order.krwPerThb) > 0 && (
+                      <span className="ml-2 font-normal text-xs text-muted-foreground">
+                        ≈ {formatMoney(Number(order.netProfitKrw) / Number(order.krwPerThb), 'THB', i18n.resolvedLanguage)}
+                      </span>
+                    )}
+                  </>
+                )}
             </span>
           </div>
         </CardContent>
@@ -980,24 +989,49 @@ function FinancialsEditModal({
 }) {
   const { t } = useTranslation()
   const mutation = useUpdateFinancials(order.id)
-  const [revAmt, setRevAmt] = useState(order.customerRevenueAmount ?? '')
+  const [revAmt, setRevAmt] = useState(order.customerRevenueAmount != null ? String(order.customerRevenueAmount) : '')
   const [revCur, setRevCur] = useState<'KRW' | 'THB' | ''>(order.customerRevenueCurrency ?? '')
-  const [logKrAmt, setLogKrAmt] = useState(order.logisticsKrToThAmount ?? '')
+  const [logKrAmt, setLogKrAmt] = useState(order.logisticsKrToThAmount != null ? String(order.logisticsKrToThAmount) : '')
   const [logKrCur, setLogKrCur] = useState<'KRW' | 'THB' | ''>(order.logisticsKrToThCurrency ?? '')
-  const [logThAmt, setLogThAmt] = useState(order.logisticsThDomesticAmount ?? '')
+  const [logThAmt, setLogThAmt] = useState(order.logisticsThDomesticAmount != null ? String(order.logisticsThDomesticAmount) : '')
   const [logThCur, setLogThCur] = useState<'KRW' | 'THB' | ''>(order.logisticsThDomesticCurrency ?? '')
-  const [fx, setFx] = useState(order.krwPerThb ?? '')
+  const [fx, setFx] = useState(order.krwPerThb != null ? String(order.krwPerThb) : '')
+  const [fxMode, setFxMode] = useState<'KRW_PER_THB' | 'THB_PER_KRW'>('KRW_PER_THB')
   const [localError, setLocalError] = useState<string | null>(null)
+
+  function clampFraction(v: string, fraction: number): string {
+    const n = Number(v)
+    if (!Number.isFinite(n)) return v
+    return n.toFixed(fraction).replace(/0+$/, '').replace(/\.$/, '')
+  }
+
+  function invertFx(v: string): string {
+    const n = Number(v)
+    if (!Number.isFinite(n) || n === 0) return v
+    return clampFraction(String(1 / n), 4)
+  }
+
+  function switchFxMode(next: 'KRW_PER_THB' | 'THB_PER_KRW') {
+    if (next === fxMode) return
+    if (fx.trim()) setFx(invertFx(fx.trim()))
+    setFxMode(next)
+  }
 
   const anyTHB = revCur === 'THB' || logKrCur === 'THB' || logThCur === 'THB'
 
+  function isBlankOrZero(v: string): boolean {
+    const trimmed = v.trim()
+    if (!trimmed) return true
+    const n = Number(trimmed)
+    return Number.isFinite(n) && n === 0
+  }
+
   function pair(amt: string, cur: 'KRW' | 'THB' | '') {
-    const trimmed = amt.trim()
-    if (!trimmed && !cur) return [null, null] as const
-    if (!trimmed || !cur) {
+    if (isBlankOrZero(amt)) return [null, null] as const
+    if (!cur) {
       throw new Error('amount_currency_mismatch')
     }
-    return [trimmed, cur] as const
+    return [amt.trim(), cur] as const
   }
 
   function submit(e: FormEvent) {
@@ -1015,7 +1049,9 @@ function FinancialsEditModal({
           logisticsKrToThCurrency: lc,
           logisticsThDomesticAmount: ta,
           logisticsThDomesticCurrency: tc,
-          krwPerThb: fx.trim() || null,
+          krwPerThb: isBlankOrZero(fx)
+            ? null
+            : (fxMode === 'KRW_PER_THB' ? clampFraction(fx.trim(), 4) : invertFx(fx.trim())),
         },
         { onSuccess: onClose },
       )
@@ -1063,13 +1099,44 @@ function FinancialsEditModal({
         />
         <div className="space-y-1">
           <label className="text-xs text-muted-foreground">{t('field.krw_per_thb.label')}</label>
-          <Input
-            type="text"
-            inputMode="decimal"
-            value={fx}
-            onChange={(e) => setFx(e.target.value.replace(/[^0-9.]/g, ''))}
-            placeholder="38.5"
-          />
+          <div className="flex gap-1">
+            <Button
+              type="button"
+              size="sm"
+              variant={fxMode === 'KRW_PER_THB' ? 'default' : 'outline'}
+              onClick={() => switchFxMode('KRW_PER_THB')}
+            >
+              {t('field.fx.dir.krw_per_thb')}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={fxMode === 'THB_PER_KRW' ? 'default' : 'outline'}
+              onClick={() => switchFxMode('THB_PER_KRW')}
+            >
+              {t('field.fx.dir.thb_per_krw')}
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              inputMode="decimal"
+              value={fx}
+              onChange={(e) => setFx(e.target.value.replace(/[^0-9.]/g, ''))}
+              placeholder={fxMode === 'KRW_PER_THB' ? '38.5' : '0.026'}
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={t('aria.field_reset')}
+              disabled={!fx.trim()}
+              onClick={() => setFx('')}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
           {anyTHB && !fx.trim() && (
             <p className="text-xs text-amber-600">
               {t('order.detail.financials.fx_required_hint')}
@@ -1089,13 +1156,29 @@ function FinancialsEditModal({
             </AlertDescription>
           </Alert>
         )}
-        <div className="flex justify-end gap-2 pt-1">
-          <Button type="button" variant="outline" size="sm" onClick={onClose}>
-            {t('btn.cancel')}
+        <div className="flex justify-between gap-2 pt-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setRevAmt(''); setRevCur('')
+              setLogKrAmt(''); setLogKrCur('')
+              setLogThAmt(''); setLogThCur('')
+              setFx('')
+              setLocalError(null)
+            }}
+          >
+            {t('btn.reset_all')}
           </Button>
-          <Button type="submit" size="sm" disabled={mutation.isPending}>
-            {mutation.isPending ? t('msg.loading') : t('btn.save')}
-          </Button>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={onClose}>
+              {t('btn.cancel')}
+            </Button>
+            <Button type="submit" size="sm" disabled={mutation.isPending}>
+              {mutation.isPending ? t('msg.loading') : t('btn.save')}
+            </Button>
+          </div>
         </div>
       </form>
     </div>,
@@ -1116,6 +1199,8 @@ function FinancialPair({
   onAmount: (v: string) => void
   onCurrency: (v: 'KRW' | 'THB' | '') => void
 }) {
+  const { t } = useTranslation()
+  const hasValue = amount.trim() !== '' || currency !== ''
   return (
     <div className="space-y-1">
       <label className="text-xs text-muted-foreground">{label}</label>
@@ -1137,6 +1222,16 @@ function FinancialPair({
           <option value="KRW">KRW</option>
           <option value="THB">THB</option>
         </Select>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={t('aria.field_reset')}
+          disabled={!hasValue}
+          onClick={() => { onAmount(''); onCurrency('') }}
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   )
@@ -1148,11 +1243,11 @@ function PaidAmountEditModal({
   onClose,
 }: {
   orderId: number
-  currentPaid: string | null
+  currentPaid: string | number | null
   onClose: () => void
 }) {
   const { t } = useTranslation()
-  const [paid, setPaid] = useState(currentPaid ?? '')
+  const [paid, setPaid] = useState(currentPaid != null ? String(currentPaid) : '')
   const mutation = useUpdatePaidAmount(orderId)
 
   function submit(e: FormEvent) {

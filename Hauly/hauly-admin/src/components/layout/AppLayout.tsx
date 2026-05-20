@@ -164,9 +164,9 @@ export default function AppLayout() {
         </DropdownMenu>
       </header>
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Desktop sidebar — md+ only */}
-        <aside className="hidden md:flex md:w-60 border-r bg-background flex-col">
+      <div className="flex-1 flex">
+        {/* Desktop sidebar — md+ only. sticky so it stays visible while main scrolls. */}
+        <aside className="hidden md:flex md:w-60 md:sticky md:top-14 md:self-start md:h-[calc(100vh-3.5rem)] border-r bg-background flex-col">
           {navContent}
         </aside>
 
@@ -187,7 +187,7 @@ export default function AppLayout() {
           </div>
         )}
 
-        <main className="flex-1 bg-muted/20 overflow-auto">
+        <main className="flex-1 bg-muted/20 min-w-0">
           <Outlet />
         </main>
       </div>

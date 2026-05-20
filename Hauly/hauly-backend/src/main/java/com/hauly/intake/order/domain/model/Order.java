@@ -399,17 +399,27 @@ public class Order {
      *   profit_krw = customer_revenue_krw - paid_amount_krw - logistics_kr_th_krw - logistics_th_dom_krw
      */
     public java.math.BigDecimal getNetProfitKrw() {
-        if (paidAmountKrw == null
-                || customerRevenueAmount == null
-                || logisticsKrToThAmount == null
-                || logisticsThDomesticAmount == null) {
+        // 핵심 두 입력만 필수: 실결제금액 + 매출. 물류비는 미입력 시 0으로 간주.
+        if (paidAmountKrw == null || customerRevenueAmount == null) {
             return null;
         }
         java.math.BigDecimal revenueKrw = toKrw(customerRevenueAmount, customerRevenueCurrency);
-        java.math.BigDecimal logisticsKr = toKrw(logisticsKrToThAmount, logisticsKrToThCurrency);
-        java.math.BigDecimal logisticsTh = toKrw(logisticsThDomesticAmount, logisticsThDomesticCurrency);
+        java.math.BigDecimal logisticsKr = logisticsKrToThAmount == null
+                ? java.math.BigDecimal.ZERO
+                : toKrw(logisticsKrToThAmount, logisticsKrToThCurrency);
+        java.math.BigDecimal logisticsTh = logisticsThDomesticAmount == null
+                ? java.math.BigDecimal.ZERO
+                : toKrw(logisticsThDomesticAmount, logisticsThDomesticCurrency);
+        // THB 입력값이 있는데 환율이 없으면 변환 불가 → null
         if (revenueKrw == null || logisticsKr == null || logisticsTh == null) return null;
         return revenueKrw.subtract(paidAmountKrw).subtract(logisticsKr).subtract(logisticsTh);
+    }
+
+    /** 순수익 (THB) — 환율(krwPerThb) 입력된 주문에서만 계산 가능. 없으면 null. */
+    public java.math.BigDecimal getNetProfitThb() {
+        java.math.BigDecimal profitKrw = getNetProfitKrw();
+        if (profitKrw == null || krwPerThb == null || krwPerThb.signum() == 0) return null;
+        return profitKrw.divide(krwPerThb, 2, java.math.RoundingMode.HALF_UP);
     }
 
     private java.math.BigDecimal toKrw(java.math.BigDecimal amount, String currency) {

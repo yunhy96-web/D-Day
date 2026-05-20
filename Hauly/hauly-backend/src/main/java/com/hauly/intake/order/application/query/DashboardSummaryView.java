@@ -19,6 +19,8 @@ public record DashboardSummaryView(
         long totalOrderCount,
         Map<FulfillmentStatus, Long> ordersByFulfillmentStatus,
         BigDecimal depositBalanceKrw,
-        /** 재무 입력이 완료된 주문들의 순수익 합계 (KRW). 한 건도 없으면 0. */
-        BigDecimal totalNetProfitKrw
+        /** 재무 입력이 완료된 주문들의 순수익 합계 (KRW). 한 건도 없으면 0. CANCELLED 제외. */
+        BigDecimal totalNetProfitKrw,
+        /** 환율이 입력된 주문만 합산한 순수익 (THB). 환율 없는 주문은 제외. CANCELLED 제외. */
+        BigDecimal totalNetProfitThb
 ) {}

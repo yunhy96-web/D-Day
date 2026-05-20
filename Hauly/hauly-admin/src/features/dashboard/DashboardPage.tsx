@@ -42,6 +42,8 @@ export default function DashboardPage() {
               {(() => {
                 const v = Number(data.totalNetProfitKrw)
                 const negative = Number.isFinite(v) && v < 0
+                const thb = Number(data.totalNetProfitThb)
+                const hasThb = Number.isFinite(thb) && thb !== 0
                 return (
                   <>
                     <p
@@ -52,6 +54,11 @@ export default function DashboardPage() {
                       }
                     >
                       {formatMoney(data.totalNetProfitKrw, 'KRW', i18n.resolvedLanguage)}
+                      {hasThb && (
+                        <span className="ml-3 text-base font-normal text-muted-foreground">
+                          ≈ {formatMoney(data.totalNetProfitThb, 'THB', i18n.resolvedLanguage)}
+                        </span>
+                      )}
                     </p>
                     <p className="text-xs text-muted-foreground mt-2">
                       {t('dashboard.net_profit.help')}

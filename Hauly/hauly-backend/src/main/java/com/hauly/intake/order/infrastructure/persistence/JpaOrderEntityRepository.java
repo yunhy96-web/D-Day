@@ -119,15 +119,14 @@ interface JpaOrderEntityRepository extends JpaRepository<Order, Long> {
     List<Object[]> findOrderNosByIds(@Param("ids") Collection<Long> ids);
 
     /**
-     * 재무 입력이 완료된 주문들 — 4개 monetary 필드 모두 NOT NULL.
-     * 환율 조건은 service 레이어에서 추가 필터링 (THB 사용 시에만 환율 필요).
+     * 순수익 계산 가능한 주문들 — 핵심 2개(실결제금액 + 매출)만 NOT NULL. 물류비는 미입력 시 0으로 간주.
+     * CANCELLED 제외. 환율(THB→KRW 변환) 조건은 도메인 레이어에서 처리.
      */
     @Query("""
             SELECT o FROM Order o
             WHERE o.paidAmountKrw IS NOT NULL
               AND o.customerRevenueAmount IS NOT NULL
-              AND o.logisticsKrToThAmount IS NOT NULL
-              AND o.logisticsThDomesticAmount IS NOT NULL
+              AND o.fulfillmentStatus <> com.hauly.intake.order.domain.model.FulfillmentStatus.CANCELLED
             """)
     List<Order> findAllWithCompleteFinancials();
 }

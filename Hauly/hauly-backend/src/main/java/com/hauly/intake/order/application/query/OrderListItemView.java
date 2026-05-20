@@ -38,6 +38,9 @@ public record OrderListItemView(
         // PURCHASED 시 입력한 실제 결제 금액 (KRW). 미입력 또는 PURCHASED 미진입 시 null.
         BigDecimal paidAmountKrw,
         Map<String, BigDecimal> totalsByCurrency,
+        // 매출 + 결제금액 (+ 환율, THB 사용 시) 입력되어야 계산되는 순수익. 미충족 시 null.
+        BigDecimal netProfitKrw,
+        BigDecimal netProfitThb,
         OffsetDateTime createdAt
 ) {
     /** TTL for presigned URLs in the list — short list paint window. */
@@ -78,6 +81,8 @@ public record OrderListItemView(
                 order.getShippingAddressLabel(),
                 order.getPaidAmountKrw(),
                 totals,
+                order.getNetProfitKrw(),
+                order.getNetProfitThb(),
                 order.getCreatedAt()
         );
     }

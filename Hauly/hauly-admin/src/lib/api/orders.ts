@@ -41,6 +41,10 @@ export interface OrderListItem {
   shippingAddressLabel: string | null
   paidAmountKrw: string | null
   totalsByCurrency: Partial<Record<CurrencyCode, string>>
+  /** 매출+결제금액 (+ THB 사용 시 환율) 다 입력되면 계산. null이면 미입력. */
+  netProfitKrw: string | null
+  /** 환율 입력된 주문에서만 계산. null이면 환율 없거나 KRW만 사용. */
+  netProfitThb: string | null
   createdAt: string
 }
 
@@ -148,8 +152,10 @@ export interface DashboardSummary {
   ordersByFulfillmentStatus: Partial<Record<FulfillmentStatus, number>>
   /** Negative = customer owes us. */
   depositBalanceKrw: string
-  /** 재무 입력이 완료된 주문 합계 순수익 (KRW). */
+  /** 재무 입력이 완료된 주문 합계 순수익 (KRW). CANCELLED 제외. */
   totalNetProfitKrw: string
+  /** 환율 입력된 주문만 합산한 순수익 (THB). */
+  totalNetProfitThb: string
 }
 
 export interface UpdateFinancialsInput {

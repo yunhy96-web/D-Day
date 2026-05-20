@@ -2,11 +2,12 @@ package com.hauly.shared.customer.domain.model;
 
 /**
  * LINE messenger ID value object.
- * Trimmed, case-preserved (LINE IDs are case-sensitive). 1-64 chars per LINE's spec.
+ * Trimmed, case-preserved. Length matches DB column (customer.line_id varchar(500)) —
+ * users often paste full nickname/note here, so we don't enforce LINE's 1-64 spec.
  */
 public record LineId(String value) {
 
-    private static final int MAX_LENGTH = 64;
+    private static final int MAX_LENGTH = 500;
 
     public LineId {
         if (value == null || value.isBlank()) {

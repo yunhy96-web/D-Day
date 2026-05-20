@@ -35,11 +35,17 @@ public class DashboardQueryService {
             filled.put(s, count);
             total += count;
         }
-        BigDecimal totalProfit = orders.findAllWithCompleteFinancials().stream()
+        var financialOrders = orders.findAllWithCompleteFinancials();
+        BigDecimal totalProfitKrw = financialOrders.stream()
                 .map(o -> o.getNetProfitKrw())
                 .filter(java.util.Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalProfitThb = financialOrders.stream()
+                .map(o -> o.getNetProfitThb())
+                .filter(java.util.Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         return new DashboardSummaryView(
-                orders.sumAmountByCurrency(), total, filled, deposits.currentBalance(), totalProfit);
+                orders.sumAmountByCurrency(), total, filled, deposits.currentBalance(),
+                totalProfitKrw, totalProfitThb);
     }
 }
