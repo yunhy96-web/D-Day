@@ -1,0 +1,49 @@
+server:
+  port: 8092
+
+spring:
+  application:
+    name: flasharena-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://127.0.0.1:5432/flasharena}
+    username: ${DB_USER:sideproject}
+    password: ${DB_PASSWORD:20251220}
+    driver-class-name: org.postgresql.Driver
+  data:
+    redis:
+      # Redisson starter 가 이 설정으로 RedissonClient 를 자동 구성한다 (REDIS_LOCK 모드의 분산 락).
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+  jpa:
+    hibernate:
+      # DDL 스크립트(db/ddl/*.sql)가 단일 진실 소스. Hibernate 가 테이블을 만들거나 변경하지 않는다.
+      ddl-auto: none
+    # OSIV 비활성화: 요청 스레드의 영속성 컨텍스트가 끝까지 열려 있으면
+    # 워커 트랜잭션이 커밋한 재고 변경을 1차 캐시가 가려 최종 재고를 stale 하게 읽는다.
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        # "order" 같은 예약어 스키마/테이블을 후속 Phase 에서 안전하게 인용하기 위함.
+        globally_quoted_identifiers: true
+
+app:
+  jwt:
+    # ⚠️ HS256 은 256bit(32byte) 이상 키를 요구. 운영에서는 반드시 JWT_SECRET 으로 override 할 것.
+    secret: ${JWT_SECRET:flasharena-dev-secret-key-please-override-in-production-0123456789}
+    expiration-ms: ${JWT_EXP_MS:3600000}
+  auth:
+    default-username: ${AUTH_USER:user}
+    default-password: ${AUTH_PW:1234}
+    default-role: ROLE_ADMIN
+  # Transactional Outbox 릴레이어 설정 (order 도메인)
+  outbox:
+    relay-interval-ms: ${OUTBOX_RELAY_INTERVAL_MS:500}   # 릴레이어 폴링 주기
+    batch-size: ${OUTBOX_BATCH_SIZE:100}                 # 틱당 발행 배치 크기
+    max-retry: ${OUTBOX_MAX_RETRY:10}                    # 재시도 상한 → 초과 시 FAILED(준-DLQ)
+  # Redis Stream 설정 (생산자=릴레이어 / 소비자=payment 공용)
+  stream:
+    key: ${STREAM_KEY:flasharena:order-events}           # XADD/XREADGROUP 대상 스트림 키
+    group: ${STREAM_GROUP:payment-group}                 # 소비자 그룹
+    consumer: ${STREAM_CONSUMER:payment-1}               # 소비자 이름
