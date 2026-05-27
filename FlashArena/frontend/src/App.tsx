@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Controls from '@/components/Controls'
+import DesignDoc from '@/components/DesignDoc'
 import LogTerminal from '@/components/LogTerminal'
 import ResultReport from '@/components/ResultReport'
 import RunningGauge from '@/components/RunningGauge'
@@ -17,6 +18,8 @@ export default function App() {
   const [token, setToken] = useState<string | null>(null)
   const [conn, setConn] = useState<ConnState>('connecting')
   const [loginError, setLoginError] = useState<string | null>(null)
+
+  const [view, setView] = useState<'sim' | 'design'>('sim')
 
   const [mode, setMode] = useState<SimulationMode>('SYNC')
   const [concurrency, setConcurrency] = useState(1000)
@@ -118,13 +121,37 @@ export default function App() {
         <StatusBadge state={conn} onRetry={doLogin} />
       </header>
 
-      {loginError && (
+      <nav className="mb-6 flex gap-1 rounded-xl border border-slate-800 bg-slate-900/40 p-1 text-sm">
+        {(
+          [
+            ['sim', '시뮬레이터'],
+            ['design', '설계 의도'],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setView(key)}
+            className={`flex-1 rounded-lg px-3 py-1.5 font-medium transition ${
+              view === key
+                ? 'bg-slate-700 text-slate-100'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      {loginError && view === 'sim' && (
         <div className="mb-4 rounded-xl border border-red-500/40 bg-red-950/30 px-4 py-3 text-sm text-red-300">
           로그인 실패: {loginError} — 백엔드(8092)가 떠 있는지 확인 후 재시도하세요.
         </div>
       )}
 
-      <div className="space-y-5">
+      {view === 'design' && <DesignDoc />}
+
+      <div className={`space-y-5 ${view === 'sim' ? '' : 'hidden'}`}>
         <Controls
           mode={mode}
           concurrency={concurrency}

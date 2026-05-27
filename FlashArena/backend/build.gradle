@@ -40,6 +40,9 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // ArchUnit: 모듈 경계(스키마 분리·내부 접근 금지)를 빌드 타임에 강제한다.
+    testImplementation 'com.tngtech.archunit:archunit-junit5:1.3.0'
 }
 
 tasks.named('test') {

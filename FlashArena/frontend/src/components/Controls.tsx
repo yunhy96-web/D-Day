@@ -105,9 +105,17 @@ export default function Controls({
           active={mode === 'REDIS_LOCK'}
           disabled={running}
           title="Redis 분산 락 모드"
-          desc="상품별 Redisson 분산 락으로 임계영역을 직렬화 — 정확히 재고만큼만 판매됩니다."
+          desc="상품별 Redisson 분산 락으로 임계영역을 직렬화 — 정확하지만 한 명씩 줄세워 느립니다."
           accent="ring-emerald-400/70"
           onClick={() => onModeChange('REDIS_LOCK')}
+        />
+        <ModeCard
+          active={mode === 'REDIS_COUNTER'}
+          disabled={running}
+          title="Redis 카운터 모드 (DECR)"
+          desc="원자 DECR 로 게이트키핑 — 락/대기 없이 당첨자만 DB 에 씁니다. 정확하면서도 빠릅니다."
+          accent="ring-sky-400/70"
+          onClick={() => onModeChange('REDIS_COUNTER')}
         />
       </div>
 

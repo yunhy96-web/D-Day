@@ -104,14 +104,38 @@ public class OrderProcessor {
     }
 
     /**
+     * REDIS_COUNTER 모드 정산. 게이트(Redis DECR)는 호출부(SimulationService)에서 이미 판정했다.
+     * 락도 대기도 없이, 당첨(won)이면 원자 차감 + 판매 기록, 낙첨이면 FAILED 만 남긴다.
+     *
+     * @param won Redis DECR 결과가 0 이상(=재고 한 자리 확보)인지
+     * @return 구매 성공(CREATED) 여부
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public boolean settleCounter(UUID productId, UUID userId, boolean won) {
+        if (!won) {
+            fail(productId, userId);
+            return false;
+        }
+        // 가격만 읽고(불변), 수량은 원자 UPDATE 로 줄인다 → 동시 당첨자끼리도 lost-update 없음.
+        long unitPrice = productRepository.findById(productId).orElseThrow().getPrice();
+        productRepository.decreaseQuantityAtomic(productId);
+        recordSale(productId, userId, unitPrice);
+        return true;
+    }
+
+    /**
      * 구매 성공 처리: 재고 차감 + CREATED 주문 INSERT + ORDER_COMPLETED 아웃박스 INSERT.
      * 세 작업이 같은 트랜잭션에서 원자적으로 커밋된다 → 주문은 있는데 이벤트가 없는 상태가 불가능.
      */
     private boolean succeed(Product product, UUID userId) {
-        UUID productId = product.getId();
         product.decrease();
         productRepository.save(product);
+        recordSale(product.getId(), userId, product.getPrice());
+        return true;
+    }
 
+    /** CREATED 주문 INSERT + ORDER_COMPLETED 아웃박스 INSERT (같은 트랜잭션). 재고 차감은 호출부 책임. */
+    private void recordSale(UUID productId, UUID userId, long unitPrice) {
         OrderEntity order = orderRepository.save(OrderEntity.builder()
                 .userId(userId)
                 .productId(productId)
@@ -119,10 +143,9 @@ public class OrderProcessor {
                 .status("CREATED")
                 .build());
 
-        long amount = product.getPrice() * order.getQuantity();
+        long amount = unitPrice * order.getQuantity();
         String payload = buildPayload(order.getId(), userId, productId, order.getQuantity(), amount);
         outboxRepository.save(OutboxEvent.orderCompleted(order.getId(), payload));
-        return true;
     }
 
     /** 재고 부족 실패: FAILED 주문만 기록 (아웃박스 이벤트는 발행하지 않는다). */

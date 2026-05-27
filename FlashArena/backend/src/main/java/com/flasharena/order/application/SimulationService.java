@@ -4,7 +4,7 @@ import com.flasharena.order.domain.SimulationMode;
 import com.flasharena.order.infrastructure.OutboxRepository;
 import com.flasharena.order.presentation.dto.SimulationRequest;
 import com.flasharena.order.presentation.dto.SimulationResult;
-import com.flasharena.payment.infrastructure.PaymentHistoryRepository;
+import com.flasharena.payment.application.PaymentResetService;
 import jakarta.annotation.PreDestroy;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -40,6 +40,8 @@ public class SimulationService {
     // RAM 1GB 제약 → 스레드 풀은 50 으로 고정. 그래도 concurrency 개 태스크를 통과시켜 경합을 만든다.
     private static final int MAX_POOL_SIZE = 50;
     private static final String LOCK_KEY_PREFIX = "lock:product:";
+    // REDIS_COUNTER 모드의 게이트키핑 카운터 키. 매 run 전 초기 재고로 적재하고 DECR 로 자리를 나눠 갖는다.
+    private static final String STOCK_KEY_PREFIX = "stock:product:";
     private static final long LOCK_WAIT_SECONDS = 10L;   // 경합 시 spurious 실패 대신 줄서서 직렬화되도록 넉넉히
     private static final long LOCK_LEASE_SECONDS = 5L;    // 데드락 방지용 자동 해제
     // 버퍼 폭주 방지를 위한 로그 샘플링 간격.
@@ -52,7 +54,7 @@ public class SimulationService {
     private final SimulationLogger logger;
     private final SimulationStreamHub streamHub;
     private final OutboxRepository outboxRepository;
-    private final PaymentHistoryRepository paymentHistoryRepository;
+    private final PaymentResetService paymentResetService;
     private final StringRedisTemplate redisTemplate;
     private final String streamKey;
 
@@ -76,7 +78,7 @@ public class SimulationService {
             SimulationLogger logger,
             SimulationStreamHub streamHub,
             OutboxRepository outboxRepository,
-            PaymentHistoryRepository paymentHistoryRepository,
+            PaymentResetService paymentResetService,
             StringRedisTemplate redisTemplate,
             @Value("${app.stream.key:flasharena:order-events}") String streamKey) {
         this.orderProcessor = orderProcessor;
@@ -84,7 +86,7 @@ public class SimulationService {
         this.logger = logger;
         this.streamHub = streamHub;
         this.outboxRepository = outboxRepository;
-        this.paymentHistoryRepository = paymentHistoryRepository;
+        this.paymentResetService = paymentResetService;
         this.redisTemplate = redisTemplate;
         this.streamKey = streamKey;
     }
@@ -134,6 +136,10 @@ public class SimulationService {
 
         UUID productId = orderProcessor.resetForRun(initialStock);
         resetMessagingResidue();
+        if (mode == SimulationMode.REDIS_COUNTER) {
+            // 게이트키핑 카운터를 초기 재고로 적재. 이후 DECR 한 번 = '한 자리 차지'.
+            redisTemplate.opsForValue().set(STOCK_KEY_PREFIX + productId, Integer.toString(initialStock));
+        }
         logger.summary(runId, String.format(
                 "🚀 시뮬레이션 시작 mode=%s 동시요청=%d 초기재고=%d", mode, concurrency, initialStock));
 
@@ -151,9 +157,11 @@ public class SimulationService {
                 final int seq = i;
                 futures.add(pool.submit(() -> {
                     awaitGate(startGate);
-                    boolean ok = (mode == SimulationMode.SYNC)
-                            ? buyNoLock(runId, productId, userId, seq)
-                            : buyWithRedisLock(runId, productId, userId, seq);
+                    boolean ok = switch (mode) {
+                        case SYNC -> buyNoLock(runId, productId, userId, seq);
+                        case REDIS_LOCK -> buyWithRedisLock(runId, productId, userId, seq);
+                        case REDIS_COUNTER -> buyWithCounter(runId, productId, userId, seq);
+                    };
                     (ok ? successCount : failCount).incrementAndGet();
                 }));
             }
@@ -195,7 +203,7 @@ public class SimulationService {
      */
     private void resetMessagingResidue() {
         outboxRepository.deleteAllOutbox();
-        paymentHistoryRepository.deleteAllHistory();
+        paymentResetService.resetHistory();
         try {
             // 스트림 키를 삭제하면 소비자 그룹까지 사라지므로, 길이만 0 으로 잘라 잔여 메시지를 제거한다.
             redisTemplate.opsForStream().trim(streamKey, 0);
@@ -232,6 +240,19 @@ public class SimulationService {
                 lock.unlock();
             }
         }
+    }
+
+    /**
+     * REDIS_COUNTER: Redis 원자 DECR 로 게이트키핑.
+     * 락도 대기도 없이 DECR 한 번으로 당첨/낙첨이 즉시 갈린다(잔여>=0 이면 당첨). 인메모리 연산이라 빠르다.
+     * DB 에는 당첨자만 들어가고, 수량 차감도 원자 UPDATE 라 동시 당첨자끼리 lost-update 가 없다.
+     */
+    private boolean buyWithCounter(String runId, UUID productId, UUID userId, int seq) {
+        Long remaining = redisTemplate.opsForValue().decrement(STOCK_KEY_PREFIX + productId);
+        boolean won = remaining != null && remaining >= 0;
+        boolean ok = orderProcessor.settleCounter(productId, userId, won);
+        sample(runId, ok, seq);
+        return ok;
     }
 
     /** 주요 이벤트만 샘플링해 버퍼에 적재 (concurrency 가 커도 폭주하지 않도록). */

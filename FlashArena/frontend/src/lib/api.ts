@@ -9,7 +9,7 @@
 export const API_BASE: string =
   import.meta.env.VITE_API_BASE ?? 'http://localhost:8092'
 
-export type SimulationMode = 'SYNC' | 'REDIS_LOCK'
+export type SimulationMode = 'SYNC' | 'REDIS_LOCK' | 'REDIS_COUNTER'
 
 export interface LoginResponse {
   accessToken: string

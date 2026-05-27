@@ -29,6 +29,11 @@ spring:
         globally_quoted_identifiers: true
 
 app:
+  # CORS 허용 origin 패턴(콤마 구분). 개발 기본값=localhost 임의 포트.
+  # 배포 시 CORS_ALLOWED_ORIGINS 로 프론트 도메인 지정 (예: https://flasharena.example.com).
+  # 리버스 프록시로 같은 origin 을 쓰면(방식 B) CORS 자체가 불필요하다.
+  cors:
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGINS:http://localhost:*,http://127.0.0.1:*}
   jwt:
     # ⚠️ HS256 은 256bit(32byte) 이상 키를 요구. 운영에서는 반드시 JWT_SECRET 으로 override 할 것.
     secret: ${JWT_SECRET:flasharena-dev-secret-key-please-override-in-production-0123456789}

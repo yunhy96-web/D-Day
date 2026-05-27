@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotNull;
  * concurrency = 동시 요청 수(각 요청은 상품 1개 구매 시도). RAM-1GB 보호를 위해 1..20000 으로 제한.
  */
 public record SimulationRequest(
-        @NotNull(message = "mode 는 필수입니다. (SYNC | REDIS_LOCK)")
+        @NotNull(message = "mode 는 필수입니다. (SYNC | REDIS_LOCK | REDIS_COUNTER)")
         SimulationMode mode,
 
         @Min(value = 1, message = "concurrency 는 1 이상이어야 합니다.")
