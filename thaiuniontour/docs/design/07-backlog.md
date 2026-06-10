@@ -41,7 +41,7 @@
 | 2.5 | **결제 Consumer**(XREAD group, payment_history UNIQUE 멱등) | api(내부) | 2.4 |
 | 2.6 | admin **입금 수동승인**(→CONFIRMED + `ReservationConfirmed` 발행) | admin | 2.3 |
 | 2.7 | 결제상태 조회 API(폴링) + 예약완료/계좌안내 화면 | api·frontend | 2.5 |
-| 2.8 | 비회원 예약조회(번호+이메일) | api·frontend | 2.2 |
+| 2.8 | 비회원 재진입: 매직링크(lookup_token 이메일) + 수동조회(랜덤 reservation_no+이메일). 예약번호 생성기(비순차) | api·frontend | 2.2 |
 
 > M2 완료 = **MVP 끝**(상품 올리고 → 예약 → 입금승인 → 결제완료 전 경로 동작).
 

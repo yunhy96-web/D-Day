@@ -102,6 +102,8 @@ erDiagram
     varchar reserver_name
     varchar reserver_email
     varchar reserver_phone
+    varchar reservation_no UK "표시·수동조회 랜덤코드"
+    uuid lookup_token UK "매직링크(비회원 재진입)"
     timestamptz confirmed_at
     timestamptz cancelled_at
   }
@@ -379,6 +381,7 @@ INSERT INTO common.label(code, locale, text) VALUES
 - **상태=CHECK, 결제수단=common_code**: 상태는 도메인이 통제(코드와 함께 진화), 결제수단은 운영이 확장.
 - **검색 `simple` + pg_trgm**: 한국어 형태소 분석기 없이 MVP. seam: 추후 pgroonga/mecab으로 교체.
 - **교차 스키마 FK 0개**: reservation↔catalog/member, payment↔reservation 모두 UUID 논리참조 → 도메인 격리.
+- **비회원 재진입 = 매직링크 + 예약번호·이메일**(비밀번호 X). `lookup_token`(UUID, 추측불가)으로 이메일 서명링크 조회, `reservation_no`(랜덤·비순차)로 수동 조회. 둘 다 UNIQUE. 게스트에게 비번을 강요하지 않아 마찰↓·보안↑. (생성·메일발송 로직은 M2)
 
 ## 다음 단계(4단계 API)로 넘길 포인트
 - 예약 생성(동기: 재고차감+PENDING) ↔ 입금 수동승인(CONFIRMED+이벤트 발행) ↔ 결제 처리(비동기) 경계.

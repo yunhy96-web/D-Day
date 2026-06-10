@@ -125,9 +125,13 @@ GNB 메가메뉴/필터용. **테마 트리(주 네비)** 와 **지역(패싯)**
 |---|---|---|---|
 | POST | `/reservations` | GUEST/MEMBER | 예약 생성(재고차감→PENDING). 비회원=reserver 정보 필수 |
 | GET | `/reservations/{id}` | MEMBER/본인 | 예약 상세(상태 포함) |
-| GET | `/reservations/lookup?no=&email=` | GUEST | **비회원 예약 조회**(예약번호+이메일) |
+| GET | `/reservations/by-token/{lookupToken}` | GUEST | **매직링크 조회**(이메일 서명링크 타깃, 1순위) |
+| GET | `/reservations/lookup?no=&email=` | GUEST | **수동 조회**(랜덤 예약번호+이메일, fallback) |
 | GET | `/reservations/me` | MEMBER | 내 예약 목록 |
-| POST | `/reservations/{id}/cancel` | MEMBER/본인 | 취소(상태 검증 → CANCELLED, 재고복원 이벤트) |
+| POST | `/reservations/{id}/cancel` | MEMBER/본인 | 취소(상태 검증 → CANCELLED, 재고복원 이벤트). 게스트 취소는 OTP 1회(확장) |
+
+> **비회원 재진입(비밀번호 X)**: 주문확인 이메일에 `lookup_token` 매직링크 포함 → 클릭만으로 조회.
+> 수동 조회는 `reservation_no`(랜덤·비순차) + 이메일. 순차번호 금지(열거 방지). 취소 등 민감 작업은 OTP 추가 가능.
 
 ```json
 // POST /reservations (req)
@@ -135,8 +139,8 @@ GNB 메가메뉴/필터용. **테마 트리(주 네비)** 와 **지역(패싯)**
   "paymentMethod":"BANK_TRANSFER",
   "reserver":{ "name":"홍길동", "email":"a@b.com", "phone":"010-..." } }
 
-// 201 → data
-{ "reservationId":"...", "reservationNo":"R-20260701-0001", "status":"PENDING",
+// 201 → data  (reservationNo는 랜덤·비순차. 매직링크는 이메일로 발송)
+{ "reservationId":"...", "reservationNo":"TUT-7K3P9Q2", "status":"PENDING",
   "amount":89000, "paymentMethod":"BANK_TRANSFER",
   "bankInfo":{ "bank":"국민", "account":"123-456", "holder":"타이유니온투어", "deadline":"2026-06-12T23:59:59+09:00" } }
 

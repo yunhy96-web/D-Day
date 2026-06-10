@@ -13,6 +13,8 @@ CREATE TABLE reservation.reservation (
     reserver_name        VARCHAR(100) NOT NULL,
     reserver_email       VARCHAR(255) NOT NULL,
     reserver_phone       VARCHAR(30)  NOT NULL,
+    reservation_no       VARCHAR(20)  NOT NULL,       -- 표시·수동조회용 랜덤 코드(비순차, 추측불가). 예: TUT-7K3P9Q2
+    lookup_token         UUID NOT NULL DEFAULT gen_random_uuid(), -- 매직링크용(이메일 서명링크). 비회원 비번 대체
     created_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
     confirmed_at         TIMESTAMPTZ,
@@ -22,6 +24,9 @@ CREATE TABLE reservation.reservation (
 CREATE INDEX idx_reservation_member   ON reservation.reservation(member_id);
 CREATE INDEX idx_reservation_schedule ON reservation.reservation(product_schedule_id);
 CREATE INDEX idx_reservation_status   ON reservation.reservation(status);
+-- 비회원 재진입: 예약번호(수동조회) + 매직링크 토큰(이메일 링크). 둘 다 추측불가해야 안전.
+CREATE UNIQUE INDEX uq_reservation_no    ON reservation.reservation(reservation_no);
+CREATE UNIQUE INDEX uq_reservation_token ON reservation.reservation(lookup_token);
 
 -- Transactional Outbox (생산자=reservation 소유). 예약 INSERT와 동일 로컬 TX로 원자 커밋.
 CREATE TABLE reservation.outbox (
