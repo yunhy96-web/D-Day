@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: thaiuniontour-api
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/thaiuniontour}
+    username: ${SPRING_DATASOURCE_USERNAME:tut}
+    password: ${SPRING_DATASOURCE_PASSWORD:tutpass}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none          # 스키마는 Flyway가 관리
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: catalog
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    schemas: common,member,catalog,reservation,payment
+    default-schema: common    # flyway_schema_history 위치
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6380}
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# 이벤트 릴레이어/스트림 기본값 (06-infra.md)
+app:
+  outbox:
+    relay-interval-ms: 500
+    batch-size: 100
+    max-retry: 10
+  stream:
+    key: tut:reservation-events
+    consumer-group: payment-workers

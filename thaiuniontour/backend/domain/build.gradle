@@ -1,0 +1,9 @@
+// domain — 엔티티·Repository(포트)·도메인 서비스 (라이브러리 jar). 스키마-per-도메인.
+dependencies {
+    implementation project(':common')
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    runtimeOnly 'org.postgresql:postgresql'
+}

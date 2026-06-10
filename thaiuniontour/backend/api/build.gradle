@@ -1,0 +1,21 @@
+// api — 고객 대면 REST + Relayer + 결제 Consumer (실행 가능 boot jar)
+plugins {
+    id 'org.springframework.boot'
+}
+
+dependencies {
+    implementation project(':common')
+    implementation project(':domain')
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // DB 마이그레이션 (Boot 3.2 기본 Flyway 9 — flyway-core가 postgres 직접 지원)
+    implementation 'org.flywaydb:flyway-core'
+    runtimeOnly 'org.postgresql:postgresql'
+}
+
+tasks.named('bootJar') { archiveFileName = 'api.jar' }

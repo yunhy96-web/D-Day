@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: thaiuniontour-admin
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/thaiuniontour}
+    username: ${SPRING_DATASOURCE_USERNAME:tut}
+    password: ${SPRING_DATASOURCE_PASSWORD:tutpass}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none          # 스키마는 api 모듈 Flyway가 관리
+    open-in-view: false
+  flyway:
+    enabled: false            # 마이그레이션은 api가 소유 (중복 실행 방지)
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8081
