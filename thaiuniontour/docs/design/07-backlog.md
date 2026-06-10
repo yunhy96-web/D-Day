@@ -93,6 +93,18 @@ flowchart LR
 
 ---
 
+## M0 확장성 검토 후속 (architect 리뷰 반영)
+M0에서 **지금 적용 완료**: default_schema 제거(@Table 스키마 명시 컨벤션) · domain 컨텍스트 패키지 골격 · 포트 인터페이스(StockDeductionStrategy/PaymentGateway/PaymentConfirmation/FileStorage) · AggregateRoot 베이스 · Flyway 소유권 문서화.
+
+**아래는 의도적으로 해당 마일스톤으로 미룸**(지금 만들면 over-engineering):
+- [ ] **M2**: `reservation.reservation`에 `version` 컬럼(낙관락) 추가 — 동시 상태전이(승인 vs 취소) 대비. `ALTER TABLE ADD COLUMN`(신규 V7).
+- [ ] **M2**: `DomainEventSerializer`(이벤트→Outbox JSONB, **payload에 `schemaVersion` 항상 포함**) — Outbox 구현 시.
+- [ ] **M1**: 프론트 `lib/api.ts`·`lib/hooks/` 데이터 패칭 컨벤션 — 첫 API 연동 시.
+- [ ] **M3**: Spring 프로필 분리(`application-local.yml`/`application-prod.yml`) — 배포 단계.
+- [ ] **M3**: `layout.tsx` `lang` 동적화(ko/en) — i18n 구현 시.
+
+---
+
 ## 설계 완료
 0~7단계 설계 종료. 다음은 **구현 단계**(이 design 스킬 범위 밖).
 구현 착수 시 M0부터. 각 마일스톤 후 동시성/멱등 테스트로 검증.

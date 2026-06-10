@@ -12,7 +12,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        default_schema: catalog
+        # 전역 default_schema 미사용(스키마-per-도메인). 엔티티마다 @Table(schema="reservation"|"payment"|...) 명시 필수.
     open-in-view: false
   flyway:
     enabled: true

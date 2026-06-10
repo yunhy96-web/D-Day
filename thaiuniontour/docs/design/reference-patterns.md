@@ -8,7 +8,7 @@ thaiuniontour의 핵심 비기능 요구(한정 좌석 선착순·동시성 안�
 
 ## 1. 도메인 격리 (스키마-per-도메인)
 
-- PostgreSQL **스키마**로 도메인 경계를 물리적으로 분리: `reservation`, `payment`, `product`, `member` …
+- PostgreSQL **스키마**로 도메인 경계를 물리적으로 분리: `reservation`, `payment`, `catalog`(상품/분류/재고), `member`, `common` …
 - **교차 스키마 물리 FK 금지.** 다른 도메인의 식별자는 **UUID 타입으로만** 참조한다.
 - 도메인 간 통신은 직접 호출이 아니라 **이벤트**로 한다.
   - 예: 예약 도메인이 결제 도메인을 직접 호출하지 않는다. 예약 완료 이벤트만 발행하고, 결제는 그걸 구독한다.
