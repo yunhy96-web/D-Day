@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>카테고리 등록</title>
+    <style>
+        body { font-family: sans-serif; margin: 24px; }
+        h1 { margin-bottom: 16px; }
+        .form-row { margin-bottom: 14px; }
+        label { display: block; font-weight: bold; margin-bottom: 4px; }
+        input[type=text], input[type=number], select { width: 320px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+        .error { color: #d32f2f; font-size: 0.85em; margin-top: 2px; }
+        .btn { padding: 8px 18px; background: #1a73e8; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; }
+        .btn:hover { background: #1558b0; }
+        .btn-cancel { padding: 8px 18px; background: #888; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; text-decoration: none; }
+        .nav { margin-bottom: 16px; }
+        a { color: #1a73e8; }
+    </style>
+</head>
+<body>
+<div class="nav">
+    <a href="/admin">홈</a> &gt; <a href="/admin/categories">카테고리 관리</a> &gt; 신규 등록
+</div>
+<h1>카테고리 등록</h1>
+<form th:action="@{/admin/categories}" th:object="${form}" method="post">
+    <div class="form-row">
+        <label for="type">타입 *</label>
+        <select id="type" th:field="*{type}">
+            <option value="">-- 선택 --</option>
+            <option th:each="t : ${categoryTypes}" th:value="${t}" th:text="${t}">THEME</option>
+        </select>
+        <div class="error" th:if="${#fields.hasErrors('type')}" th:errors="*{type}"></div>
+    </div>
+
+    <div class="form-row">
+        <label for="parentId">부모 카테고리 (선택)</label>
+        <select id="parentId" th:field="*{parentId}">
+            <option value="">-- 없음 (루트) --</option>
+            <option th:each="p : ${parentCandidates}"
+                    th:value="${p.id}"
+                    th:text="${p.type + ' / ' + p.name}">parent</option>
+        </select>
+    </div>
+
+    <div class="form-row">
+        <label for="name">이름 *</label>
+        <input type="text" id="name" th:field="*{name}" placeholder="카테고리명"/>
+        <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+    </div>
+
+    <div class="form-row">
+        <label for="slug">슬러그 *</label>
+        <input type="text" id="slug" th:field="*{slug}" placeholder="url-friendly-slug"/>
+        <div class="error" th:if="${#fields.hasErrors('slug')}" th:errors="*{slug}"></div>
+    </div>
+
+    <div class="form-row">
+        <label for="sort">정렬순서</label>
+        <input type="number" id="sort" th:field="*{sort}" value="0"/>
+    </div>
+
+    <div>
+        <button class="btn" type="submit">저장</button>
+        <a class="btn-cancel" href="/admin/categories">취소</a>
+    </div>
+</form>
+</body>
+</html>

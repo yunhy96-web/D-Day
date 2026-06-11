@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>카테고리 관리</title>
+    <style>
+        body { font-family: sans-serif; margin: 24px; }
+        h1 { margin-bottom: 16px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+        th { background: #f5f5f5; }
+        a { color: #1a73e8; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .nav { margin-bottom: 16px; }
+        .btn { display: inline-block; padding: 6px 14px; background: #1a73e8; color: #fff; border-radius: 4px; text-decoration: none; }
+        .btn:hover { background: #1558b0; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="nav">
+    <a href="/admin">홈</a> &gt; 카테고리 관리
+</div>
+<h1>카테고리 목록</h1>
+<p><a class="btn" href="/admin/categories/new">+ 신규 카테고리</a></p>
+<table>
+    <thead>
+        <tr>
+            <th>타입</th>
+            <th>레벨</th>
+            <th>이름</th>
+            <th>슬러그</th>
+            <th>정렬</th>
+            <th>부모ID</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="cat : ${categories}">
+            <td th:text="${cat.type}">THEME</td>
+            <td th:text="${cat.level}">1</td>
+            <td th:text="${cat.name}">이름</td>
+            <td th:text="${cat.slug}">slug</td>
+            <td th:text="${cat.sort}">0</td>
+            <td th:text="${cat.parentId}">-</td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(categories)}">
+            <td colspan="6" style="text-align:center;color:#888;">등록된 카테고리가 없습니다.</td>
+        </tr>
+    </tbody>
+</table>
+</body>
+</html>

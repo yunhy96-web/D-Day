@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>상품 관리</title>
+    <style>
+        body { font-family: sans-serif; margin: 24px; }
+        h1 { margin-bottom: 16px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+        th { background: #f5f5f5; }
+        a { color: #1a73e8; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .nav { margin-bottom: 16px; }
+        .btn { display: inline-block; padding: 6px 14px; background: #1a73e8; color: #fff; border-radius: 4px; text-decoration: none; }
+        .btn:hover { background: #1558b0; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="nav">
+    <a href="/admin">홈</a> &gt; 상품 관리
+</div>
+<h1>상품 목록</h1>
+<p><a class="btn" href="/admin/products/new">+ 신규 상품</a></p>
+<table>
+    <thead>
+        <tr>
+            <th>이름</th>
+            <th>가격</th>
+            <th>상태</th>
+            <th>재고유형</th>
+            <th>작업</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="p : ${products}">
+            <td th:text="${p.name}">상품명</td>
+            <td th:text="${#numbers.formatInteger(p.basePrice, 0, 'COMMA') + '원'}">0원</td>
+            <td th:text="${p.status}">DRAFT</td>
+            <td th:text="${p.stockType}">LIMITED</td>
+            <td><a th:href="@{/admin/products/{id}/edit(id=${p.id})}">수정</a></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(products)}">
+            <td colspan="5" style="text-align:center;color:#888;">등록된 상품이 없습니다.</td>
+        </tr>
+    </tbody>
+</table>
+</body>
+</html>

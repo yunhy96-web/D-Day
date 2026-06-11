@@ -6,6 +6,7 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -50,6 +51,18 @@ public class ProductCategory {
         public Pk(UUID productId, UUID categoryId) {
             this.productId = productId;
             this.categoryId = categoryId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Pk pk)) return false;
+            return Objects.equals(productId, pk.productId) && Objects.equals(categoryId, pk.categoryId);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(productId, categoryId);
         }
     }
 }

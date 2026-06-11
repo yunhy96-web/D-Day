@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>상품 등록/수정</title>
+    <style>
+        body { font-family: sans-serif; margin: 24px; }
+        h1 { margin-bottom: 16px; }
+        .form-row { margin-bottom: 14px; }
+        label { display: block; font-weight: bold; margin-bottom: 4px; }
+        input[type=text], input[type=number], input[type=url], select { width: 400px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+        textarea { width: 400px; height: 120px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+        .error { color: #d32f2f; font-size: 0.85em; margin-top: 2px; }
+        .btn { padding: 8px 18px; background: #1a73e8; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; }
+        .btn:hover { background: #1558b0; }
+        .btn-cancel { display: inline-block; padding: 8px 18px; background: #888; color: #fff; border-radius: 4px; text-decoration: none; font-size: 1em; }
+        .nav { margin-bottom: 16px; }
+        a { color: #1a73e8; }
+    </style>
+</head>
+<body>
+<div class="nav">
+    <a href="/admin">홈</a> &gt; <a href="/admin/products">상품 관리</a> &gt;
+    <span th:text="${productId != null} ? '수정' : '신규 등록'">등록</span>
+</div>
+<h1 th:text="${productId != null} ? '상품 수정' : '상품 등록'">상품 등록</h1>
+
+<!-- 신규: POST /admin/products, 수정: POST /admin/products/{id} -->
+<form th:action="${productId != null} ? @{/admin/products/{id}(id=${productId})} : @{/admin/products}"
+      th:object="${form}" method="post">
+
+    <div class="form-row">
+        <label for="name">상품명 *</label>
+        <input type="text" id="name" th:field="*{name}" placeholder="상품 이름"/>
+        <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+    </div>
+
+    <div class="form-row">
+        <label for="summary">요약</label>
+        <input type="text" id="summary" th:field="*{summary}" placeholder="한 줄 요약"/>
+    </div>
+
+    <div class="form-row">
+        <label for="description">상세 설명</label>
+        <textarea id="description" th:field="*{description}" placeholder="상세 설명을 입력하세요"></textarea>
+    </div>
+
+    <div class="form-row">
+        <label for="stockType">재고 유형 *</label>
+        <select id="stockType" th:field="*{stockType}">
+            <option value="">-- 선택 --</option>
+            <option th:each="s : ${stockTypes}" th:value="${s}" th:text="${s}">LIMITED</option>
+        </select>
+        <div class="error" th:if="${#fields.hasErrors('stockType')}" th:errors="*{stockType}"></div>
+    </div>
+
+    <div class="form-row">
+        <label for="basePrice">기본 가격 (원) *</label>
+        <input type="number" id="basePrice" th:field="*{basePrice}" min="0" placeholder="0"/>
+        <div class="error" th:if="${#fields.hasErrors('basePrice')}" th:errors="*{basePrice}"></div>
+    </div>
+
+    <div class="form-row">
+        <label for="status">상태 *</label>
+        <select id="status" th:field="*{status}">
+            <option value="">-- 선택 --</option>
+            <option th:each="s : ${productStatuses}" th:value="${s}" th:text="${s}">DRAFT</option>
+        </select>
+        <div class="error" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></div>
+    </div>
+
+    <div class="form-row">
+        <label for="thumbnailUrl">썸네일 URL</label>
+        <input type="text" id="thumbnailUrl" th:field="*{thumbnailUrl}" placeholder="https://..."/>
+    </div>
+
+    <div class="form-row">
+        <label for="themeCategoryId">테마 카테고리 * (대표)</label>
+        <select id="themeCategoryId" th:field="*{themeCategoryId}">
+            <option value="">-- 선택 --</option>
+            <option th:each="c : ${themeCategories}" th:value="${c.id}" th:text="${c.name}">테마</option>
+        </select>
+        <div class="error" th:if="${#fields.hasErrors('themeCategoryId')}" th:errors="*{themeCategoryId}"></div>
+    </div>
+
+    <div class="form-row">
+        <label for="destinationCategoryId">여행지 카테고리 (선택)</label>
+        <select id="destinationCategoryId" th:field="*{destinationCategoryId}">
+            <option value="">-- 없음 --</option>
+            <option th:each="c : ${destinationCategories}" th:value="${c.id}" th:text="${c.name}">지역</option>
+        </select>
+    </div>
+
+    <div>
+        <button class="btn" type="submit">저장</button>
+        <a class="btn-cancel" href="/admin/products">취소</a>
+    </div>
+</form>
+</body>
+</html>
