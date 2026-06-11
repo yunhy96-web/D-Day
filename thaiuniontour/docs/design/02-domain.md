@@ -42,13 +42,16 @@ graph LR
 
 ```mermaid
 stateDiagram-v2
-  [*] --> PENDING: create (재고 차감)
-  PENDING --> CONFIRMED: confirm (admin 입금 수동승인)
-  PENDING --> CANCELLED: cancel/timeout (재고 복원)
-  CONFIRMED --> CANCELLED: cancel (재고 복원 + 환불)
+  [*] --> PENDING: create (재고 즉시 점유, but 임시) + 입금기한
+  PENDING --> CONFIRMED: confirm (admin 입금 수동승인) ★실제 확정★
+  PENDING --> CANCELLED: cancel / 기한초과 자동만료(EXPIRED) → 재고 복원
+  CONFIRMED --> CANCELLED: cancel → 환불정책 적용 + 재고 복원
   CONFIRMED --> [*]
   CANCELLED --> [*]
 ```
+
+> **확정되어야 실제 확정**: PENDING은 임시 확보(미입금 시 `payment_deadline` 초과로 자동 만료→재고 회수).
+> CONFIRMED(입금승인)만 실제 확정. 취소사유(`cancel_reason`)·환불정책·연관상품은 `08-discovery-and-policy.md`.
 
 ### 구성 요소
 - **Value Object**: `Money(amount: long, currency=KRW)`, `Reserver(email, phone, name)`(게스트/회원 공통), `ReservationStatus`, `ScheduleRef(productId, scheduleId, saleDate)`.

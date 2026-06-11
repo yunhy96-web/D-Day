@@ -29,7 +29,9 @@
 | 1.4 | 상품 목록 **검색/필터/정렬** API (tsvector+pg_trgm+패싯) | api | 1.2 |
 | 1.5 | 상품 상세 + 날짜별 재고 조회 API | api | 1.3 |
 | 1.6 | 프론트: 홈·`/c/[...slug]`·`/search`·필터 사이드바·MegaMenu·검색바 | frontend | 1.1,1.4 |
-| 1.7 | 프론트: 상품 상세 + 예약 캘린더(BookingPanel) | frontend | 1.5 |
+| 1.7 | 프론트: 상품 상세 + 예약 캘린더(BookingPanel) + 연관상품 | frontend | 1.5 |
+| 1.8 | 취소정책 CRUD(admin) + 상품 연결 + 상세 노출 | admin·api | 1.2 |
+| 1.9 | 연관상품 큐레이션(admin) + `/products/{id}/related`(자동 보충) | admin·api | 1.2 |
 
 ### M2 — 예약 & 이벤트 결제 (MVP 코어 ②) ★핵심
 | # | 작업 | 영역 | 의존 |
@@ -42,6 +44,8 @@
 | 2.6 | admin **입금 수동승인**(→CONFIRMED + `ReservationConfirmed` 발행) | admin | 2.3 |
 | 2.7 | 결제상태 조회 API(폴링) + 예약완료/계좌안내 화면 | api·frontend | 2.5 |
 | 2.8 | 비회원 재진입: 매직링크(lookup_token 이메일) + 수동조회(랜덤 reservation_no+이메일). 예약번호 생성기(비순차) | api·frontend | 2.2 |
+| 2.9 | 입금기한 부여 + **ReservationExpirySweeper**(@Scheduled, PENDING 만료→재고복원→ReservationCancelled[EXPIRED]) | api | 2.4 |
+| 2.10 | 취소→환불정책 산정 + `payment.refund` 생성(멱등) + 재고복원, admin 환불 수동완료 | api·admin | 2.6 |
 
 > M2 완료 = **MVP 끝**(상품 올리고 → 예약 → 입금승인 → 결제완료 전 경로 동작).
 

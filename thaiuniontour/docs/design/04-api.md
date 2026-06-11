@@ -95,7 +95,10 @@ GNB 메가메뉴/필터용. **테마 트리(주 네비)** 와 **지역(패싯)**
 | GET | `/products` | GUEST | **검색/필터/정렬 목록** (아래 파라미터) |
 | GET | `/products/{id}` | GUEST | 상품 상세(이미지·설명·일정 요약) |
 | GET | `/products/{id}/schedules?from=&to=` | GUEST | 날짜별 재고/가격(예약 캘린더) |
+| GET | `/products/{id}/related?limit=8` | GUEST | 연관상품(큐레이션 우선 + 동일 테마/지역 자동보충) |
 | GET | `/products/autocomplete?q=` | GUEST | 검색 자동완성(상품명/카테고리) |
+
+> 상품 상세(`GET /products/{id}`) 응답에 `cancellationPolicy`(규칙 요약: 7일전 100%/3~6일 50%/…) 포함.
 
 **`GET /products` 쿼리 파라미터** (검색+패싯, athometrip엔 없던 기능)
 | param | 예 | 설명 |
@@ -128,7 +131,8 @@ GNB 메가메뉴/필터용. **테마 트리(주 네비)** 와 **지역(패싯)**
 | GET | `/reservations/by-token/{lookupToken}` | GUEST | **매직링크 조회**(이메일 서명링크 타깃, 1순위) |
 | GET | `/reservations/lookup?no=&email=` | GUEST | **수동 조회**(랜덤 예약번호+이메일, fallback) |
 | GET | `/reservations/me` | MEMBER | 내 예약 목록 |
-| POST | `/reservations/{id}/cancel` | MEMBER/본인 | 취소(상태 검증 → CANCELLED, 재고복원 이벤트). 게스트 취소는 OTP 1회(확장) |
+| POST | `/reservations/{id}/cancel` | MEMBER/본인 | 취소 → 상태/환불정책 계산 후 CANCELLED + 재고복원. PENDING=환불없음, CONFIRMED=정책 환불액 산정. 응답에 `refundAmount`/`refundRate` |
+| GET | `/reservations/{id}/refund` | MEMBER/본인 | 환불 상태 조회(REQUESTED/COMPLETED) |
 
 > **비회원 재진입(비밀번호 X)**: 주문확인 이메일에 `lookup_token` 매직링크 포함 → 클릭만으로 조회.
 > 수동 조회는 `reservation_no`(랜덤·비순차) + 이메일. 순차번호 금지(열거 방지). 취소 등 민감 작업은 OTP 추가 가능.
@@ -193,6 +197,9 @@ REST 아님. 폼 submit + 서버 렌더 + 리다이렉트. 권한 `ADMIN` 고정
 | 카테고리 관리 | `/admin/categories` | 테마/지역 트리 CRUD·정렬 |
 | 예약/입금 승인 | `/admin/reservations` | PENDING 목록 → **입금확인 승인**(→CONFIRMED, 이벤트 발행) |
 | 결제 조회 | `/admin/payments` | 결제이력 조회 |
+| 취소정책 | `/admin/cancellation-policies` | 정책/규칙(출발D-day별 환불율) CRUD, 상품 연결 |
+| 환불 처리 | `/admin/refunds` | 환불 요청(REQUESTED) → 수동 송금 후 COMPLETED |
+| 연관상품 | `/admin/products/{id}/related` | 연관상품 큐레이션 |
 | 공통코드 | `/admin/common-codes` | 결제수단 등 코드 on/off·추가 |
 | 회원 | `/admin/members` | 회원/권한 조회 |
 
