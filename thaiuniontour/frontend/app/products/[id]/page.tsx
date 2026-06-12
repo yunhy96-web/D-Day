@@ -160,7 +160,7 @@ interface ProductTitleProps {
   summary: string;
   basePrice: number;
   isSoldOut: boolean;
-  categories: { id: number; name: string }[];
+  categories: { id: string; name: string }[];
 }
 
 function ProductTitle({ name, summary, isSoldOut, categories }: ProductTitleProps) {

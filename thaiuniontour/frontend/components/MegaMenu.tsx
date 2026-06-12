@@ -9,7 +9,7 @@ interface MegaMenuProps {
 }
 
 export default function MegaMenu({ categories }: MegaMenuProps) {
-  const [openId, setOpenId] = useState<number | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   if (categories.length === 0) return null;
 

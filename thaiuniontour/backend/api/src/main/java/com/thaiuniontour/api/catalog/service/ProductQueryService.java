@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -44,33 +45,62 @@ public class ProductQueryService {
         this.categoryRepository = categoryRepository;
     }
 
+    /** 단순 검색(홈/검색바). categoryId는 정확 일치. */
     @Transactional(readOnly = true)
     public Page<ResProductList> search(String q, UUID categoryId, String sort, int page, int size) {
-        Pageable pageable = PageRequest.of(page, Math.min(size, 100), toSort(sort));
+        return search(new SearchCond(q, categoryId != null ? Set.of(categoryId) : null,
+                null, null, null, sort), page, size);
+    }
 
-        // 고객 노출은 판매중(ON_SALE)만. 해당하는 조건만 동적으로 결합.
+    /**
+     * 카테고리 랜딩/필터 검색. categoryIds(서브트리), destinationId(지역 패싯), 가격범위 결합.
+     * 해당하는 조건만 Specification으로 추가 → null 파라미터 SQL 문제 없음.
+     */
+    @Transactional(readOnly = true)
+    public Page<ResProductList> search(SearchCond cond, int page, int size) {
+        Pageable pageable = PageRequest.of(page, Math.min(size, 100), toSort(cond.sort()));
+
+        // 고객 노출은 판매중(ON_SALE)만.
         Specification<Product> spec = (root, query, cb) ->
                 cb.equal(root.get("status"), ProductStatus.ON_SALE);
 
-        String qn = blankToNull(q);
+        String qn = blankToNull(cond.q());
         if (qn != null) {
             String like = "%" + qn.toLowerCase() + "%";
             spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("name")), like));
         }
-        if (categoryId != null) {
-            spec = spec.and((root, query, cb) -> {
-                Subquery<UUID> sub = query.subquery(UUID.class);
-                var pc = sub.from(ProductCategory.class);
-                sub.select(pc.get("id").get("productId"));
-                sub.where(cb.equal(pc.get("id").get("categoryId"), categoryId));
-                return root.get("id").in(sub);
-            });
+        if (cond.categoryIds() != null && !cond.categoryIds().isEmpty()) {
+            spec = spec.and(inCategory(cond.categoryIds()));
+        }
+        if (cond.destinationId() != null) {
+            spec = spec.and(inCategory(Set.of(cond.destinationId())));
+        }
+        if (cond.minPrice() != null) {
+            spec = spec.and((root, query, cb) -> cb.ge(root.get("basePrice"), cond.minPrice()));
+        }
+        if (cond.maxPrice() != null) {
+            spec = spec.and((root, query, cb) -> cb.le(root.get("basePrice"), cond.maxPrice()));
         }
 
         return productRepository.findAll(spec, pageable)
                 .map(p -> new ResProductList(p.getId(), p.getName(), p.getSummary(),
                         p.getThumbnailUrl(), p.getBasePrice(), p.getStatus().name()));
     }
+
+    /** product_category에 주어진 카테고리들 중 하나라도 태깅된 상품. */
+    private Specification<Product> inCategory(Set<UUID> categoryIds) {
+        return (root, query, cb) -> {
+            Subquery<UUID> sub = query.subquery(UUID.class);
+            var pc = sub.from(ProductCategory.class);
+            sub.select(pc.get("id").get("productId"));
+            sub.where(pc.get("id").get("categoryId").in(categoryIds));
+            return root.get("id").in(sub);
+        };
+    }
+
+    /** 검색 조건. categoryIds=테마 서브트리(상위 클릭 시 하위 포함). */
+    public record SearchCond(String q, Set<UUID> categoryIds, UUID destinationId,
+                             Long minPrice, Long maxPrice, String sort) {}
 
     @Transactional(readOnly = true)
     public ResProductDetail detail(UUID id) {

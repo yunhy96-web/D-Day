@@ -2,15 +2,24 @@ const BASE = process.env.API_INTERNAL_BASE || 'http://localhost:8080';
 
 // ── 공통 타입 ──────────────────────────────────────────────────────────
 export interface CategoryNode {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   level: number;
   children?: CategoryNode[];
 }
 
+export interface CategoryDetail {
+  id: string;
+  name: string;
+  slug: string;
+  level: number;
+  breadcrumb: { id: string; name: string; slug: string }[];
+  children: { id: string; name: string; slug: string }[];
+}
+
 export interface ProductSummary {
-  id: number;
+  id: string;
   name: string;
   summary: string;
   thumbnailUrl: string | null;
@@ -26,7 +35,7 @@ export interface PageMeta {
 }
 
 export interface ProductDetail {
-  id: number;
+  id: string;
   name: string;
   summary: string;
   description: string;
@@ -35,8 +44,8 @@ export interface ProductDetail {
   status: 'ON_SALE' | 'SOLD_OUT' | 'HIDDEN';
   thumbnailUrl: string | null;
   categories: {
-    theme: { id: number; name: string }[];
-    destination: { id: number; name: string }[];
+    theme: { id: string; name: string }[];
+    destination: { id: string; name: string }[];
   };
   breadcrumb: string[];
 }
@@ -66,7 +75,10 @@ export async function getCategoryTree(type: 'THEME' | 'DESTINATION'): Promise<Ca
 
 export interface GetProductsParams {
   q?: string;
-  categoryId?: number | string;
+  categoryId?: string;
+  destinationId?: string;
+  minPrice?: number | string;
+  maxPrice?: number | string;
   sort?: 'latest' | 'priceAsc' | 'priceDesc';
   page?: number;
   size?: number;
@@ -80,6 +92,9 @@ export async function getProducts(params: GetProductsParams = {}): Promise<{
     const qs = new URLSearchParams();
     if (params.q) qs.set('q', params.q);
     if (params.categoryId != null) qs.set('categoryId', String(params.categoryId));
+    if (params.destinationId != null) qs.set('destinationId', String(params.destinationId));
+    if (params.minPrice != null) qs.set('minPrice', String(params.minPrice));
+    if (params.maxPrice != null) qs.set('maxPrice', String(params.maxPrice));
     if (params.sort) qs.set('sort', params.sort);
     if (params.page != null) qs.set('page', String(params.page));
     if (params.size != null) qs.set('size', String(params.size));
@@ -101,9 +116,22 @@ export async function getProducts(params: GetProductsParams = {}): Promise<{
   }
 }
 
-export async function getProduct(id: number | string): Promise<ProductDetail | null> {
+export async function getProduct(id: string | string): Promise<ProductDetail | null> {
   try {
     return await apiFetch<ProductDetail>(`/api/v1/products/${id}`);
+  } catch {
+    return null;
+  }
+}
+
+export async function getCategoryBySlug(
+  type: 'THEME' | 'DESTINATION',
+  slug: string,
+): Promise<CategoryDetail | null> {
+  try {
+    return await apiFetch<CategoryDetail>(
+      `/api/v1/categories/by-slug?type=${type}&slug=${encodeURIComponent(slug)}`,
+    );
   } catch {
     return null;
   }
