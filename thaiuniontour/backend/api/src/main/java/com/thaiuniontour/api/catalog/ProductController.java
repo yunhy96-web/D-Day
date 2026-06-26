@@ -59,4 +59,11 @@ public class ProductController {
     public ApiResponse<ResProductDetail> detail(@PathVariable UUID id) {
         return ApiResponse.ok(productQueryService.detail(id));
     }
+
+    /** GET /api/v1/products/{id}/schedules → 날짜별 재고/가격(예약 캘린더). */
+    @GetMapping("/{id}/schedules")
+    public ApiResponse<List<com.thaiuniontour.api.catalog.dto.ProductDto.ResSchedule>> schedules(
+            @PathVariable UUID id) {
+        return ApiResponse.ok(productQueryService.schedules(id));
+    }
 }

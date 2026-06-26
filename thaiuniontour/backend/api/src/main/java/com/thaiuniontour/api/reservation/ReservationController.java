@@ -1,5 +1,6 @@
 package com.thaiuniontour.api.reservation;
 
+import com.thaiuniontour.api.reservation.dto.ReservationDto.BankInfo;
 import com.thaiuniontour.api.reservation.dto.ReservationDto.ReqCreate;
 import com.thaiuniontour.api.reservation.dto.ReservationDto.ResCreated;
 import com.thaiuniontour.api.reservation.dto.ReservationDto.ResDetail;
@@ -47,7 +48,7 @@ public class ReservationController {
         Reservation r = commandService.create(
                 null, req.productScheduleId(), req.quantity(), req.paymentMethod(),
                 req.reserver().name(), req.reserver().email(), req.reserver().phone());
-        var bank = new ResCreated.BankInfo(bankName, bankAccount, bankHolder,
+        var bank = new BankInfo(bankName, bankAccount, bankHolder,
                 r.getPaymentDeadline() == null ? null : r.getPaymentDeadline().toString());
         return ApiResponse.ok(new ResCreated(
                 r.getId(), r.getReservationNo(), r.getStatus().name(), r.getAmount(),

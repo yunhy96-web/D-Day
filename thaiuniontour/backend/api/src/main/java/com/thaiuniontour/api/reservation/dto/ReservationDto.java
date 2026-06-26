@@ -26,6 +26,9 @@ public final class ReservationDto {
         ) {}
     }
 
+    /** 계좌이체 안내(공용). PENDING 입금 대기 시 노출. */
+    public record BankInfo(String bank, String account, String holder, String deadline) {}
+
     /** 예약 생성 응답: 계좌이체 안내 + 매직링크 토큰 포함. */
     public record ResCreated(
             UUID reservationId,
@@ -35,11 +38,9 @@ public final class ReservationDto {
             String paymentMethod,
             String lookupToken,
             BankInfo bankInfo
-    ) {
-        public record BankInfo(String bank, String account, String holder, String deadline) {}
-    }
+    ) {}
 
-    /** 예약 상세/조회 응답. */
+    /** 예약 상세/조회 응답. PENDING이면 bankInfo 포함. */
     public record ResDetail(
             UUID id,
             String reservationNo,
@@ -53,7 +54,8 @@ public final class ReservationDto {
             ReserverInfo reserver,
             String paymentDeadline,
             String confirmedAt,
-            String cancelledAt
+            String cancelledAt,
+            BankInfo bankInfo
     ) {
         public record ReserverInfo(String name, String email, String phone) {}
     }

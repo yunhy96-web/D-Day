@@ -36,4 +36,14 @@ public final class ProductDto {
         public record Categories(List<Ref> theme, List<Ref> destination) {}
         public record Ref(UUID id, String name) {}
     }
+
+    /** 날짜별 재고/가격 (예약 캘린더). stock=null → 무제한. */
+    public record ResSchedule(
+            UUID scheduleId,
+            String saleDate,
+            Integer stock,
+            long price,
+            String status,
+            boolean soldOut
+    ) {}
 }

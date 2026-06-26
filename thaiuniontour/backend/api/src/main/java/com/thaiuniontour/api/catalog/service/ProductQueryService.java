@@ -2,6 +2,9 @@ package com.thaiuniontour.api.catalog.service;
 
 import com.thaiuniontour.api.catalog.dto.ProductDto.ResProductDetail;
 import com.thaiuniontour.api.catalog.dto.ProductDto.ResProductList;
+import com.thaiuniontour.api.catalog.dto.ProductDto.ResSchedule;
+import com.thaiuniontour.domain.catalog.model.ScheduleStatus;
+import com.thaiuniontour.domain.catalog.repository.ProductScheduleRepository;
 import com.thaiuniontour.common.error.ErrorCode;
 import com.thaiuniontour.common.exception.BusinessException;
 import com.thaiuniontour.domain.catalog.model.Category;
@@ -36,13 +39,28 @@ public class ProductQueryService {
     private final ProductRepository productRepository;
     private final ProductCategoryRepository productCategoryRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductScheduleRepository scheduleRepository;
 
     public ProductQueryService(ProductRepository productRepository,
                                ProductCategoryRepository productCategoryRepository,
-                               CategoryRepository categoryRepository) {
+                               CategoryRepository categoryRepository,
+                               ProductScheduleRepository scheduleRepository) {
         this.productRepository = productRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.categoryRepository = categoryRepository;
+        this.scheduleRepository = scheduleRepository;
+    }
+
+    /** 날짜별 재고/가격(예약 캘린더). 매진/마감 판정 포함. */
+    @Transactional(readOnly = true)
+    public List<ResSchedule> schedules(UUID productId) {
+        return scheduleRepository.findByProductIdOrderBySaleDateAsc(productId).stream()
+                .map(s -> new ResSchedule(
+                        s.getId(), s.getSaleDate().toString(), s.getStock(), s.getPrice(),
+                        s.getStatus().name(),
+                        s.getStatus() != ScheduleStatus.OPEN
+                                || (s.getStock() != null && s.getStock() <= 0)))
+                .toList();
     }
 
     /** 단순 검색(홈/검색바). categoryId는 정확 일치. */
