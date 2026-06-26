@@ -30,16 +30,16 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           {q ? (
-            <h1 className="text-xl font-bold text-gray-800">
-              <span className="text-blue-600">&ldquo;{q}&rdquo;</span> 검색 결과
-              <span className="ml-2 text-base font-normal text-gray-500">
+            <h1 className="text-xl font-bold text-ink-800">
+              <span className="text-brand-600">&ldquo;{q}&rdquo;</span> 검색 결과
+              <span className="ml-2 text-base font-normal text-ink-500">
                 {pageMeta.totalElements.toLocaleString('ko-KR')}건
               </span>
             </h1>
           ) : (
-            <h1 className="text-xl font-bold text-gray-800">
+            <h1 className="text-xl font-bold text-ink-800">
               전체 상품
-              <span className="ml-2 text-base font-normal text-gray-500">
+              <span className="ml-2 text-base font-normal text-ink-500">
                 {pageMeta.totalElements.toLocaleString('ko-KR')}건
               </span>
             </h1>
@@ -58,8 +58,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 href={href}
                 className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                   isActive
-                    ? 'border-blue-500 bg-blue-500 text-white'
-                    : 'border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-600'
+                    ? 'border-brand-500 bg-brand-500 text-white'
+                    : 'border-ink-200 text-ink-600 hover:border-brand-400 hover:text-brand-600'
                 }`}
               >
                 {label}
@@ -71,8 +71,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
       {/* 상품 그리드 */}
       {items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-200 bg-white py-20 text-center text-gray-400">
-          <svg className="mx-auto mb-4 h-12 w-12 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="rounded-xl border border-dashed border-cream-300 bg-white py-20 text-center text-ink-400">
+          <svg className="mx-auto mb-4 h-12 w-12 text-ink-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <p className="font-medium">검색 결과가 없습니다.</p>
@@ -98,8 +98,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 href={href}
                 className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'border border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-600'
+                    ? 'bg-brand-500 text-white'
+                    : 'border border-ink-200 text-ink-600 hover:border-brand-400 hover:text-brand-600'
                 }`}
               >
                 {i + 1}

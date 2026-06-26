@@ -94,7 +94,7 @@ export default async function CategoryLandingPage({ params, searchParams }: Prop
       </div>
 
       {/* 카테고리 제목 */}
-      <h1 className="mb-4 text-2xl font-bold text-gray-900">{category.name}</h1>
+      <h1 className="mb-4 text-2xl font-bold text-ink-900">{category.name}</h1>
 
       {/* 하위 카테고리 칩 */}
       {category.children.length > 0 && (
@@ -103,7 +103,7 @@ export default async function CategoryLandingPage({ params, searchParams }: Prop
             <Link
               key={child.id}
               href={`/c/${child.slug}`}
-              className="rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-100 hover:border-blue-400 transition-colors"
+              className="rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-sm font-medium text-brand-700 hover:bg-brand-100 hover:border-brand-400 transition-colors"
             >
               {child.name}
             </Link>
@@ -127,18 +127,18 @@ export default async function CategoryLandingPage({ params, searchParams }: Prop
         {/* 상품 영역 */}
         <div className="flex-1 min-w-0">
           {/* 건수 표시 */}
-          <p className="mb-4 text-sm text-gray-500">
+          <p className="mb-4 text-sm text-ink-500">
             총{' '}
-            <span className="font-semibold text-gray-800">
+            <span className="font-semibold text-ink-800">
               {pageMeta.totalElements.toLocaleString('ko-KR')}건
             </span>
           </p>
 
           {/* 빈 상태 */}
           {items.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-200 bg-white py-20 text-center text-gray-400">
+            <div className="rounded-xl border border-dashed border-cream-300 bg-white py-20 text-center text-ink-400">
               <svg
-                className="mx-auto mb-4 h-12 w-12 text-gray-200"
+                className="mx-auto mb-4 h-12 w-12 text-ink-200"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -172,8 +172,8 @@ export default async function CategoryLandingPage({ params, searchParams }: Prop
                     href={pageHref(i)}
                     className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-medium transition-colors ${
                       isActive
-                        ? 'bg-blue-600 text-white'
-                        : 'border border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-600'
+                        ? 'bg-brand-500 text-white'
+                        : 'border border-ink-200 text-ink-600 hover:border-brand-400 hover:text-brand-600'
                     }`}
                   >
                     {i + 1}

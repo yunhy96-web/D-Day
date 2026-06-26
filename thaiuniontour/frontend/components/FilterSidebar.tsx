@@ -75,14 +75,14 @@ export default function FilterSidebar({
     currentDestinationId || currentMinPrice || currentMaxPrice || currentSort !== 'latest';
 
   return (
-    <aside className="w-full rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+    <aside className="w-full rounded-xl border border-cream-200 bg-white p-5 shadow-sm">
       {/* 헤더 */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-bold text-gray-800">필터</h2>
+        <h2 className="text-sm font-bold text-ink-800">필터</h2>
         {hasFilter && (
           <button
             onClick={handleReset}
-            className="text-xs text-blue-600 hover:underline"
+            className="text-xs text-brand-600 hover:underline"
           >
             초기화
           </button>
@@ -91,7 +91,7 @@ export default function FilterSidebar({
 
       {/* 정렬 */}
       <div className="mb-5">
-        <p className="mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">정렬</p>
+        <p className="mb-2 text-xs font-semibold text-ink-400 uppercase tracking-wider">정렬</p>
         <div className="flex flex-col gap-1">
           {SORT_OPTIONS.map(({ value, label }) => (
             <button
@@ -99,8 +99,8 @@ export default function FilterSidebar({
               onClick={() => handleSort(value)}
               className={`rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                 currentSort === value
-                  ? 'bg-blue-50 font-semibold text-blue-600'
-                  : 'text-gray-600 hover:bg-gray-50'
+                  ? 'bg-brand-100 font-semibold text-brand-700'
+                  : 'text-ink-600 hover:bg-cream-200'
               }`}
             >
               {label}
@@ -112,14 +112,14 @@ export default function FilterSidebar({
       {/* 지역 */}
       {destinations.length > 0 && (
         <div className="mb-5">
-          <p className="mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">지역</p>
+          <p className="mb-2 text-xs font-semibold text-ink-400 uppercase tracking-wider">지역</p>
           <div className="flex flex-col gap-1">
             <button
               onClick={() => handleDestination('')}
               className={`rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                 !currentDestinationId
-                  ? 'bg-blue-50 font-semibold text-blue-600'
-                  : 'text-gray-600 hover:bg-gray-50'
+                  ? 'bg-brand-100 font-semibold text-brand-700'
+                  : 'text-ink-600 hover:bg-cream-200'
               }`}
             >
               전체 지역
@@ -130,8 +130,8 @@ export default function FilterSidebar({
                 onClick={() => handleDestination(String(dest.id))}
                 className={`rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                   currentDestinationId === String(dest.id)
-                    ? 'bg-blue-50 font-semibold text-blue-600'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    ? 'bg-brand-100 font-semibold text-brand-700'
+                    : 'text-ink-600 hover:bg-cream-200'
                 }`}
               >
                 {dest.name}
@@ -143,7 +143,7 @@ export default function FilterSidebar({
 
       {/* 가격 범위 */}
       <div>
-        <p className="mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">가격 범위</p>
+        <p className="mb-2 text-xs font-semibold text-ink-400 uppercase tracking-wider">가격 범위</p>
         <div className="flex items-center gap-2">
           <input
             type="number"
@@ -151,19 +151,19 @@ export default function FilterSidebar({
             min={0}
             defaultValue={currentMinPrice}
             onBlur={handleMinPrice}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:border-blue-400 focus:outline-none"
+            className="w-full rounded-lg border border-cream-300 px-3 py-2 text-sm text-ink-700 placeholder-ink-400 focus:border-brand-400 focus:outline-none"
           />
-          <span className="flex-shrink-0 text-gray-400">~</span>
+          <span className="flex-shrink-0 text-ink-400">~</span>
           <input
             type="number"
             placeholder="최대"
             min={0}
             defaultValue={currentMaxPrice}
             onBlur={handleMaxPrice}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:border-blue-400 focus:outline-none"
+            className="w-full rounded-lg border border-cream-300 px-3 py-2 text-sm text-ink-700 placeholder-ink-400 focus:border-brand-400 focus:outline-none"
           />
         </div>
-        <p className="mt-1 text-xs text-gray-400">입력 후 포커스 해제 시 적용</p>
+        <p className="mt-1 text-xs text-ink-400">입력 후 포커스 해제 시 적용</p>
       </div>
     </aside>
   );

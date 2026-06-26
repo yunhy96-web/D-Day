@@ -10,10 +10,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
+      <body className="min-h-screen bg-cream-100 text-ink-800 antialiased">
         <Header />
         <main>{children}</main>
-        <footer className="mt-16 border-t border-gray-200 bg-white py-8 text-center text-xs text-gray-400">
+        <footer className="mt-16 border-t border-cream-300 bg-white py-8 text-center text-xs text-ink-400">
           © 2026 ThaiUnionTour. All rights reserved.
         </footer>
       </body>
