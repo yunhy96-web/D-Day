@@ -38,7 +38,11 @@
             <td th:text="${#numbers.formatInteger(p.basePrice, 0, 'COMMA') + '원'}">0원</td>
             <td th:text="${p.status}">DRAFT</td>
             <td th:text="${p.stockType}">LIMITED</td>
-            <td><a th:href="@{/admin/products/{id}/edit(id=${p.id})}">수정</a></td>
+            <td>
+                <a th:href="@{/admin/products/{id}/edit(id=${p.id})}">수정</a>
+                &nbsp;|&nbsp;
+                <a th:href="@{/admin/products/{id}/schedules(id=${p.id})}">일정 관리</a>
+            </td>
         </tr>
         <tr th:if="${#lists.isEmpty(products)}">
             <td colspan="5" style="text-align:center;color:#888;">등록된 상품이 없습니다.</td>

@@ -22,4 +22,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
 
     /** 입금기한 만료 스위퍼: PENDING + 기한초과. */
     List<Reservation> findByStatusAndPaymentDeadlineBefore(ReservationStatus status, OffsetDateTime now);
+
+    /** admin 전체 목록(최신순). */
+    List<Reservation> findAllByOrderByCreatedAtDesc();
+
+    /** admin 상태별 목록(최신순). */
+    List<Reservation> findByStatusOrderByCreatedAtDesc(ReservationStatus status);
 }

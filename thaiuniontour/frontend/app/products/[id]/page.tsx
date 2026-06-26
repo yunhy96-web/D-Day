@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getProduct } from '@/lib/api';
 import Breadcrumb from '@/components/Breadcrumb';
+import BookingPanel from '@/components/BookingPanel';
 
 interface Props {
   params: { id: string };
@@ -128,25 +129,14 @@ export default async function ProductDetailPage({ params }: Props) {
               </p>
             )}
 
-            {/* 예약 버튼 (M2 구현 예정) */}
-            <div className="mt-6">
-              {isSoldOut ? (
-                <div className="w-full rounded-xl bg-cream-200 py-3 text-center text-sm font-semibold text-ink-500">
-                  매진된 상품입니다
-                </div>
-              ) : (
-                <button
-                  disabled
-                  title="예약 기능은 M2에서 구현 예정입니다"
-                  className="w-full cursor-not-allowed rounded-xl bg-brand-500 py-3 text-center text-sm font-semibold text-white opacity-60"
-                >
-                  예약하기 (준비중)
-                </button>
-              )}
-              <p className="mt-2 text-center text-xs text-ink-400">
-                예약 시스템은 M2에서 오픈 예정입니다.
-              </p>
-            </div>
+            {/* 예약 패널 */}
+            {isSoldOut ? (
+              <div className="mt-6 w-full rounded-xl bg-cream-200 py-3 text-center text-sm font-semibold text-ink-500">
+                매진된 상품입니다
+              </div>
+            ) : (
+              <BookingPanel productId={product.id} productName={product.name} />
+            )}
           </div>
         </div>
       </div>

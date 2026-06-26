@@ -136,3 +136,132 @@ export async function getCategoryBySlug(
     return null;
   }
 }
+
+// ── 예약 타입 ──────────────────────────────────────────────────────────
+export interface Schedule {
+  scheduleId: string;
+  saleDate: string; // YYYY-MM-DD
+  stock: number | null; // null = 무제한
+  price: number;
+  status: string;
+  soldOut: boolean;
+}
+
+export interface BankInfo {
+  bank: string;
+  account: string;
+  holder: string;
+  deadline: string;
+}
+
+export interface ReservationDetail {
+  id: string;
+  reservationNo: string;
+  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED';
+  productId: string;
+  productScheduleId: string;
+  saleDate: string;
+  quantity: number;
+  amount: number;
+  paymentMethod: string;
+  reserver: { name: string; email: string; phone: string };
+  paymentDeadline: string | null;
+  confirmedAt: string | null;
+  cancelledAt: string | null;
+  bankInfo?: BankInfo;
+}
+
+export interface CreateReservationBody {
+  productScheduleId: string;
+  quantity: number;
+  paymentMethod: 'BANK_TRANSFER';
+  reserver: { name: string; email: string; phone: string };
+}
+
+export interface CreateReservationResult {
+  reservationId: string;
+  reservationNo: string;
+  status: string;
+  amount: number;
+  paymentMethod: string;
+  lookupToken: string;
+  bankInfo: BankInfo;
+}
+
+export interface PaymentStatus {
+  reservationId: string;
+  status: 'PAID' | 'PENDING';
+  method: string;
+  amount: number;
+  paidAt: string | null;
+}
+
+// ── 서버 전용 예약 API ─────────────────────────────────────────────────
+export async function getSchedules(productId: string): Promise<Schedule[]> {
+  try {
+    return await apiFetch<Schedule[]>(`/api/v1/products/${productId}/schedules`);
+  } catch {
+    return [];
+  }
+}
+
+export async function getReservation(id: string): Promise<ReservationDetail | null> {
+  try {
+    return await apiFetch<ReservationDetail>(`/api/v1/reservations/${id}`);
+  } catch {
+    return null;
+  }
+}
+
+export async function getReservationByToken(token: string): Promise<ReservationDetail | null> {
+  try {
+    return await apiFetch<ReservationDetail>(`/api/v1/reservations/by-token/${token}`);
+  } catch {
+    return null;
+  }
+}
+
+export async function lookupReservation(
+  no: string,
+  email: string,
+): Promise<ReservationDetail | null> {
+  try {
+    return await apiFetch<ReservationDetail>(
+      `/api/v1/reservations/lookup?no=${encodeURIComponent(no)}&email=${encodeURIComponent(email)}`,
+    );
+  } catch {
+    return null;
+  }
+}
+
+// ── 클라이언트 전용 예약 API (상대경로 프록시) ────────────────────────
+export async function createReservation(
+  body: CreateReservationBody,
+): Promise<CreateReservationResult> {
+  const res = await fetch('/api/v1/reservations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const json = await res.json();
+  if (res.status === 409 || !json.success) {
+    const code = json?.error?.code ?? '';
+    if (code === 'RESERVATION_SOLD_OUT') {
+      throw new Error('이 일정은 이미 매진되었습니다.');
+    }
+    throw new Error(json?.error?.message ?? '예약에 실패했습니다. 다시 시도해주세요.');
+  }
+  return json.data as CreateReservationResult;
+}
+
+export async function getPaymentStatus(reservationId: string): Promise<PaymentStatus | null> {
+  try {
+    const res = await fetch(`/api/v1/payments/by-reservation/${reservationId}`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (!json.success) return null;
+    return json.data as PaymentStatus;
+  } catch {
+    return null;
+  }
+}
