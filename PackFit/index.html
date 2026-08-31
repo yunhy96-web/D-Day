@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PackFit</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 14px system-ui, sans-serif; color: #222; background: #f5f5f5; }
+    main { display: grid; grid-template-columns: 440px 1fr; height: 100vh; }
+    @media (max-width: 800px) { main { grid-template-columns: 1fr; height: auto; } #view { height: 60vh; } }
+    aside { padding: 16px; overflow: auto; background: #fff; border-right: 1px solid #ddd; }
+    h1 { font-size: 18px; margin: 0 0 12px; }
+    fieldset { border: 1px solid #ddd; border-radius: 6px; margin: 0 0 12px; padding: 10px; }
+    legend { font-weight: 600; padding: 0 4px; }
+    label { display: inline-flex; flex-direction: column; font-size: 12px; color: #555; margin: 0 6px 6px 0; }
+    input[type=number] { width: 64px; padding: 4px; }
+    input[type=text] { width: 90px; padding: 4px; }
+    table { border-collapse: collapse; width: 100%; font-size: 12px; }
+    th { text-align: left; color: #555; font-weight: 500; padding: 2px; }
+    td { padding: 2px; }
+    td input[type=number] { width: 46px; }
+    td input[type=text] { width: 70px; }
+    button { cursor: pointer; padding: 6px 12px; border: 1px solid #888; border-radius: 4px; background: #fff; }
+    button.primary { background: #2563eb; color: #fff; border-color: #2563eb; width: 100%; padding: 10px; font-size: 15px; }
+    button.small { padding: 2px 6px; font-size: 12px; }
+    section { display: flex; flex-direction: column; }
+    #view { flex: 1; min-height: 0; }
+    #view { position: relative; }
+    #tip { position: absolute; pointer-events: none; background: rgba(0,0,0,.75); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; }
+    #player { display: flex; align-items: center; gap: 10px; padding: 6px 16px; background: #fff; border-top: 1px solid #ddd; }
+    #player input { flex: 1; }
+    #result { padding: 10px 16px; background: #fff; border-top: 1px solid #ddd; }
+    #result .bad { color: #dc2626; }
+    #legend span { display: inline-block; margin: 2px 8px 2px 0; }
+    #legend i { display: inline-block; width: 12px; height: 12px; vertical-align: -1px; margin-right: 4px; border-radius: 2px; }
+  </style>
+</head>
+<body>
+<main>
+  <aside>
+    <h1>PackFit — 상자 적재 시뮬레이터</h1>
+    <form id="form">
+      <fieldset>
+        <legend>상자 (mm)</legend>
+        <label>가로 W<input type="number" name="bw" value="400" min="1" required></label>
+        <label>세로 D<input type="number" name="bd" value="300" min="1" required></label>
+        <label>높이 H<input type="number" name="bh" value="300" min="1" required></label>
+        <label>벽 여유<input type="number" name="wall" value="10" min="0" required></label>
+        <label>최대 무게(g)<input type="number" name="maxWeight" min="0" placeholder="제한 없음"></label>
+        <div style="margin-top:4px">
+          <select id="preset"><option value="">표준 상자 선택…</option></select>
+          <button type="button" id="recommend" class="small">최소 상자 추천</button>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>물건 (mm)</legend>
+        <table>
+          <thead><tr><th>이름</th><th>W</th><th>D</th><th>H</th><th>수량</th><th>간격</th><th>무게</th><th title="높이 방향 고정">세움</th><th title="위에 적재 금지">깨짐</th><th></th></tr></thead>
+          <tbody id="items"></tbody>
+        </table>
+        <button type="button" id="add" class="small" style="margin-top:6px">+ 물건 추가</button>
+      </fieldset>
+      <button type="submit" class="primary">적재 계산</button>
+    </form>
+  </aside>
+  <section>
+    <div id="view"><div id="tip" hidden></div></div>
+    <div id="player" hidden>
+      <button type="button" id="play" class="small">▶ 재생</button>
+      <input type="range" id="step" min="0" value="0" step="1">
+      <span id="stepLabel"></span>
+    </div>
+    <div id="result">입력 후 「적재 계산」을 누르세요.</div>
+  </section>
+</main>
+<template id="row">
+  <tr>
+    <td><input type="text" name="name" required></td>
+    <td><input type="number" name="w" min="1" required></td>
+    <td><input type="number" name="d" min="1" required></td>
+    <td><input type="number" name="h" min="1" required></td>
+    <td><input type="number" name="qty" min="1" value="1" required></td>
+    <td><input type="number" name="gap" min="0" value="5" required></td>
+    <td><input type="number" name="weight" min="0" placeholder="g"></td>
+    <td><input type="checkbox" name="noRotate"></td>
+    <td><input type="checkbox" name="fragile"></td>
+    <td><button type="button" class="small del">×</button></td>
+  </tr>
+</template>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
