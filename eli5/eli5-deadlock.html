@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>데드락 - 5살도 이해하는 설명</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
+    background: #fdf0f0;
+    color: #333;
+    line-height: 1.6;
+  }
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  .slide:nth-child(even) { background: #fff; }
+  h1 { font-size: 3rem; margin-bottom: 20px; }
+  h2 { font-size: 2.2rem; margin-bottom: 30px; }
+  .big { font-size: 6rem; margin: 20px 0; }
+  .row {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 30px 0;
+  }
+  .box {
+    background: #fff;
+    border: 4px solid #333;
+    border-radius: 20px;
+    padding: 30px 40px;
+    font-size: 1.4rem;
+    box-shadow: 6px 6px 0 #333;
+  }
+  .box .emoji { font-size: 4rem; display: block; margin-bottom: 10px; }
+  .arrow { font-size: 3rem; }
+  .bad { border-color: #d33; box-shadow: 6px 6px 0 #d33; }
+  .good { border-color: #2a9d3f; box-shadow: 6px 6px 0 #2a9d3f; }
+  .caption { font-size: 1.5rem; max-width: 640px; margin-top: 20px; }
+  .small { font-size: 1.1rem; color: #888; margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<div class="slide">
+  <h1>🔒 데드락 (교착 상태)</h1>
+  <div class="big">🧒🔄🧒</div>
+  <p class="caption"><b>"서로 상대방 것을 기다리며<br>둘 다 영원히 멈춰버리는 것"</b></p>
+  <p class="small">아래로 스크롤 ⬇️</p>
+</div>
+
+<div class="slide">
+  <h2>😊 상황 설명</h2>
+  <p class="caption">그림을 완성하려면 <b>크레용과 가위</b> 둘 다 필요해요</p>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">🧒🖍️</span>
+      철수는<br><b>크레용</b>을 잡았어요
+    </div>
+    <div class="box">
+      <span class="emoji">👧✂️</span>
+      영희는<br><b>가위</b>를 잡았어요
+    </div>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>😱 문제 발생!</h2>
+  <div class="row">
+    <div class="box bad">
+      <span class="emoji">🧒🖍️</span>
+      철수: "가위 줘!<br>줄 때까지<br>크레용 안 놔!"
+    </div>
+    <div class="arrow">🔄</div>
+    <div class="box bad">
+      <span class="emoji">👧✂️</span>
+      영희: "크레용 줘!<br>줄 때까지<br>가위 안 놔!"
+    </div>
+  </div>
+  <p class="caption">둘 다 <b>자기 건 꽉 쥐고</b><br>상대방 것만 기다려요.<br><b>영원히... 아무도 못 움직여요</b> 🥶</p>
+  <p class="small">이게 바로 데드락! 서로가 서로를 기다리는 동그라미가 생겼어요</p>
+</div>
+
+<div class="slide">
+  <h2>🗄️ DB에서는 이렇게 생겨요</h2>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">🧑‍💻</span>
+      작업 A:<br><b>1번 행</b> 잠그고<br>2번 행 기다림
+    </div>
+    <div class="arrow">🔄</div>
+    <div class="box">
+      <span class="emoji">🧑‍💻</span>
+      작업 B:<br><b>2번 행</b> 잠그고<br>1번 행 기다림
+    </div>
+  </div>
+  <p class="caption">트랜잭션이 행(row)을 잠그고 일해요.<br>서로 반대 순서로 잠그면... 꽝! 💥</p>
+</div>
+
+<div class="slide">
+  <h2>👨‍🏫 선생님(DB)의 해결법</h2>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">👀</span>
+      DB는 기다림의<br><b>동그라미</b>를<br>감시하고 있어요
+    </div>
+    <div class="arrow">➡️</div>
+    <div class="box good">
+      <span class="emoji">🖐️</span>
+      발견하면 한 명을 골라<br><b>"너는 처음부터 다시!"</b><br><small>(강제 롤백)</small>
+    </div>
+  </div>
+  <p class="caption">한 명이 물러나면 나머지는 진행돼요.<br>물러난 쪽은 에러를 받고 <b>다시 시도</b>하면 돼요</p>
+  <p class="small">MariaDB가 "Deadlock found when trying to get lock" 에러를 주는 순간이에요</p>
+</div>
+
+<div class="slide">
+  <h2>✨ 애초에 안 만드는 법</h2>
+  <div class="row">
+    <div class="box good">
+      <span class="emoji">1️⃣➡️2️⃣</span>
+      모두가 <b>같은 순서</b>로<br>잡기<br><small>크레용 먼저, 가위 나중</small>
+    </div>
+    <div class="box good">
+      <span class="emoji">⏱️</span>
+      <b>짧게</b> 쥐기<br><small>트랜잭션은 빨리 끝내기</small>
+    </div>
+    <div class="box good">
+      <span class="emoji">🔁</span>
+      걸리면<br><b>다시 시도</b><br><small>재시도 로직</small>
+    </div>
+  </div>
+  <p class="caption">모두가 크레용 → 가위 순서로만 잡으면<br>동그라미가 <b>절대 안 생겨요!</b></p>
+</div>
+
+<div class="slide">
+  <h2>📝 정리하면</h2>
+  <div class="row" style="flex-direction: column; gap: 15px;">
+    <div class="box bad" style="max-width: 550px;">
+      데드락 = 서로 상대방의 잠금을<br>기다리는 <b>원(circle)</b>이 생겨 모두 멈춤
+    </div>
+    <div class="box good" style="max-width: 550px;">
+      DB가 감지해서 한쪽을 <b>강제 롤백</b> —<br>죽는 게 아니라 다시 시도하면 됨
+    </div>
+    <div class="box good" style="max-width: 550px;">
+      예방 = <b>같은 순서로 잠그기</b> +<br>트랜잭션 짧게 + 재시도
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

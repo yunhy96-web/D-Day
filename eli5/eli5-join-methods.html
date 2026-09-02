@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>조인 방식 3형제 - 5살도 이해하는 설명</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
+    background: #f0fdf4;
+    color: #333;
+    line-height: 1.6;
+  }
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  .slide:nth-child(even) { background: #fff; }
+  h1 { font-size: 3rem; margin-bottom: 20px; }
+  h2 { font-size: 2.2rem; margin-bottom: 10px; }
+  .level {
+    font-size: 1.1rem;
+    color: #fff;
+    background: #333;
+    border-radius: 999px;
+    padding: 6px 20px;
+    margin-bottom: 30px;
+    display: inline-block;
+  }
+  .big { font-size: 6rem; margin: 20px 0; }
+  .row {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 30px 0;
+  }
+  .box {
+    background: #fff;
+    border: 4px solid #333;
+    border-radius: 20px;
+    padding: 30px 40px;
+    font-size: 1.4rem;
+    box-shadow: 6px 6px 0 #333;
+  }
+  .box .emoji { font-size: 4rem; display: block; margin-bottom: 10px; }
+  .arrow { font-size: 3rem; }
+  .bad { border-color: #d33; box-shadow: 6px 6px 0 #d33; }
+  .good { border-color: #2a9d3f; box-shadow: 6px 6px 0 #2a9d3f; }
+  .caption { font-size: 1.5rem; max-width: 660px; margin-top: 20px; }
+  .small { font-size: 1.1rem; color: #888; margin-top: 40px; }
+  .meter {
+    font-size: 1.3rem;
+    margin-top: 25px;
+    background: #fff;
+    border: 3px solid #333;
+    border-radius: 15px;
+    padding: 15px 30px;
+    max-width: 660px;
+  }
+  table {
+    border-collapse: collapse;
+    font-size: 1.15rem;
+    margin-top: 20px;
+    background: #fff;
+  }
+  th, td { border: 3px solid #333; padding: 14px 20px; }
+  th { background: #c8f0d0; }
+</style>
+</head>
+<body>
+
+<div class="slide">
+  <h1>🤝 조인 방식 3형제</h1>
+  <div class="big">📋🔗📋</div>
+  <p class="caption"><b>"두 명단을 맞춰보는 세 가지 방법"</b><br><br>학생 명단 📋 과 대출 기록 📚 에서<br>"누가 어떤 책을 빌렸나?"를 찾아봐요</p>
+  <p class="small">아래로 스크롤 ⬇️</p>
+</div>
+
+<div class="slide">
+  <h2>방법 1: 한 명씩 찾아가기</h2>
+  <div class="level">NL 조인 (Nested Loop)</div>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">🧒</span>
+      학생 한 명 집기<br>"철수!"
+    </div>
+    <div class="arrow">➡️</div>
+    <div class="box">
+      <span class="emoji">📚🔖</span>
+      대출 기록에서<br>철수 찾기<br><small>(색인=인덱스로!)</small>
+    </div>
+    <div class="arrow">🔁</div>
+    <div class="box">
+      <span class="emoji">👧</span>
+      다음 학생<br>"영희!"
+    </div>
+  </div>
+  <p class="caption">한 명 집고 → 상대편에서 찾고 → 반복.<br>상대편에 <b>색인(인덱스)이 꼭 있어야</b> 빨라요.<br>없으면 매번 처음부터 다 뒤져요 😱</p>
+  <div class="meter">✅ 학생이 <b>몇 명 안 될 때</b> 최고 · 첫 결과가 <b>바로바로</b> 나옴<br>❌ 학생이 수만 명이면 왔다갔다 지옥</div>
+</div>
+
+<div class="slide">
+  <h2>방법 2: 바구니에 나눠 담기</h2>
+  <div class="level">해시 조인 (Hash)</div>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">🗂️</span>
+      <b>작은 명단</b>을<br>이름 첫 글자별<br>바구니에 착착<br><small>(메모리에 해시 테이블)</small>
+    </div>
+    <div class="arrow">➡️</div>
+    <div class="box">
+      <span class="emoji">📚</span>
+      <b>큰 명단</b>을<br>한 번만 죽 훑으며<br>맞는 바구니에서<br>꺼내 맞추기
+    </div>
+  </div>
+  <p class="caption">준비(바구니 담기)는 한 번,<br>그 다음은 <b>양쪽 다 한 번씩만</b> 읽으면 끝!</p>
+  <div class="meter">✅ <b>둘 다 클 때</b> 최고 · 색인 필요 없음<br>❌ "같다(=)"로만 맞출 수 있음 · 바구니 만들 <b>메모리</b> 필요<br>❌ 바구니 다 담기 전엔 결과가 안 나옴</div>
+</div>
+
+<div class="slide">
+  <h2>방법 3: 둘 다 줄 세워 지퍼 잠그기</h2>
+  <div class="level">소트 머지 조인 (Sort Merge)</div>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">📋⬇️</span>
+      학생 명단<br><b>가나다순 정렬</b>
+    </div>
+    <div class="box">
+      <span class="emoji">📚⬇️</span>
+      대출 기록도<br><b>가나다순 정렬</b>
+    </div>
+    <div class="arrow">➡️</div>
+    <div class="box good">
+      <span class="emoji">🤐</span>
+      나란히 놓고<br><b>지퍼처럼</b><br>위에서 아래로 착착
+    </div>
+  </div>
+  <p class="caption">둘 다 순서대로니까 <b>한 번씩 내려가며</b> 맞추면 끝.<br>정렬하는 수고가 크지만,<br><b>이미 정렬돼 있으면</b> 공짜예요!</p>
+  <div class="meter">✅ 크기 비교 조인(&lt;, &gt;, between)도 가능 · 정렬돼 있으면 최고<br>❌ 정렬 비용이 비쌈 — 요즘은 해시에게 밀리는 일이 많음</div>
+</div>
+
+<div class="slide">
+  <h2>🎯 언제 누구를 쓸까?</h2>
+  <div class="row" style="flex-direction: column; gap: 15px;">
+    <div class="box good" style="max-width: 620px;">
+      🧒 조금만 찾는다 (화면 조회, OLTP)<br>➡️ <b>NL 조인</b> + 인덱스
+    </div>
+    <div class="box good" style="max-width: 620px;">
+      🏔️ 왕창 맞춘다 (배치, 통계, 대량)<br>➡️ <b>해시 조인</b>
+    </div>
+    <div class="box good" style="max-width: 620px;">
+      📐 크기 비교로 맞추거나 이미 정렬됨<br>➡️ <b>소트 머지 조인</b>
+    </div>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>📝 한눈에 정리</h2>
+  <table>
+    <tr><th></th><th>🔁 NL</th><th>🗂️ 해시</th><th>🤐 소트머지</th></tr>
+    <tr><td><b>비유</b></td><td>한 명씩<br>찾아가기</td><td>바구니에<br>나눠 담기</td><td>줄 세워<br>지퍼 잠그기</td></tr>
+    <tr><td><b>잘하는 것</b></td><td>소량 · 빠른<br>첫 응답</td><td>대량 ·<br>등호(=) 조인</td><td>범위 조인 ·<br>정렬된 데이터</td></tr>
+    <tr><td><b>필요한 것</b></td><td>상대편<br><b>인덱스</b></td><td><b>메모리</b><br>(해시 테이블)</td><td><b>정렬</b><br>(비용 큼)</td></tr>
+    <tr><td><b>첫 결과</b></td><td>⚡ 즉시</td><td>🕐 준비 후</td><td>🕐 정렬 후</td></tr>
+    <tr><td><b>어울리는 곳</b></td><td>OLTP<br>(화면 조회)</td><td>배치 · DW<br>(대량 집계)</td><td>정렬된<br>범위 조인</td></tr>
+  </table>
+  <p class="caption"><b>"조금이면 NL, 왕창이면 해시,<br>정렬돼 있으면 소트머지"</b></p>
+  <p class="small">SQLP 팁: NL의 핵심은 '부분범위처리'(첫 결과 즉시), 해시의 핵심은 'Build(작은 쪽)/Probe(큰 쪽)', 소트머지의 핵심은 '정렬 비용'이에요</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>아웃박스 패턴 - 5살도 이해하는 설명</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
+    background: #fdf6ec;
+    color: #333;
+    line-height: 1.6;
+  }
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  .slide:nth-child(even) { background: #fff; }
+  h1 { font-size: 3rem; margin-bottom: 20px; }
+  h2 { font-size: 2.2rem; margin-bottom: 30px; }
+  .big { font-size: 6rem; margin: 20px 0; }
+  .row {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 30px 0;
+  }
+  .box {
+    background: #fff;
+    border: 4px solid #333;
+    border-radius: 20px;
+    padding: 30px 40px;
+    font-size: 1.4rem;
+    box-shadow: 6px 6px 0 #333;
+  }
+  .box .emoji { font-size: 4rem; display: block; margin-bottom: 10px; }
+  .arrow { font-size: 3rem; }
+  .bad { border-color: #d33; box-shadow: 6px 6px 0 #d33; }
+  .good { border-color: #2a9d3f; box-shadow: 6px 6px 0 #2a9d3f; }
+  .caption { font-size: 1.5rem; max-width: 600px; margin-top: 20px; }
+  .small { font-size: 1.1rem; color: #888; margin-top: 40px; }
+  .crossed { position: relative; opacity: 0.6; }
+  .crossed::after {
+    content: "❌";
+    position: absolute;
+    top: -20px; right: -20px;
+    font-size: 3rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="slide">
+  <h1>📮 아웃박스 패턴</h1>
+  <div class="big">✉️</div>
+  <p class="caption"><b>"할 일을 먼저 편지함에 넣어두고,<br>집배원이 나중에 배달하는 것"</b></p>
+  <p class="small">아래로 스크롤 ⬇️</p>
+</div>
+
+<div class="slide">
+  <h2>😊 하고 싶은 일</h2>
+  <p class="caption">주문이 들어오면 <b>두 가지</b>를 해야 해요</p>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">📓</span>
+      내 공책에<br>주문 적기<br><small>(우리 DB 저장)</small>
+    </div>
+    <div class="arrow">＋</div>
+    <div class="box">
+      <span class="emoji">🏰</span>
+      옆 동네 가게에<br>알려주기<br><small>(외부 API 호출)</small>
+    </div>
+  </div>
+  <p class="caption">둘 다 <b>꼭</b> 성공해야 해요!</p>
+</div>
+
+<div class="slide">
+  <h2>😱 문제가 생겨요</h2>
+  <div class="row">
+    <div class="box good">
+      <span class="emoji">📓</span>
+      공책에는<br>적었는데...
+    </div>
+    <div class="arrow">➡️</div>
+    <div class="box bad crossed">
+      <span class="emoji">🏰</span>
+      옆 동네 가는 길에<br>넘어졌어요!
+    </div>
+  </div>
+  <p class="caption">공책에는 주문이 있는데<br>옆 동네는 몰라요 😵<br><b>둘이 서로 달라졌어요!</b></p>
+</div>
+
+<div class="slide">
+  <h2>💡 좋은 생각!</h2>
+  <p class="caption">옆 동네에 <b>직접 바로</b> 가지 말고...</p>
+  <div class="row">
+    <div class="box good">
+      <span class="emoji">📓</span>
+      주문 적기
+    </div>
+    <div class="arrow">＋</div>
+    <div class="box good">
+      <span class="emoji">📮</span>
+      <b>같은 공책에</b><br>"옆 동네에 알릴 것"<br>메모도 적기
+    </div>
+  </div>
+  <p class="caption">같은 공책에 <b>한 번에</b> 적으니까<br>둘 다 적히거나, 둘 다 안 적혀요.<br>절반만 되는 일이 없어요! ✨</p>
+  <p class="small">이 메모장이 바로 "아웃박스(보낼 편지함)"</p>
+</div>
+
+<div class="slide">
+  <h2>🚴 집배원 등장</h2>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">📮</span>
+      편지함
+    </div>
+    <div class="arrow">➡️</div>
+    <div class="box">
+      <span class="emoji">🚴</span>
+      집배원이<br>계속 확인해요
+    </div>
+    <div class="arrow">➡️</div>
+    <div class="box">
+      <span class="emoji">🏰</span>
+      옆 동네에<br>배달!
+    </div>
+  </div>
+  <p class="caption">집배원(릴레이)이 편지함을 보고<br>아직 안 보낸 편지를 배달해요</p>
+</div>
+
+<div class="slide">
+  <h2>💪 넘어져도 괜찮아요</h2>
+  <div class="row">
+    <div class="box bad">
+      <span class="emoji">🚴💥</span>
+      배달하다<br>넘어짐!
+    </div>
+    <div class="arrow">➡️</div>
+    <div class="box good">
+      <span class="emoji">📮</span>
+      편지는 아직<br>편지함에 있어요
+    </div>
+    <div class="arrow">➡️</div>
+    <div class="box good">
+      <span class="emoji">🚴✨</span>
+      일어나서<br>다시 배달!
+    </div>
+  </div>
+  <p class="caption">편지가 사라지지 않으니까<br><b>될 때까지 다시 시도</b>할 수 있어요</p>
+</div>
+
+<div class="slide">
+  <h2>📝 정리하면</h2>
+  <div class="row" style="flex-direction: column; gap: 15px;">
+    <div class="box good" style="max-width: 550px;">
+      1️⃣ 진짜 데이터와 "보낼 일" 메모를<br><b>같은 DB, 같은 트랜잭션</b>에 저장
+    </div>
+    <div class="box good" style="max-width: 550px;">
+      2️⃣ 별도의 릴레이가 메모를 읽어<br><b>외부로 전송</b>
+    </div>
+    <div class="box good" style="max-width: 550px;">
+      3️⃣ 실패하면 메모가 남아있으니<br><b>재시도</b> — 잃어버리는 일 없음
+    </div>
+  </div>
+  <p class="small">우리 프로젝트의 tb_external_api_outbox + ExternalApiOutboxRelay가 바로 이거예요 🎉</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>트랜잭션 격리 수준 - 5살도 이해하는 설명</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
+    background: #f0f6fd;
+    color: #333;
+    line-height: 1.6;
+  }
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  .slide:nth-child(even) { background: #fff; }
+  h1 { font-size: 3rem; margin-bottom: 20px; }
+  h2 { font-size: 2.2rem; margin-bottom: 10px; }
+  .level {
+    font-size: 1.1rem;
+    color: #fff;
+    background: #333;
+    border-radius: 999px;
+    padding: 6px 20px;
+    margin-bottom: 30px;
+    display: inline-block;
+  }
+  .big { font-size: 6rem; margin: 20px 0; }
+  .row {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 30px 0;
+  }
+  .box {
+    background: #fff;
+    border: 4px solid #333;
+    border-radius: 20px;
+    padding: 30px 40px;
+    font-size: 1.4rem;
+    box-shadow: 6px 6px 0 #333;
+  }
+  .box .emoji { font-size: 4rem; display: block; margin-bottom: 10px; }
+  .arrow { font-size: 3rem; }
+  .bad { border-color: #d33; box-shadow: 6px 6px 0 #d33; }
+  .good { border-color: #2a9d3f; box-shadow: 6px 6px 0 #2a9d3f; }
+  .caption { font-size: 1.5rem; max-width: 640px; margin-top: 20px; }
+  .small { font-size: 1.1rem; color: #888; margin-top: 40px; }
+  .meter {
+    font-size: 1.3rem;
+    margin-top: 25px;
+    background: #fff;
+    border: 3px solid #333;
+    border-radius: 15px;
+    padding: 15px 30px;
+  }
+  table {
+    border-collapse: collapse;
+    font-size: 1.2rem;
+    margin-top: 20px;
+    background: #fff;
+  }
+  th, td { border: 3px solid #333; padding: 14px 22px; }
+  th { background: #ffe9a8; }
+</style>
+</head>
+<body>
+
+<div class="slide">
+  <h1>🚪 트랜잭션 격리 수준</h1>
+  <div class="big">📓👀👀</div>
+  <p class="caption"><b>"여러 명이 같은 공책을 동시에 쓰고 읽을 때,<br>서로를 얼마나 못 보게 막을까?"</b>의 4단계 규칙</p>
+  <p class="small">아래로 스크롤 ⬇️</p>
+</div>
+
+<div class="slide">
+  <h2>😊 상황 설명</h2>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">✍️</span>
+      철수는 공책에<br><b>쓰는 중</b>
+    </div>
+    <div class="box">
+      <span class="emoji">👀</span>
+      영희는 그 공책을<br><b>읽는 중</b>
+    </div>
+  </div>
+  <p class="caption">동시에 일어나면 이상한 일이 생겨요.<br>그래서 <b>"얼마나 가려줄까?"</b> 규칙이 필요해요</p>
+</div>
+
+<div class="slide">
+  <h2>1단계: 다 보여요</h2>
+  <div class="level">READ UNCOMMITTED</div>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">✏️</span>
+      철수가 <b>연필로</b><br>쓰는 중...<br><small>(아직 지울 수도 있음)</small>
+    </div>
+    <div class="arrow">➡️</div>
+    <div class="box bad">
+      <span class="emoji">👀</span>
+      영희가 그걸<br><b>벌써 읽어버림!</b>
+    </div>
+  </div>
+  <p class="caption">철수가 "앗, 아니다" 하고 지우면(롤백)<br>영희는 <b>세상에 없는 내용</b>을 읽은 거예요 😱</p>
+  <div class="meter">⚡ 제일 빠름 · 🙈 제일 위험 (Dirty Read)</div>
+</div>
+
+<div class="slide">
+  <h2>2단계: 완성한 것만 보여요</h2>
+  <div class="level">READ COMMITTED</div>
+  <div class="row">
+    <div class="box good">
+      <span class="emoji">🖊️</span>
+      <b>볼펜으로 완성</b>한<br>글만 읽을 수 있어요<br><small>(커밋된 것만)</small>
+    </div>
+  </div>
+  <p class="caption">그런데... 영희가 같은 줄을 <b>두 번</b> 읽는 사이에<br>철수가 고쳐서 완성하면?</p>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">👀</span>
+      아까는<br>"사과 3개"
+    </div>
+    <div class="arrow">➡️</div>
+    <div class="box bad">
+      <span class="emoji">👀</span>
+      다시 보니<br>"사과 5개"?!
+    </div>
+  </div>
+  <div class="meter">🙂 지운 글은 안 보임 · 😵 읽을 때마다 값이 바뀔 수 있음 (Non-Repeatable Read)</div>
+</div>
+
+<div class="slide">
+  <h2>3단계: 사진 찍어놓고 봐요</h2>
+  <div class="level">REPEATABLE READ ⭐ MySQL/MariaDB 기본값</div>
+  <div class="row">
+    <div class="box good">
+      <span class="emoji">📸</span>
+      읽기 시작할 때<br>공책을 <b>사진</b> 찍고<br>끝까지 그 사진만 봐요
+    </div>
+  </div>
+  <p class="caption">철수가 뭘 고치든 영희의 사진은 안 변해요.<br>몇 번을 읽어도 <b>항상 같은 값</b> ✨</p>
+  <div class="row">
+    <div class="box bad">
+      <span class="emoji">👻</span>
+      가끔 <b>새로 생긴 줄</b>이<br>불쑥 나타날 수 있어요<br><small>(Phantom Read)</small>
+    </div>
+  </div>
+  <div class="meter">😀 읽기 안정적 · 👻 유령 줄만 조심</div>
+</div>
+
+<div class="slide">
+  <h2>4단계: 한 명씩 줄 서요</h2>
+  <div class="level">SERIALIZABLE</div>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">🚶</span>
+      철수 먼저
+    </div>
+    <div class="arrow">➡️</div>
+    <div class="box">
+      <span class="emoji">🚶‍♀️</span>
+      끝나면 영희
+    </div>
+    <div class="arrow">➡️</div>
+    <div class="box">
+      <span class="emoji">🚶</span>
+      그 다음 민수
+    </div>
+  </div>
+  <p class="caption">아예 <b>한 명씩 차례로</b> 공책을 써요.<br>이상한 일이 절대 없지만... <b>기다려야 해요</b> 🐢</p>
+  <div class="meter">💯 제일 안전 · 🐢 제일 느림</div>
+</div>
+
+<div class="slide">
+  <h2>📝 한눈에 정리</h2>
+  <table>
+    <tr><th>단계</th><th>지운 글<br>보임?</th><th>값이<br>바뀜?</th><th>유령 줄<br>나타남?</th><th>속도</th></tr>
+    <tr><td>1️⃣ READ UNCOMMITTED</td><td>😱 네</td><td>😱 네</td><td>😱 네</td><td>⚡⚡⚡</td></tr>
+    <tr><td>2️⃣ READ COMMITTED</td><td>✅ 아니요</td><td>😵 네</td><td>😵 네</td><td>⚡⚡</td></tr>
+    <tr><td>3️⃣ REPEATABLE READ ⭐</td><td>✅ 아니요</td><td>✅ 아니요</td><td>👻 가끔</td><td>⚡</td></tr>
+    <tr><td>4️⃣ SERIALIZABLE</td><td>✅ 아니요</td><td>✅ 아니요</td><td>✅ 아니요</td><td>🐢</td></tr>
+  </table>
+  <p class="caption">위로 갈수록 빠르고 위험,<br>아래로 갈수록 안전하고 느려요.<br><b>가릴수록 안전, 가릴수록 느림!</b></p>
+  <p class="small">우리 프로젝트의 MariaDB는 기본값이 REPEATABLE READ예요 🎉</p>
+</div>
+
+</body>
+</html>
