@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>윤희영 | 이력서 — Backend Engineer</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    --navy: #0f2540; --accent: #2f6fed; --accent-soft: #e8f0fe;
+    --ink: #1f2937; --sub: #5b6b7f; --line: #e3e8ef; --bg: #f7f9fc;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ink); background: var(--bg); line-height: 1.55; font-size: 13.5px;
+    -webkit-font-smoothing: antialiased; word-break: keep-all; overflow-wrap: break-word;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  .page { max-width: 860px; margin: 32px auto; background: #fff; padding: 44px 52px; border: 1px solid var(--line); }
+
+  /* Header */
+  .head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; padding-bottom: 18px; border-bottom: 2px solid var(--navy); }
+  .head h1 { font-size: 30px; font-weight: 800; color: var(--navy); letter-spacing: -0.02em; line-height: 1.2; }
+  .head h1 small { font-size: 15px; font-weight: 600; color: var(--sub); margin-left: 8px; }
+  .head .apply { margin-top: 6px; font-size: 14px; color: var(--sub); }
+  .head .apply b { color: var(--accent); }
+  .contact { text-align: right; font-size: 13px; color: var(--sub); line-height: 1.8; white-space: nowrap; }
+  .contact a { color: var(--ink); font-weight: 600; }
+
+  /* Sections */
+  section { margin-top: 26px; }
+  h2 { font-size: 15px; font-weight: 800; color: var(--navy); letter-spacing: 0.04em; text-transform: uppercase;
+       padding-bottom: 6px; border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+  h2 span { color: var(--sub); font-weight: 500; text-transform: none; letter-spacing: 0; font-size: 12.5px; margin-left: 8px; }
+
+  /* Summary */
+  .summary p { margin-bottom: 8px; }
+  .summary b { color: var(--navy); }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+  .kpi { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 11px; }
+  .kpi .n { font-size: 18px; font-weight: 800; color: var(--accent); }
+  .kpi .l { font-size: 11.5px; color: var(--sub); line-height: 1.35; }
+
+  /* Fit table */
+  table.fit { width: 100%; border-collapse: collapse; font-size: 12.8px; }
+  table.fit th, table.fit td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  table.fit th { width: 30%; background: var(--bg); color: var(--navy); font-weight: 700; }
+  table.fit td b { color: var(--navy); }
+  table.fit .tag { display: inline-block; font-size: 10.5px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 4px; padding: 1px 6px; margin-right: 4px; vertical-align: 1px; }
+
+  /* Career */
+  .job { display: grid; grid-template-columns: 128px 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px dashed var(--line); }
+  .job:last-child { border-bottom: none; }
+  .job .when { color: var(--sub); font-size: 12.5px; font-weight: 600; line-height: 1.5; }
+  .job .when .dur { display: block; color: #8a97a8; font-weight: 500; font-size: 11.5px; }
+  .job h3 { font-size: 15.5px; color: var(--navy); }
+  .job .role { color: var(--sub); font-size: 12.5px; margin: 1px 0 8px; }
+  ul.b { list-style: none; }
+  ul.b li { position: relative; padding-left: 14px; margin-bottom: 5px; font-size: 13px; }
+  ul.b li::before { content: ""; position: absolute; left: 1px; top: 8px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+  ul.b li b { color: var(--navy); }
+  .m { color: var(--accent); font-weight: 700; }
+  .nw, code { white-space: nowrap; }
+  .job .ctx { font-size: 12.5px; color: var(--ink); background: var(--bg); border-left: 3px solid var(--accent); padding: 6px 10px; margin: 0 0 10px; border-radius: 0 6px 6px 0; }
+  .job .ctx b { color: var(--navy); }
+  /* Project blocks (문제 → 해결 → 성과) */
+  .pj { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+  .pj h4 { font-size: 13.5px; color: var(--navy); display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; margin-bottom: 6px; }
+  .pj h4 .meta { font-size: 11.5px; font-weight: 600; color: var(--sub); }
+  .pj h4 .contrib { font-size: 11px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 4px; padding: 1px 7px; }
+  .pj dl { display: grid; grid-template-columns: 42px 1fr; row-gap: 4px; column-gap: 8px; font-size: 12.8px; }
+  .pj dt { font-weight: 800; color: var(--navy); font-size: 11.5px; padding-top: 2px; }
+  .pj dd { color: var(--ink); }
+  .pj dd b { color: var(--navy); }
+  .pj dd code { font-size: 11.5px; background: var(--bg); border: 1px solid var(--line); border-radius: 3px; padding: 0 3px; }
+  .fill { background: #fff3bf; border-bottom: 1px dashed #d9a400; padding: 0 3px; font-weight: 700; }
+
+
+  /* Skills */
+  .skills { display: grid; grid-template-columns: 120px 1fr; row-gap: 6px; column-gap: 12px; font-size: 13px; }
+  .skills dt { font-weight: 700; color: var(--navy); }
+  .skills dd { color: var(--ink); }
+
+  /* Projects */
+  .proj { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
+  .proj:last-child { border-bottom: none; }
+  .proj .name { font-weight: 700; color: var(--navy); }
+  .proj .name small { display: block; font-weight: 500; color: var(--sub); font-size: 11.5px; }
+  .proj .stack { color: var(--sub); font-size: 12px; margin-top: 2px; }
+
+  /* Edu */
+  .edu { display: grid; grid-template-columns: 128px 1fr; gap: 16px; padding: 7px 0; font-size: 13px; }
+  .edu .when { color: var(--sub); font-size: 12.5px; font-weight: 600; }
+  .edu b { color: var(--navy); }
+  .edu p { color: var(--sub); font-size: 12.5px; }
+
+  footer { margin-top: 26px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--sub); text-align: center; }
+
+  /* ===== Cover (1p) ===== */
+  .cover { --c-bg: #161616; --c-accent: #7aa2ff; --c-sub: #b8bfcc;
+    position: relative; max-width: 860px; aspect-ratio: 210 / 297; margin: 32px auto 0; padding: 60px 64px 44px;
+    background: var(--c-bg); color: #fff; display: flex; flex-direction: column; font-size: 15px; }
+  .cover h1 { font-size: 46px; font-weight: 800; line-height: 1.22; letter-spacing: -0.02em; }
+  .cover h1 em { font-style: normal; color: var(--c-accent); }
+  .cover .grid { display: grid; grid-template-columns: 270px 1fr; gap: 48px; margin-top: 48px; flex: 1; }
+  .cover .photo { width: 270px; height: 338px; background: #2b2b2b; position: relative; overflow: hidden; }
+  .cover .photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .cover .photo svg { position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); width: 216px; fill: #444; }
+  .cover .label { font-size: 24px; font-weight: 600; letter-spacing: 0.04em; color: var(--c-accent); margin-bottom: 12px; }
+  .cover .contact { margin-top: 44px; text-align: left; white-space: normal; font-size: 15.5px; line-height: 2; color: var(--c-sub); }
+  .cover .contact a { color: #fff; font-weight: 500; }
+  .cover .contact .ic { display: inline-block; width: 18px; color: var(--c-sub); }
+  .cover .intro { color: #e6e9ef; font-size: 17px; line-height: 1.65; margin-bottom: 34px; }
+  .cover .intro b { color: #fff; }
+  .cover .hook { margin-bottom: 32px; }
+  .cover .hook h3 { font-size: 19.5px; font-weight: 700; text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 1.5px; margin-bottom: 5px; }
+  .cover .hook p { font-size: 17px; color: #e6e9ef; line-height: 1.55; }
+  .cover .hook .m { color: var(--c-accent); font-weight: 800; }
+  .cover .logos { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 26px; border-top: 1px solid #2e2e2e; margin-top: auto; }
+  .cover .logos figure { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 10.5px; color: var(--c-sub); }
+  .cover .logos img { width: 40px; height: 40px; }
+  .cover .logos .txt { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 15px; border-radius: 8px; }
+  .cover .logos .aws { background: #232f3e; color: #ff9900; }
+  .cover .logos .ora { background: #c74634; color: #fff; font-size: 11px; }
+  .cover .next { position: absolute; right: 64px; bottom: 14px; font-size: 11px; color: #6b7280; }
+
+  @media print {
+    @page { size: A4; margin: 14mm 13mm; }
+
+    @page cover { size: A4; margin: 0; }
+    .cover { page: cover; break-after: page; max-width: none; aspect-ratio: auto; width: 210mm; height: 297mm; margin: 0; padding: 18mm 16mm 12mm; }
+    body { background: #fff; font-size: 11.6px; line-height: 1.42; }
+    footer { margin-top: 10px; padding-top: 6px; }
+    .proj, .edu { padding: 4px 0; }
+    .kpi { padding: 6px 10px; }
+    .page { max-width: none; margin: 0; padding: 0; border: none; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    ul.b li, .proj, .edu, table.fit tr, .kpis, .job .ctx, .skills, .pj h4, .pj dd { break-inside: avoid; }
+    .job h3, .job .role, h2, .pj h4 { break-after: avoid; }
+    .pj { border: none; border-left: 3px solid var(--accent-soft); border-radius: 0; padding: 2px 10px 4px; margin-bottom: 8px; }
+    .pj dl { row-gap: 3px; }
+    section { margin-top: 14px; }
+    .job { padding: 8px 0; }
+    a { color: inherit; }
+  }
+</style>
+</head>
+<body>
+<div class="cover">
+  <h1>장애가 나도 데이터가<br>깨지지 않는 시스템을 만드는<br><em>백엔드 개발자</em></h1>
+
+  <div class="grid">
+    <div>
+      <div class="photo">
+        <svg viewBox="0 0 200 200"><circle cx="100" cy="70" r="42"/><path d="M20 200c0-50 36-80 80-80s80 30 80 80z"/></svg>
+        <img src="IMG_4112.jpg" alt="윤희영" onerror="this.remove()">
+      </div>
+      <div class="contact">
+        <div class="label">CONTACT</div>
+        <div><span class="ic">✉</span> <a href="mailto:yunhy96@naver.com">yunhy96@naver.com</a></div>
+        <div><span class="ic">⌥</span> <a href="https://github.com/yunhy96-web">github.com/yunhy96-web</a></div>
+        <div><span class="ic">⌂</span> 서울 성동구</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="label">PROFILE</div>
+      <p class="intro">구현만으로 끝내지 않습니다. 결제·발권처럼 <b>돈이 걸린 외부 연동</b>이 장애 상황에서도 정합성을 지키도록 설계하는
+        백엔드 개발자 <b>윤희영</b>입니다. <span class="nw">Java/Spring · 4년</span></p>
+
+      <div class="hook">
+        <h3>외부 벤더 5사 발권 신뢰성 계층 단독 설계!</h3>
+        <p>Outbox 재시도 + 취소 실패 시 환불 자동 차단<br><span class="m">벤더 5사</span> 동일 적용 · 중복 발권 방지</p>
+      </div>
+      <div class="hook">
+        <h3>상용 서비스 성능 개선 경험!</h3>
+        <p>로그 조회 3s → 0.3s <span class="m">10배 ↑</span><br>재고 합산 쿼리 900ms → 200ms <span class="m">4배 ↑</span></p>
+      </div>
+      <div class="hook">
+        <h3>글로벌 결제 · 인프라 구축 경험!</h3>
+        <p>PortOne/PayPal 결제 + Webhook 비동기 검증<br>AWS Blue-Green 무중단 배포 · 봇 트래픽 <span class="m">5%</span> 차단</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="logos">
+    <figure><img src="https://cdn.simpleicons.org/openjdk/ffffff" alt=""><figcaption>Java</figcaption></figure>
+    <figure><img src="https://cdn.simpleicons.org/springboot/6DB33F" alt=""><figcaption>Spring Boot</figcaption></figure>
+    <figure><img src="https://cdn.simpleicons.org/postgresql/4169E1" alt=""><figcaption>PostgreSQL</figcaption></figure>
+    <figure><img src="https://cdn.simpleicons.org/apachekafka/ffffff" alt=""><figcaption>Kafka</figcaption></figure>
+    <figure><img src="https://cdn.simpleicons.org/mysql/4479A1" alt=""><figcaption>MySQL</figcaption></figure>
+    <figure><img src="https://cdn.simpleicons.org/redis/FF4438" alt=""><figcaption>Redis</figcaption></figure>
+    <figure><img src="https://cdn.simpleicons.org/mongodb/47A248" alt=""><figcaption>MongoDB</figcaption></figure>
+    <figure><img src="https://cdn.simpleicons.org/docker/2496ED" alt=""><figcaption>Docker</figcaption></figure>
+    <figure><img src="https://cdn.simpleicons.org/jenkins/D24939" alt=""><figcaption>Jenkins</figcaption></figure>
+    <figure><img src="https://cdn.simpleicons.org/githubactions/2088FF" alt=""><figcaption>GitHub Actions</figcaption></figure>
+    <figure><div class="txt aws">aws</div><figcaption>AWS</figcaption></figure>
+  </div>
+  <div class="next">상세 경력 · 프로젝트 → 다음 장</div>
+</div>
+
+<div class="page">
+
+  <div class="head">
+    <div>
+      <h1>윤희영 <small>Yun Huiyeong</small></h1>
+      <div class="apply"><b>Backend Engineer</b> · 4년</div>
+      <div class="apply">Java/Spring · 글로벌 결제 · 외부 연동 · 이벤트 기반 아키텍처 · AWS</div>
+    </div>
+    <div class="contact">
+      <a href="mailto:yunhy96@naver.com">yunhy96@naver.com</a><br>
+      <a href="https://github.com/yunhy96-web">github.com/yunhy96-web</a><br>
+      서울 성동구 거주
+    </div>
+  </div>
+
+  <!-- ===== 장애 대응 이력 ===== -->
+  <section>
+    <h2>장애 대응 이력 <span>실제 사고 → 원인 → 조치 · 상세는 Experience 참조</span></h2>
+    <ul class="b">
+      <li><b>재발권 후 취소가 벤더에 전달되지 않음 (앳홈트립, 2026.06)</b> — 주문 단위 멱등키가 두 번째 취소를 중복으로 판정해 버렸고, 고객 환불은 나갔는데 벤더 좌석은 남았음.
+        멱등키를 예약 단위로 세분화하고 <b>취소 실패 시 환불을 차단</b>하도록 바꿈. 이 사고가 Outbox 신뢰성 계층 설계의 출발점.</li>
+      <li><b>벤더 rate limit 연쇄 거부 (앳홈트립, 2026)</b> — 짧은 간격 재시도가 벤더 호출 한도를 넘겨 정상 요청까지 거부됨.
+        벤더별 서킷브레이커(실패율 50%·10초 open)와 지수 백오프 3→6→12초를 두고 재시도 대상을 5xx·소켓 오류로 한정.</li>
+      <li><b>캘린더 재고와 벤더 실재고 불일치 (앳홈트립, 2026.08)</b> — 화면에서 예약 가능이던 날짜가 결제 후 발권 단계에서 매진으로 실패.
+        결제 직전 <b>재고·가격 재검증</b>을 넣고 미결제 유령 주문이 채택되지 않게 차단.</li>
+      <li><b>60초 넘는 외부 호출 중 DB 락 대기 (앳홈트립, 2026)</b> — 외부 호출 동안 트랜잭션이 열려 있어 후속 UPDATE가 0건 처리되거나 락 타임아웃 발생.
+        장시간 호출을 트랜잭션 밖 비동기로 분리하고 5분 주기 reconcile 스케줄러로 누락 건 구제.</li>
+      <li><b>LB 간헐 500 오류 (한국네트웍스, 2023)</b> — 2서버 로드밸런싱 환경에서 간헐 500. 로그 분석으로 타임아웃·자원 부족을 특정해 설정 조정 후 해소.</li>
+    </ul>
+  </section>
+
+  <!-- ===== 경력 ===== -->
+  <section>
+    <h2>Experience <span>총 4년 · 백엔드/서버 개발</span></h2>
+
+    <div class="job">
+      <div class="when">2025.11 – 재직중<span class="dur">앳홈트립 · 프로덕트팀 대리</span></div>
+      <div>
+        <h3>앳홈트립 — 여행 플랫폼 (미국 현지 투어·뮤지컬·패스 커머스)</h3>
+        <div class="role">외부 벤더 발권 연동 · 가격/옵션 엔진 · 파트너센터 · 어드민 대시보드</div>
+        <div class="ctx">서비스 규모: 백엔드 <b>3인 팀</b> · 외부 벤더 <b>5사</b>(미국 투어·뮤지컬·패스) · 10개월 <b>899커밋</b>(전체 4,390 중 2위). 기여도는 모듈별 git 커밋 수 기준.</div>
+
+        <div class="pj">
+          <h4>① 외부 벤더 발권·취소 신뢰성 계층 (Transactional Outbox) <span class="meta">2026.06 – 08</span> <span class="contrib">기여도 100% · 설계·구현 단독</span></h4>
+          <dl>
+            <dt>문제</dt><dd>돈이 걸린 발권·취소를 동기 호출 한 번으로 끝내고 있었음. 취소가 조용히 실패하면 <b>환불은 나가고 좌석은 남았고</b>, 타임아웃 뒤 단순 재시도는 중복 발권을 만들었음.</dd>
+            <dt>해결</dt><dd>Outbox 테이블 + 릴레이로 호출을 분리. 예약 단위 멱등키, 조건부 UPDATE로 처리권 선점, 지수 백오프 5회 후 DEAD·Slack 1회 알림.
+              타임아웃은 <b>자동 재시도 금지</b>·운영자 확인으로 분류하고, 환불 직전에는 취소를 동기로 먼저 보내 <b>실패 시 환불 차단</b>.</dd>
+            <dt>성과</dt><dd>Ventrata·Galaxy Connect·Trip.com·Ingresso·Broadway Inbound <b>5개 벤더에 동일 계층 적용</b>. 취소 실패→환불 차단으로 자금 불일치 원천 차단. 발권·취소 이력은 append-only 감사 테이블로 보존.</dd>
+          </dl>
+        </div>
+
+        <div class="pj">
+          <h4>② 외부 티켓 벤더 5사 연동 (SOAP·REST) <span class="meta">2025.12 – 2026.08</span> <span class="contrib">기여도 약 70% · 외부연동 모듈 69/100 커밋</span></h4>
+          <dl>
+            <dt>문제</dt><dd>벤더마다 확정 방식(즉시 과금 vs 폴링)·부분 실패·타임아웃 양상이 달랐고, <b>60초 넘는 외부 호출 동안 DB 트랜잭션이 열려</b> 락 대기·0건 UPDATE가 발생. 짧은 재시도가 rate limit 연쇄 거부를 유발.</dd>
+            <dt>해결</dt><dd>장시간 호출을 트랜잭션 밖 비동기로 분리하고 5분 주기 reconcile로 누락 건 구제. Resilience4j <b>벤더별 서킷브레이커</b> + 지수 백오프, 재시도 대상을 5xx·소켓 오류로 한정.
+              뮤지컬 다건 구매 부분 실패 처리, 결제 직전 <b>재고·가격 재검증</b>.</dd>
+            <dt>성과</dt><dd>신규 벤더 4사 연동, 기존 1사 안정화. 자동발권 on/off·결제 시 외부 호출 차단을 어드민 옵션으로 열어 <b>CX팀이 개발자 없이 운영</b>. 실패 유형별 Slack 채널·문구 정리.</dd>
+          </dl>
+        </div>
+
+        <div class="pj">
+          <h4>③ 외부 상품 가격·옵션 엔진 <span class="meta">2025.12 – 진행 중</span> <span class="contrib">기여도 약 60% · 가격 프록시 단독 67커밋</span></h4>
+          <dl>
+            <dt>문제</dt><dd>벤더 net 가격 + 마진 + 요일/특별기간 할증 계산이 화면·API에 흩어져 <b>장바구니 금액과 결제 금액이 달라지고</b>, 할증 누락·반올림 오차가 반복.</dd>
+            <dt>해결</dt><dd>가격 계산을 도메인 서비스 하나로 집약. 지정가/마진가 모드 분리, 특별기간 우선순위(특정일 &gt; 날짜범위) 해석, 장바구니 담을 때 <b>서버 측 검증</b>과 결제 전 <b>가격 변경 감지</b>.</dd>
+            <dt>성과</dt><dd>단일 계산 경로로 장바구니–결제 금액 불일치 제거. 가격 산출 근거를 응답에 포함해 운영 문의 대응 시간 단축. 픽패스 업/다운그레이드 정책까지 같은 엔진으로 처리.</dd>
+          </dl>
+        </div>
+
+        <div class="pj">
+          <h4>④ 파트너센터 구축 + 어드민 권한 체계 <span class="meta">2025.11 – 2026.03</span> <span class="contrib">기여도 약 65% · 140/211 커밋</span></h4>
+          <dl>
+            <dt>문제</dt><dd>현지 파트너·가이드가 배정 주문을 확인할 채널이 없어 CX팀이 수동 전달. 어드민 메뉴 권한이 공통코드에 하드코딩되어 파트너 유형별 분리 불가.</dd>
+            <dt>해결</dt><dd>메뉴·계정 권한을 DB 기반으로 어드민에서 관리, 가이드는 본인 배정 주문만 조회. 상품별 동적 컬럼, 캘린더·시간 옵션 필터, 엑셀 추출, 미국 시간대 기준 조회, 대시보드 매출 집계.</dd>
+            <dt>성과</dt><dd>가이드·셔틀·외부 파트너 유형별 권한 분리 운영. 국가별 매출 집계 쿼리 성능 개선.</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="job">
+      <div class="when">2024.12.09 – 2025.10.31<span class="dur">폰드메이커스 · 프로덕트팀 대리</span></div>
+      <div>
+        <h3>폰드메이커스 — 아티스트 팬 플랫폼</h3>
+        <div class="role">구독 서비스 · 백엔드 개발 · 인프라 구축 · 성능 최적화</div>
+        <div class="role">이직 사유: 지출이 매출을 지속적으로 상회하는 구조가 이어져 사업 지속성에 위기가 있다고 판단해 이직</div>
+        <ul class="b">
+          <li><b>성능 최적화</b> — 동기 3중 쿼리로 3초 걸리던 로그 조회를 비동기 처리·쿼리 튜닝·페이지네이션으로 <span class="m nw">0.3초(10배)</span> 개선</li>
+          <li><b>멤버십 구독 서비스 구축</b> — PortOne·PayPal 해외 결제 연동 + Webhook 비동기 검증, 스케줄러 기반 정기 결제·자동 갱신, 만료 FCM 푸시까지 구독 라이프사이클 전체 관리</li>
+          <li><b>무중단 배포·이중화</b> — GitHub Actions 기반 Blue-Green 배포, Redis 캐싱 이중화, 공용 RDS 구축으로 로컬 DB 파편화 해소</li>
+          <li><b>보안 강화</b> — AWS Shield 도입으로 전체 트래픽의 <span class="m">약 5%</span>였던 악성 봇 트래픽 방어</li>
+          <li><b>운영 자동화</b> — 알림 히스토리 1,000건 단위 배치 삭제로 락 이슈 최소화, JMeter 부하 테스트 환경 도입</li>
+          <li><b>채팅 인프라</b> — MongoDB 데이터 모델링 및 EC2 기반 NoSQL 인프라 직접 구성</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="job">
+      <div class="when">2022.09.02 – 2024.11.29<span class="dur">한국네트웍스 · 솔루션개발</span></div>
+      <div>
+        <h3>한국네트웍스 — 물류 솔루션(WMS) SI</h3>
+        <div class="role">APR 물류시스템 구축 PL · 인터페이스 개발 · 솔루션 마이그레이션 · 인프라 구성</div>
+        <ul class="b">
+          <li><b>APR 물류시스템 구축 (2023.06–2024.06)</b> — PDA 모바일 담당 PL. CJ·롯데택배 송장 DB to DB 인터페이스 테이블 설계·구현, 적치 전략 프로시저·수출 패킹·품목 라벨 등 핵심 물류 기능 개발</li>
+          <li><b>쿼리 튜닝</b> — 재고 합산 로직 인덱스 추가·불필요 JOIN 제거로 <span class="m">900ms → 200ms(4배)</span>, 마스터 데이터 엑셀 업로드 일괄 처리로 <span class="m">10s → 5s</span></li>
+          <li><b>인프라·장애 대응</b> — EC2·Jenkins·RDS 기반 2서버 로드밸런싱 무중단 배포 구성, LB 간헐 500 오류를 로그 분석으로 원인 규명(타임아웃·자원 부족) 후 해결</li>
+          <li><b>솔루션 마이그레이션</b> — Oracle → PostgreSQL(RDS) 전환, JSP → React(AgGrid) 컨버전, 삼양식품 WMS-SAP 연동 전환, 깨끗한나라 재고 데이터 정합성 검증·보정</li>
+          <li><b>권한 관리 시스템화</b> — 개발자가 DB를 직접 조작하던 권한 부여를 관리자 화면으로 전환, <span class="nw">Spring Security</span> 세션 제어로 동시 로그인 차단</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 기술 ===== -->
+  <section>
+    <h2>Skills</h2>
+    <dl class="skills">
+      <dt>Backend</dt><dd>Java, Spring Boot, Spring Security, Spring Data JPA, QueryDSL, MyBatis, JWT, REST API, SOAP 클라이언트, Resilience4j, Python(Selenium 크롤러)</dd>
+      <dt>Database</dt><dd>PostgreSQL, Oracle, MySQL, MSSQL, Redis, MongoDB — 인덱스 설계·쿼리 튜닝, 프로시저, Flyway 마이그레이션</dd>
+      <dt>Infra · Security</dt><dd>AWS(EC2·RDS·S3·ELB·Shield·CloudFront), Docker, Nginx, Linux(Ubuntu), Jenkins, GitHub Actions CI/CD, Blue-Green 배포, JMeter</dd>
+      <dt>Architecture</dt><dd>Transactional Outbox, Kafka(파티션 키·수동 커밋), Redis Streams, 멱등 Consumer, 분산 락, DDD 멀티모듈, 도메인별 스키마 분리, 이벤트 기반 비동기 처리</dd>
+      <dt>AI · Integration</dt><dd>OpenAI API, 클로바 AI, Slack Bot, PortOne·PayPal, 외부 티켓 벤더 API 5사, FCM, Telegram Bot API</dd>
+    </dl>
+  </section>
+
+  <!-- ===== 프로젝트 ===== -->
+  <section>
+    <h2>Projects <span>1인 설계→개발→인프라→배포 · 상세는 포트폴리오 참조</span></h2>
+    <div class="proj">
+      <div class="name">D-Day<small>다국어 커뮤니티 · 운영 중</small></div>
+      <div>OpenAI 번역을 트랜잭션 경계 밖 비동기 파이프라인으로 분리(외부 API 실패가 도메인 TX를 롤백시키지 않음), DB 기반 동적 RBAC,
+           재배포 없는 동적 스케줄러, 재시작 안전한 크롤러<span class="nw">(커서 영속화·멱등)</span>. GitHub Actions → Docker Hub → EC2 자동 배포.
+        <div class="stack">Spring Boot 3.2 · PostgreSQL · OpenAI API · Expo · Docker · EC2</div></div>
+    </div>
+    <div class="proj">
+      <div class="name">FlashArena<small>동시성·장애 시뮬레이터</small></div>
+      <div>No-Lock 시 재고 음수 발생과 Redis 분산 락 시 정확한 차감을 실시간 SSE 로그로 비교 증명. Transactional Outbox + <span class="nw">Kafka</span>(orderId 파티션 키·acks=all·수동 오프셋 커밋), UNIQUE 제약 멱등 Consumer,
+           스키마 격리로 MSA 제약(교차 FK·JOIN·TX 금지) 재현.
+        <div class="stack">Java 21 · Spring Boot 3 · Kafka · Redis · PostgreSQL · SSE · React</div></div>
+    </div>
+    <div class="proj">
+      <div class="name">ThaiUnionTour<small>이벤트 기반 예약 커머스</small></div>
+      <div>요구사항·도메인 모델·ERD·API 명세·인프라 설계 문서 8종 선작성 후 구현. <code>UPDATE … WHERE stock ≥ qty</code> 원자 차감으로 오버부킹 차단,
+           <code>FOR UPDATE SKIP LOCKED</code> Relayer → <span class="nw">Redis Streams</span> → 멱등 Consumer 결제 파이프라인.
+        <div class="stack">Java 17 · Gradle 멀티모듈(DDD) · PostgreSQL · Redis Streams · Flyway · Next.js 14</div></div>
+    </div>
+    <div class="proj">
+      <div class="name">PackFit<small>3D 적재 시뮬레이터</small></div>
+      <div>EP-BFD(Extreme-Point + Best-Fit-Decreasing) bin packing 직접 구현 — 6방향 회전·바닥 지지율 70%·fragile·최대 무게 제약, 정렬 전략 4종 시도.
+           간격은 상자 축소·물건 팽창으로 알고리즘 밖에서 처리해 <code>pack()</code>을 결정적 순수 함수로 유지, 불변식 기반 테스트. Three.js 단계별 적재 시각화.
+        <div class="stack">TypeScript · Three.js · Vite · Vitest</div></div>
+    </div>
+    <div class="proj">
+      <div class="name">CheckStock<small>재입고 모니터링 · 실사용</small></div>
+      <div>스냅샷 diff 기반 변경 감지 → Expo Push·Telegram 멀티채널 알림. Python(Selenium) 크롤러를 Spring Boot에서 호출하는 하이브리드 구조.
+        <div class="stack">Spring Boot · Python · Jsoup · Expo Push · Telegram Bot API</div></div>
+    </div>
+  </section>
+
+  <!-- ===== 교육/학력 ===== -->
+  <section>
+    <h2>Education &amp; Activities</h2>
+    <div class="edu"><div class="when">2023.12</div><div><b>비사이드 포텐데이 해커톤 — 트립유어마인드</b> (백엔드·서버·DB 담당, 수료)<p>생성형 AI 여행 계획 추천 앱 · 클로바 AI 연동 REST API·프롬프트 설계, EC2·RDS 구축, JWT 카카오 로그인</p></div></div>
+    <div class="edu"><div class="when">2021.07 – 2022.06</div><div><b>SSAFY (삼성 청년 SW 아카데미) 수료</b><p>알고리즘 교육 · 웹 프로젝트 3회(OpenVidu 화상회의, 블록체인 중고거래, 게임 전적 매칭) · <span class="nw">Docker·Jenkins 자동배포</span>, Spring Security+JWT, Elasticsearch</p></div></div>
+    <div class="edu"><div class="when">2015.03 – 2021.02</div><div><b>한국산업기술대학교 소프트웨어 전공 졸업</b><p>졸업 작품: 인공지능을 이용한 졸음방지 시스템</p></div></div>
+  </section>
+
+  <footer>위 기재 내용은 사실과 다름이 없습니다. — 윤희영 · yunhy96@naver.com · github.com/yunhy96-web</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Huiyeong Yun | Resume — Backend Engineer</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    --navy: #0f2540; --accent: #2f6fed; --accent-soft: #e8f0fe;
+    --ink: #1f2937; --sub: #5b6b7f; --line: #e3e8ef; --bg: #f7f9fc;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ink); background: var(--bg); line-height: 1.55; font-size: 13.5px;
+    -webkit-font-smoothing: antialiased; word-break: keep-all; overflow-wrap: break-word;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  .page { max-width: 860px; margin: 32px auto; background: #fff; padding: 44px 52px; border: 1px solid var(--line); }
+
+  /* Header */
+  .head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; padding-bottom: 18px; border-bottom: 2px solid var(--navy); }
+  .head h1 { font-size: 30px; font-weight: 800; color: var(--navy); letter-spacing: -0.02em; line-height: 1.2; }
+  .head h1 small { font-size: 15px; font-weight: 600; color: var(--sub); margin-left: 8px; }
+  .head .apply { margin-top: 6px; font-size: 14px; color: var(--sub); }
+  .head .apply b { color: var(--accent); }
+  .contact { text-align: right; font-size: 13px; color: var(--sub); line-height: 1.8; white-space: nowrap; }
+  .contact a { color: var(--ink); font-weight: 600; }
+
+  /* Sections */
+  section { margin-top: 26px; }
+  h2 { font-size: 15px; font-weight: 800; color: var(--navy); letter-spacing: 0.04em; text-transform: uppercase;
+       padding-bottom: 6px; border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+  h2 span { color: var(--sub); font-weight: 500; text-transform: none; letter-spacing: 0; font-size: 12.5px; margin-left: 8px; }
+
+  /* Summary */
+  .summary p { margin-bottom: 8px; }
+  .summary b { color: var(--navy); }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+  .kpi { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 11px; }
+  .kpi .n { font-size: 18px; font-weight: 800; color: var(--accent); }
+  .kpi .l { font-size: 11.5px; color: var(--sub); line-height: 1.35; }
+
+  /* Fit table */
+  table.fit { width: 100%; border-collapse: collapse; font-size: 12.8px; }
+  table.fit th, table.fit td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  table.fit th { width: 30%; background: var(--bg); color: var(--navy); font-weight: 700; }
+  table.fit td b { color: var(--navy); }
+  table.fit .tag { display: inline-block; font-size: 10.5px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 4px; padding: 1px 6px; margin-right: 4px; vertical-align: 1px; }
+
+  /* Career */
+  .job { display: grid; grid-template-columns: 128px 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px dashed var(--line); }
+  .job:last-child { border-bottom: none; }
+  .job .when { color: var(--sub); font-size: 12.5px; font-weight: 600; line-height: 1.5; }
+  .job .when .dur { display: block; color: #8a97a8; font-weight: 500; font-size: 11.5px; }
+  .job h3 { font-size: 15.5px; color: var(--navy); }
+  .job .role { color: var(--sub); font-size: 12.5px; margin: 1px 0 8px; }
+  ul.b { list-style: none; }
+  ul.b li { position: relative; padding-left: 14px; margin-bottom: 5px; font-size: 13px; }
+  ul.b li::before { content: ""; position: absolute; left: 1px; top: 8px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+  ul.b li b { color: var(--navy); }
+  .m { color: var(--accent); font-weight: 700; }
+  .nw, code { white-space: nowrap; }
+
+  /* Skills */
+  .skills { display: grid; grid-template-columns: 120px 1fr; row-gap: 6px; column-gap: 12px; font-size: 13px; }
+  .skills dt { font-weight: 700; color: var(--navy); }
+  .skills dd { color: var(--ink); }
+
+  /* Projects */
+  .proj { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
+  .proj:last-child { border-bottom: none; }
+  .proj .name { font-weight: 700; color: var(--navy); }
+  .proj .name small { display: block; font-weight: 500; color: var(--sub); font-size: 11.5px; }
+  .proj .stack { color: var(--sub); font-size: 12px; margin-top: 2px; }
+
+  /* Edu */
+  .edu { display: grid; grid-template-columns: 128px 1fr; gap: 16px; padding: 7px 0; font-size: 13px; }
+  .edu .when { color: var(--sub); font-size: 12.5px; font-weight: 600; }
+  .edu b { color: var(--navy); }
+  .edu p { color: var(--sub); font-size: 12.5px; }
+
+  footer { margin-top: 26px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--sub); text-align: center; }
+
+  @media print {
+    @page { size: A4; margin: 14mm 13mm; }
+    body { background: #fff; font-size: 11px; line-height: 1.38; }
+    .head { padding-bottom: 12px; }
+    .kpi { padding: 5px 10px; }
+    .proj, .edu { padding: 4px 0; }
+    footer { margin-top: 8px; padding-top: 6px; }
+    .edu p { font-size: 11px; }
+    .summary p { margin-bottom: 5px; }
+    .kpis { margin-top: 8px; }
+    .kpi .n { font-size: 16px; }
+    h2 { margin-bottom: 8px; }
+    table.fit th, table.fit td { padding: 6px 9px; }
+    ul.b li { margin-bottom: 3px; }
+    .job { padding: 6px 0; }
+    .head .apply { font-size: 13px; margin-top: 4px; }
+    .page { max-width: none; margin: 0; padding: 0; border: none; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    ul.b li, .proj, .edu, table.fit tr, .kpis, .job, .skills { break-inside: avoid; }
+    .job h3, .job .role { break-after: avoid; }
+    section { margin-top: 12px; }
+    .job { padding: 8px 0; }
+    h2 { break-after: avoid; }
+    a { color: inherit; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="head">
+    <div>
+      <h1>Huiyeong Yun <small>윤희영</small></h1>
+      <div class="apply"><b>Backend Engineer</b> · 4 yrs</div>
+      <div class="apply">Java/Spring · global payments · external integrations · event-driven · AWS</div>
+    </div>
+    <div class="contact">
+      <a href="mailto:yunhy96@naver.com">yunhy96@naver.com</a><br>
+      <a href="https://github.com/yunhy96-web">github.com/yunhy96-web</a><br>
+      Seongdong-gu, Seoul
+    </div>
+  </div>
+
+  <!-- ===== Summary ===== -->
+  <section class="summary">
+    <h2>Summary</h2>
+    <p>Backend engineer who builds <b>systems whose data survives failures intact</b>. Across three domains — logistics (WMS), a fan platform, and travel commerce —
+       led <b>external API integration interface design</b> between heterogeneous systems, <b>global payment builds (Stripe, PortOne/PayPal)</b>, and data consistency verification.</p>
+    <p>Designed payment lifecycles with async webhook verification and <b>Transactional Outbox–based idempotency and compensation logic</b> so integration failures never lose data;
+       improved <b>read performance 4–10x</b> through index design, query tuning, and async processing. Built AWS infrastructure hands-on: zero-downtime deployment, redundancy, bot-traffic defense.</p>
+    <p>Outside work, ships solo end-to-end projects to validate the same ideas — a concurrency failure simulator, an event-driven booking commerce, and a bilingual community with an AI translation pipeline.
+       Growing as an engineer who builds <b>scalable, reliable API ecosystems</b>.</p>
+    <div class="kpis">
+      <div class="kpi"><div class="n">4 yrs</div><div class="l">backend experience</div></div>
+      <div class="kpi"><div class="n">10x</div><div class="l">faster log queries<br>(3s → 0.3s)</div></div>
+      <div class="kpi"><div class="n">3+</div><div class="l">payment &amp; external integrations<br>(Stripe · PayPal · carriers)</div></div>
+      <div class="kpi"><div class="n">5</div><div class="l">solo full-cycle projects<br>design → deployment</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Core Strengths</h2>
+    <table class="fit">
+      <tr>
+        <th>Global payments · integration interface design</th>
+        <td>Stripe and PortOne/PayPal payment, cancellation, and refund lifecycles with <b>async webhook verification</b>; CJ Logistics / Lotte Global Logistics DB-to-DB shipping-label interfaces; FCM; per-supplier ticket APIs —
+            abstracts disparate external specs and blocks data loss on integration failure with <b>Outbox-based idempotency and compensation logic</b>.</td>
+      </tr>
+      <tr>
+        <th>Concurrency · event-driven architecture</th>
+        <td>Atomic first-come-first-served stock decrement (<code>UPDATE … WHERE stock ≥ qty</code>), Redis distributed locks, <b>Transactional Outbox + Redis Streams</b>,
+            <code>FOR UPDATE SKIP LOCKED</code> relayer, <span class="nw">UNIQUE-constraint</span> idempotent consumers — designs that keep data intact under failure, verified with reproducible experiments.</td>
+      </tr>
+      <tr>
+        <th>Performance optimization · query tuning</th>
+        <td>Index design and JOIN removal cut <b>inventory aggregation 900ms → 200ms (4x)</b>; async processing, query tuning, and pagination cut <b>log queries 3s → 0.3s (10x)</b>;
+            batch Excel upload 10s → 5s. Built a repeatable JMeter load-test environment. Runs PostgreSQL, Oracle, MySQL, MSSQL.</td>
+      </tr>
+      <tr>
+        <th>AWS infrastructure · ops automation</th>
+        <td>Two-server load-balanced and Blue-Green zero-downtime deployment on EC2/RDS/S3/ELB (Jenkins, GitHub Actions), AWS Shield bot-traffic defense, Cloudflare tuning,
+            <b>Slack-integrated AI log-analysis bot</b> automating incident diagnosis, DB-driven dynamic RBAC and systematized permission management.</td>
+      </tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Experience <span>4 yrs total · backend / server development</span></h2>
+
+    <div class="job">
+      <div class="when">2025.11 – Present<span class="dur">AthomeTrip · Assistant Manager, Product Team</span></div>
+      <div>
+        <h3>AthomeTrip — Travel Platform</h3>
+        <div class="role">Global payments · external supplier integration · AI ops automation · infrastructure &amp; back office</div>
+        <ul class="b">
+          <li><b>Standardized external supplier ticket integration</b> — interface abstracting per-supplier API responses; <b>Outbox-based idempotency and compensation logic</b> prevents data loss on integration failure</li>
+          <li><b>Built global payments (Stripe)</b> — payment, cancellation, and refund lifecycle management; webhook verification guarantees payment consistency</li>
+          <li><b>Product option &amp; pricing engine</b> — dynamic margin calculation per time and party-size option; cart consistency validation minimizes purchase errors</li>
+          <li><b>AI-driven ops automation</b> — Slack-integrated log-analysis bot automates error-cause diagnosis, cutting incident response lead time</li>
+          <li><b>Infrastructure &amp; back office</b> — high-availability S3 storage + Cloudflare security/speed tuning; built admin and partner settlement systems</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="job">
+      <div class="when">2024.12.09 – 2025.10.31<span class="dur">Pondmakers · Assistant Manager, Product Team</span></div>
+      <div>
+        <h3>Pondmakers — Artist Fan Platform</h3>
+        <div class="role">Subscription service · backend development · infrastructure · performance optimization</div>
+        <ul class="b">
+          <li><b>Performance optimization</b> — log queries taking 3s on three synchronous queries cut to <span class="m nw">0.3s (10x)</span> via async processing, query tuning, and pagination</li>
+          <li><b>Built membership subscription service</b> — PortOne/PayPal overseas payment integration + async webhook verification, scheduler-driven recurring billing and auto-renewal, expiry FCM push — full subscription lifecycle</li>
+          <li><b>Zero-downtime deployment &amp; redundancy</b> — Blue-Green deploys on GitHub Actions, redundant Redis caching, shared RDS ending local DB fragmentation</li>
+          <li><b>Security hardening</b> — introduced AWS Shield to block malicious bot traffic running at <span class="m">roughly 5%</span> of all traffic</li>
+          <li><b>Ops automation</b> — notification-history deletes in 1,000-row batches to cut lock contention, JMeter load-test environment</li>
+          <li><b>Chat infrastructure</b> — MongoDB data modeling and hands-on NoSQL infrastructure setup on EC2</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="job">
+      <div class="when">2022.09.02 – 2024.11.29<span class="dur">Korea Networks · Solution Development</span></div>
+      <div>
+        <h3>Korea Networks — Logistics Solution (WMS) SI</h3>
+        <div class="role">APR logistics system build, Project Lead (PL) · interface development · infrastructure · migration</div>
+        <ul class="b">
+          <li><b>APR logistics system build (2023.06–2024.06)</b> — PL for PDA mobile; DB-to-DB shipping-label interface tables for CJ Logistics / Lotte Global Logistics; putaway strategy procedures, export packing, item labels</li>
+          <li><b>Query tuning</b> — added indexes and removed needless JOINs in inventory aggregation for <span class="m">900ms → 200ms (4x)</span>; bulk-processed master-data Excel uploads for <span class="m">10s → 5s</span></li>
+          <li><b>Infrastructure &amp; incident response</b> — zero-downtime deployment across two load-balanced servers on EC2, Jenkins, and RDS; traced intermittent 500 errors at the LB via log analysis (timeouts, resource exhaustion) and resolved them</li>
+          <li><b>Solution migration</b> — Oracle → PostgreSQL (RDS) cutover, JSP → React (AgGrid) conversion, Samyang Foods WMS-SAP cutover, Kleannara inventory data consistency fixes</li>
+          <li><b>Systematized permission management</b> — moved permission granting from direct DB edits by developers to an admin console; blocked concurrent logins with <span class="nw">Spring Security</span> session control</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Skills ===== -->
+  <section>
+    <h2>Skills</h2>
+    <dl class="skills">
+      <dt>Backend</dt><dd>Java, Spring Boot, Spring Security, Spring Data JPA, QueryDSL, MyBatis, JWT, REST API, Python (Selenium crawlers)</dd>
+      <dt>Database</dt><dd>PostgreSQL, Oracle, MySQL, MSSQL, Redis, MongoDB — index design, query tuning, stored procedures, Flyway migrations</dd>
+      <dt>Infra · Security</dt><dd>AWS(EC2·RDS·S3·ELB·Shield), Cloudflare, Docker, Nginx, Linux(Ubuntu), Jenkins, GitHub Actions CI/CD, Blue-Green deployment, JMeter</dd>
+      <dt>Architecture</dt><dd>Transactional Outbox, Redis Streams, idempotent consumers, distributed locks, DDD multi-module, per-domain schema separation, event-driven async processing</dd>
+      <dt>AI · Integration</dt><dd>OpenAI API, CLOVA AI, Slack Bot, Stripe, PortOne·PayPal, FCM, Telegram Bot API</dd>
+    </dl>
+  </section>
+
+  <!-- ===== Projects ===== -->
+  <section>
+    <h2>Projects <span>Solo design → development → infrastructure → deployment · details in portfolio</span></h2>
+    <div class="proj">
+      <div class="name">D-Day<small>Korean–Thai bilingual community · in production</small></div>
+      <div>OpenAI translation split into an async pipeline outside the transaction boundary (external API failure never rolls back the domain TX), DB-driven dynamic RBAC,
+           dynamic scheduler needing no redeploy, restart-safe crawler <span class="nw">(cursor persistence, idempotent)</span>. GitHub Actions → Docker Hub → EC2 auto-deploy.
+        <div class="stack">Spring Boot 3.2 · PostgreSQL · OpenAI API · Expo · Docker · EC2</div></div>
+    </div>
+    <div class="proj">
+      <div class="name">FlashArena<small>Concurrency &amp; failure simulator</small></div>
+      <div>Proves negative stock under No-Lock against exact decrements under a Redis distributed lock, compared live in SSE logs. Transactional Outbox + Redis Streams, idempotent consumer via UNIQUE constraint,
+           schema isolation reproducing MSA constraints (no cross-schema FK, JOIN, or TX).
+        <div class="stack">Java 21 · Spring Boot 3 · Redis · PostgreSQL · SSE · React</div></div>
+    </div>
+    <div class="proj">
+      <div class="name">ThaiUnionTour<small>Event-driven booking commerce</small></div>
+      <div>Wrote 8 design documents — requirements, domain model, ERD, API spec, infrastructure — before implementing. <code>UPDATE … WHERE stock ≥ qty</code> atomic decrement blocks overbooking;
+           <code>FOR UPDATE SKIP LOCKED</code> relayer → <span class="nw">Redis Streams</span> → idempotent consumer payment pipeline.
+        <div class="stack">Java 17 · Gradle multi-module (DDD) · PostgreSQL · Redis Streams · Flyway · Next.js 14</div></div>
+    </div>
+    <div class="proj">
+      <div class="name">PackFit<small>3D packing simulator</small></div>
+      <div>Hand-implemented EP-BFD bin packing — 6-way rotation, 70% floor-support check, fragile/max-weight constraints, 4 sort strategies.
+           Spacing lives outside the algorithm (box shrinks, items inflate), keeping <code>pack()</code> a deterministic pure function with invariant-based tests. Step-by-step Three.js visualization.
+        <div class="stack">TypeScript · Three.js · Vite · Vitest</div></div>
+    </div>
+    <div class="proj">
+      <div class="name">CheckStock<small>Restock monitoring · in daily use</small></div>
+      <div>Snapshot-diff change detection → multi-channel alerts via Expo Push and Telegram. Hybrid structure calling a Python (Selenium) crawler from Spring Boot.
+        <div class="stack">Spring Boot · Python · Jsoup · Expo Push · Telegram Bot API</div></div>
+    </div>
+  </section>
+
+  <!-- ===== Education / Activities ===== -->
+  <section>
+    <h2>Education &amp; Activities</h2>
+    <div class="edu"><div class="when">2023.12</div><div><b>bside "Potenday" Hackathon — Trip Your Mind</b> (backend, server, DB; completed)<p>Generative-AI travel planning app · CLOVA AI REST API integration and prompt design, EC2/RDS setup, JWT Kakao login</p></div></div>
+    <div class="edu"><div class="when">2021.07 – 2022.06</div><div><b>SSAFY (Samsung Software Academy For Youth), completed</b><p>Algorithm training · 3 web projects (OpenVidu video conferencing, blockchain marketplace, game match-history matching) · <span class="nw">Docker/Jenkins auto-deploy</span>, Spring Security + JWT, Elasticsearch</p></div></div>
+    <div class="edu"><div class="when">2015.03 – 2021.02</div><div><b>B.S. in Software, Korea Polytechnic University (now Tech University of Korea)</b><p>Capstone: AI-based drowsiness prevention system</p></div></div>
+  </section>
+
+  <footer>I certify that the above is true and accurate. — Huiyeong Yun · yunhy96@naver.com · github.com/yunhy96-web</footer>
+</div>
+</body>
+</html>

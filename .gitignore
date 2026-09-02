@@ -35,6 +35,11 @@ Thumbs.db
 # --- OMC 로컬 상태 ---
 .omc/
 
-# --- 개인 문서 (이력서·포트폴리오·사진) ---
-resume/
-portfolio/
+# --- 개인 문서: 기본 버전(HTML)만 공개, 회사별 맞춤본·PDF는 비추적 ---
+resume/*
+!resume/윤희영_이력서.html
+!resume/Huiyeong_Yun_Resume_en.html
+!resume/IMG_4112.jpg
+portfolio/*
+!portfolio/index.html
+!portfolio/index_en.html

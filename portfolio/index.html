@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>윤희영 | Backend Engineer Portfolio</title>
+<meta name="description" content="결제·외부 API 연동·이벤트 기반 아키텍처에 강한 4년차 백엔드 개발자 윤희영의 포트폴리오" />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  :root {
+    --navy: #0f2540; --navy-2: #1b3a5f; --accent: #2f6fed; --accent-soft: #e8f0fe;
+    --ink: #1f2937; --sub: #5b6b7f; --line: #e3e8ef; --bg: #f7f9fc; --card: #fff;
+    --red: #d64545; --red-soft: #fdecec; --green: #1f9d55; --green-soft: #e6f6ec; --amber: #b7791f; --amber-soft: #fff4d6;
+    --radius: 12px; --shadow: 0 2px 12px rgba(15,37,64,.07);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ink); background: var(--bg); line-height: 1.6; font-size: 15px;
+    -webkit-font-smoothing: antialiased; word-break: keep-all; overflow-wrap: break-word; }
+  a { color: var(--accent); text-decoration: none; }
+  .container { max-width: 940px; margin: 0 auto; padding: 0 24px; }
+
+  nav { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  nav .container { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  nav .logo { font-weight: 800; color: var(--navy); }
+  nav ul { display: flex; gap: 20px; list-style: none; }
+  nav ul a { color: var(--sub); font-size: 14px; font-weight: 600; }
+  @media (max-width: 720px) { nav ul { display: none; } }
+
+  /* ===== Hero (1p) ===== */
+  header.hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 60%, #24507f 100%); color: #fff; padding: 72px 0 60px; }
+  .hero .eyebrow { color: #9db8dd; font-weight: 700; letter-spacing: .14em; font-size: 13px; text-transform: uppercase; }
+  .hero h1 { font-size: 44px; font-weight: 800; margin: 10px 0 6px; letter-spacing: -.02em; }
+  .hero h1 small { font-size: 22px; font-weight: 600; color: #b9cbe4; margin-left: 10px; }
+  .hero .tagline { font-size: 19px; color: #dbe6f4; max-width: 680px; margin-top: 12px; }
+  .hero .tagline b { color: #fff; }
+  .hero .meta { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 26px; font-size: 14.5px; color: #c4d4e8; }
+  .hero .meta a { color: #fff; font-weight: 600; }
+  .toc { padding: 44px 0 0; }
+  .toc h2 { font-size: 14px; letter-spacing: .12em; color: var(--sub); text-transform: uppercase; margin-bottom: 16px; }
+  .toc ol { list-style: none; display: grid; gap: 12px; counter-reset: c; }
+  .toc li { counter-increment: c; display: grid; grid-template-columns: 44px 1fr auto; gap: 16px; align-items: center;
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); }
+  .toc li::before { content: counter(c, decimal-leading-zero); font-size: 22px; font-weight: 800; color: var(--accent); }
+  .toc li b { display: block; font-size: 17px; color: var(--navy); }
+  .toc li span { font-size: 14px; color: var(--sub); }
+  .toc li .where { font-size: 13px; color: var(--sub); text-align: right; white-space: nowrap; }
+  .toc li.side { background: var(--bg); box-shadow: none; }
+  .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 36px; }
+  .timeline div { border-top: 3px solid var(--accent); padding-top: 10px; font-size: 13.5px; color: var(--sub); }
+  .timeline div b { display: block; color: var(--navy); font-size: 15px; }
+  .timeline div:nth-child(2) { border-color: #7aa2ff; } .timeline div:nth-child(3) { border-color: #b9cbe4; }
+  .tail { margin-top: 36px; font-size: 13.5px; color: var(--sub); }
+
+  /* ===== Case study pages ===== */
+  section.case { padding: 52px 0; border-top: 1px solid var(--line); }
+  section.case:nth-of-type(even) { background: #fff; }
+  .case-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .case-head .num { font-size: 13px; font-weight: 800; letter-spacing: .1em; color: var(--accent); }
+  .case-head h2 { font-size: 26px; font-weight: 800; color: var(--navy); letter-spacing: -.01em; }
+  .case-head .where { font-size: 13.5px; color: var(--sub); margin-left: auto; }
+  .case .problem { margin: 14px 0 18px; padding: 14px 18px; background: var(--red-soft); border-left: 4px solid var(--red); border-radius: 0 10px 10px 0; font-size: 15.5px; }
+  .case .problem b { color: var(--red); }
+  .case h3 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--sub); margin: 20px 0 10px; }
+  .diagram { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; overflow-x: auto; }
+  .diagram svg { width: 100%; height: auto; display: block; font-family: inherit; }
+  .diagram .cap { font-size: 12.5px; color: var(--sub); margin-top: 8px; }
+  svg .box { fill: #fff; stroke: var(--navy); stroke-width: 1.4; rx: 8; }
+  svg .box.soft { fill: var(--accent-soft); stroke: var(--accent); }
+  svg .box.ok { fill: var(--green-soft); stroke: var(--green); }
+  svg .box.bad { fill: var(--red-soft); stroke: var(--red); }
+  svg .box.warn { fill: var(--amber-soft); stroke: var(--amber); }
+  svg .box.dead { fill: #333; stroke: #333; }
+  svg text { font-size: 16px; fill: var(--ink); }
+  svg text.t { font-weight: 700; fill: var(--navy); }
+  svg text.s { font-size: 13.5px; fill: var(--sub); }
+  svg text.w { fill: #fff; font-weight: 700; }
+  svg .arr { stroke: var(--navy); stroke-width: 1.4; fill: none; marker-end: url(#ah); }
+  svg .arr.bad { stroke: var(--red); marker-end: url(#ahr); }
+  svg .arr.dash { stroke-dasharray: 4 3; }
+  .decisions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 720px) { .decisions { grid-template-columns: 1fr; } }
+  .decision { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; font-size: 14px; }
+  .decision b { display: block; color: var(--navy); font-size: 14.5px; margin-bottom: 4px; }
+  .decision .why { color: var(--sub); }
+  .decision .why::before { content: "왜: "; font-weight: 700; color: var(--accent); }
+  .result { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; margin-top: 18px; padding: 14px 18px;
+    background: var(--green-soft); border-left: 4px solid var(--green); border-radius: 0 10px 10px 0; font-size: 14.5px; }
+  .result .contrib { font-size: 12.5px; font-weight: 700; color: var(--accent); background: #fff; border: 1px solid var(--accent); border-radius: 6px; padding: 3px 10px; white-space: nowrap; }
+  .result b { color: var(--green); }
+  table.v { width: 100%; border-collapse: collapse; font-size: 13.5px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  table.v th, table.v td { padding: 7px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.v th { background: var(--bg); color: var(--navy); font-weight: 700; font-size: 12.5px; }
+  table.v tr:last-child td { border-bottom: none; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .two { grid-template-columns: 1fr; } }
+
+  /* ===== Side projects (5p) ===== */
+  section.side { padding: 52px 0; border-top: 1px solid var(--line); }
+  h2.sec-title { font-size: 26px; font-weight: 800; color: var(--navy); }
+  h2.sec-title::after { content: ""; display: block; width: 44px; height: 4px; background: var(--accent); border-radius: 2px; margin-top: 8px; }
+  .sec-desc { color: var(--sub); margin: 12px 0 22px; font-size: 14.5px; }
+  .project { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 14px; }
+  .project .proj-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; }
+  .project h3 { font-size: 18px; color: var(--navy); }
+  .project .proj-type { font-size: 12px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 2px 8px; }
+  .project .proj-sub { color: var(--sub); font-size: 14px; margin: 4px 0 10px; }
+  .project ul { list-style: none; }
+  .project ul li { position: relative; padding-left: 16px; margin-bottom: 5px; font-size: 14px; }
+  .project ul li::before { content: ""; position: absolute; left: 2px; top: 9px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+  .project ul li b { color: var(--navy); }
+  .flow { background: #f2f6fc; border: 1px solid #dbe6f4; border-radius: 8px; font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: 12px; color: #33475f; padding: 10px 14px; margin: 10px 0 4px; overflow-x: auto; white-space: pre; line-height: 1.6; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 4px; }
+  @media (max-width: 720px) { .cards { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; font-size: 13.5px; }
+  .card h3 { font-size: 15.5px; color: var(--navy); }
+  .card .proj-type { font-size: 11.5px; font-weight: 700; color: var(--accent); margin-left: 6px; }
+  .card p { margin-top: 6px; }
+  .card .stack { margin-top: 8px; color: var(--sub); font-size: 12.5px; }
+
+  /* ===== Last page ===== */
+  section.last { padding: 52px 0; border-top: 1px solid var(--line); background: #fff; }
+  .last h2 { font-size: 20px; font-weight: 800; color: var(--navy); margin-bottom: 12px; }
+  .last h2 + * { margin-bottom: 28px; }
+  dl.skills { display: grid; grid-template-columns: 130px 1fr; row-gap: 8px; column-gap: 14px; font-size: 14.5px; }
+  dl.skills dt { font-weight: 700; color: var(--navy); }
+  .edu { display: grid; grid-template-columns: 150px 1fr; gap: 16px; padding: 8px 0; font-size: 14px; border-bottom: 1px dashed var(--line); }
+  .edu:last-child { border-bottom: none; }
+  .edu .when { color: var(--sub); font-weight: 600; }
+  .edu b { color: var(--navy); }
+  .edu p { color: var(--sub); font-size: 13.5px; }
+  footer { background: var(--navy); color: #b9cbe4; padding: 32px 0; text-align: center; font-size: 14px; }
+  footer a { color: #fff; font-weight: 600; }
+
+  @media print {
+    @page { size: A4; margin: 12mm 12mm; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-shadow: none !important; backdrop-filter: none !important; }
+    body { background: #fff; font-size: 14px; line-height: 1.55; }
+    nav, footer { display: none; }
+    .container { max-width: none; padding: 0; }
+    header.hero { padding: 34px 36px 30px; border-radius: 12px; }
+    .hero h1 { font-size: 38px; } .hero .tagline { font-size: 17px; }
+    .toc { padding-top: 26px; } .toc li { padding: 12px 16px; } .toc li b { font-size: 15.5px; } .toc li span { font-size: 13px; }
+    .timeline { margin-top: 26px; } .tail { margin-top: 24px; }
+    section.case, section.side, section.last { break-before: page; padding: 0; border: none; background: #fff; }
+    .case-head h2 { font-size: 24px; } .case .problem { font-size: 14.5px; margin: 12px 0 14px; padding: 12px 16px; }
+    .case h3 { margin: 14px 0 8px; } .diagram { padding: 10px 12px; }
+    .decision { padding: 12px 14px; font-size: 13.5px; } .decision b { font-size: 14px; }
+    .result { margin-top: 14px; padding: 12px 16px; font-size: 14px; }
+    table.v { font-size: 13px; } table.v th, table.v td { padding: 6px 10px; }
+    .project { padding: 14px 16px; margin-bottom: 10px; } .project ul li { font-size: 12.5px; }
+    .flow { font-size: 11px; padding: 8px 12px; }
+    .card { padding: 12px 14px; font-size: 12.5px; }
+    .sec-desc { margin-bottom: 14px; }
+    dl.skills { font-size: 13px; } .edu { font-size: 13px; }
+    .diagram, .decision, .project, .card, .edu, table.v, .result { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="logo">YUN HUIYEONG</div>
+    <ul>
+      <li><a href="#case1">케이스 1</a></li><li><a href="#case2">케이스 2</a></li><li><a href="#case3">케이스 3</a></li>
+      <li><a href="#side">사이드 프로젝트</a></li><li><a href="#last">기술·교육</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ================= 1p ================= -->
+<header class="hero">
+  <div class="container">
+    <p class="eyebrow">Backend Engineer · 4 Years</p>
+    <h1>윤희영<small>Yun Huiyeong</small></h1>
+    <p class="tagline">돈이 걸린 <b>결제·발권 연동</b>이 장애 상황에서도 정합성을 지키도록 설계합니다.<br />
+      이 문서는 그 설계를 <b>사고 → 결정 → 결과</b> 순서로 세 건 보여줍니다.</p>
+    <div class="meta">
+      <span>📧 <a href="mailto:yunhy96@naver.com">yunhy96@naver.com</a></span>
+      <span>💻 <a href="https://github.com/yunhy96-web" target="_blank" rel="noopener">github.com/yunhy96-web</a></span>
+      <span>📍 서울 성동구</span>
+    </div>
+  </div>
+</header>
+
+<div class="container toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><div><b>외부 벤더 발권·취소 신뢰성 계층 (Transactional Outbox)</b><span>취소가 조용히 실패해 환불만 나간 사고 → 멱등·재시도·환불 차단 계층을 단독 설계, 벤더 5사 적용</span></div><div class="where">앳홈트립<br />2026.06 – 08</div></li>
+    <li><div><b>외부 티켓 벤더 5사 연동 (SOAP·REST)</b><span>60초 넘는 외부 호출과 rate limit 사고 → 트랜잭션 밖 비동기 확정, 벤더별 서킷브레이커, 결제 직전 재검증</span></div><div class="where">앳홈트립<br />2025.12 – 2026.08</div></li>
+    <li><div><b>멤버십 구독 결제와 조회 성능</b><span>PortOne/PayPal + Webhook 비동기 검증으로 구독 라이프사이클 관리, 로그 조회 3s → 0.3s</span></div><div class="where">폰드메이커스<br />2024.12.09 – 2025.10.31</div></li>
+    <li class="side"><div><b>사이드 프로젝트</b><span>FlashArena(동시성·Outbox·Kafka 증명) · ThaiUnionTour(이벤트 기반 예약) · D-Day · PackFit · CheckStock</span></div><div class="where">1인 풀사이클</div></li>
+    <li class="side"><div><b>기술 스택 · 경력 요약 · 교육</b><span></span></div><div class="where"></div></li>
+  </ol>
+
+  <div class="timeline">
+    <div><b>앳홈트립 · 2025.11 – 재직중</b>여행 플랫폼 · 백엔드 3인 팀 · 외부 벤더 발권 연동·가격 엔진·파트너센터</div>
+    <div><b>폰드메이커스 · 2024.12.09 – 2025.10.31</b>아티스트 팬 플랫폼 · 구독 결제·인프라·성능</div>
+    <div><b>한국네트웍스 · 2022.09.02 – 2024.11.29</b>물류 솔루션(WMS) SI · APR 구축 PL·인터페이스·마이그레이션</div>
+  </div>
+  <p class="tail">기여도는 모듈별 git 커밋 수로 산출했습니다. 각 케이스의 수치는 실제 운영 코드와 커밋 이력에서 확인할 수 있습니다.</p>
+</div>
+
+<!-- ================= 2p · Case 1 ================= -->
+<section class="case" id="case1">
+  <div class="container">
+    <div class="case-head"><span class="num">CASE 01</span><h2>외부 벤더 발권·취소 신뢰성 계층</h2><span class="where">앳홈트립 · 2026.06 – 08 · 설계·구현 단독</span></div>
+    <div class="problem"><b>사고.</b> 재발권 후 두 번째 취소가 주문 단위 멱등키에 중복으로 걸려 벤더에 전달되지 않았다. 고객 환불은 나갔고 벤더 좌석은 그대로 남았다.
+      발권·취소는 돈이 걸린 양자 작업인데 동기 호출 한 번으로 끝내고 있었고, 타임아웃 뒤 단순 재시도는 중복 발권을 만들었다.</div>
+
+    <h3>설계 — Outbox 상태 전이</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 960 275">
+        <defs>
+          <marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0f2540"/></marker>
+          <marker id="ahr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#d64545"/></marker>
+        </defs>
+        <rect class="box soft" x="10" y="28" width="170" height="64"/><text class="t" x="95" y="55" text-anchor="middle">주문 TX</text><text class="s" x="95" y="78" text-anchor="middle">요청 + Outbox INSERT</text>
+        <path class="arr" d="M180 60 H210"/>
+        <rect class="box" x="215" y="28" width="140" height="64"/><text class="t" x="285" y="55" text-anchor="middle">PENDING</text><text class="s" x="285" y="78" text-anchor="middle">멱등키 = 예약 단위</text>
+        <path class="arr" d="M355 60 H385"/><text class="s" x="370" y="16" text-anchor="middle">조건부 UPDATE 선점</text>
+        <rect class="box" x="390" y="28" width="170" height="64"/><text class="t" x="475" y="55" text-anchor="middle">PROCESSING</text><text class="s" x="475" y="78" text-anchor="middle">벤더 호출 (provider×op)</text>
+        <path class="arr" d="M560 44 H605"/>
+        <rect class="box ok" x="610" y="22" width="120" height="44"/><text class="t" x="670" y="49" text-anchor="middle">SUCCESS</text>
+        <text class="s" x="742" y="49">취소 404/410도 목적 달성</text>
+        <path class="arr bad" d="M560 76 L605 115"/>
+        <rect class="box bad" x="610" y="100" width="120" height="44"/><text class="t" x="670" y="127" text-anchor="middle">FAILED</text>
+        <path class="arr bad" d="M730 122 H785"/>
+        <rect class="box dead" x="790" y="100" width="90" height="44"/><text class="w" x="835" y="127" text-anchor="middle">DEAD</text>
+        <text class="s" x="835" y="162" text-anchor="middle">5회 초과 · Slack 1회</text>
+        <path class="arr dash" d="M670 144 V190 H285 V96"/><text class="s" x="292" y="182">백오프 30s→1m→2m→5m→15m, 5회</text>
+        <path class="arr dash" d="M520 92 V212"/>
+        <rect class="box warn" x="430" y="215" width="180" height="48"/><text class="t" x="520" y="235" text-anchor="middle">PENDING_VERIFY</text><text class="s" x="520" y="256" text-anchor="middle">타임아웃 · 자동 재시도 금지</text>
+        <text class="s" x="622" y="243">→ 운영자가 벤더 포털에서 확인 후 수동 확정</text>
+      </svg>
+      <div class="cap">처리 경로 3개: 1분 주기 폴러 · afterCommit 비동기 · 동기 인라인(SYNC_BLOCKING). 10분 넘게 PROCESSING에 방치된 건은 자동 회수. 모든 발권·취소 이력은 append-only 감사 테이블에 보존.</div>
+    </div>
+
+    <h3>결정 세 가지</h3>
+    <div class="decisions">
+      <div class="decision"><b>락 대신 조건부 UPDATE로 처리권 선점</b>릴레이가 여러 인스턴스에서 돌아도 한 건은 한 번만 잡힌다.<div class="why">락을 잡고 외부 호출을 기다리면 락 유지 시간이 곧 벤더 응답 시간이 된다.</div></div>
+      <div class="decision"><b>타임아웃은 재시도하지 않는다</b>SUCCESS/FAILED와 별도로 PENDING_VERIFY를 두고 운영자 확인으로 넘긴다.<div class="why">타임아웃은 벤더 쪽에서 성공했을 수 있다. 재시도하면 중복 발권이다.</div></div>
+      <div class="decision"><b>환불 직전 취소는 동기로, 실패하면 환불 차단</b>상태 전이는 별도 트랜잭션으로 분리해 환불이 롤백돼도 실패 사유는 남긴다.<div class="why">비동기로 보내면 환불이 나간 뒤에야 취소 실패를 알게 된다. 이게 사고의 원형이었다.</div></div>
+    </div>
+
+    <div class="result"><div>Ventrata·Galaxy Connect·Trip.com·Ingresso·Broadway Inbound <b>5개 벤더에 동일 계층 적용</b>. 취소 실패 → 환불 차단으로 자금 불일치 원천 차단, DEAD 알림은 정확히 1회. 취소 전략 전용 테스트 작성.</div><span class="contrib">기여도 100%</span></div>
+  </div>
+</section>
+
+<!-- ================= 3p · Case 2 ================= -->
+<section class="case" id="case2">
+  <div class="container">
+    <div class="case-head"><span class="num">CASE 02</span><h2>외부 티켓 벤더 5사 연동</h2><span class="where">앳홈트립 · 2025.12 – 2026.08 · 외부연동 모듈 69/100 커밋</span></div>
+    <div class="problem"><b>사고 둘.</b> 60초 넘는 벤더 호출 동안 DB 트랜잭션이 열려 있어 선등록한 주문 옵션이 미커밋 상태로 남았고, 후속 UPDATE가 0건 처리되거나 락 대기 타임아웃이 났다.
+      또 짧은 간격의 재시도가 벤더 호출 한도를 넘겨 정상 요청까지 연쇄 거부됐다.</div>
+
+    <h3>설계 — 트랜잭션 밖 비동기 확정</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 960 200">
+        <rect class="box soft" x="10" y="28" width="150" height="64"/><text class="t" x="85" y="55" text-anchor="middle">결제 완료</text><text class="s" x="85" y="78" text-anchor="middle">재고·가격 재검증 통과</text>
+        <path class="arr" d="M160 60 H185"/>
+        <rect class="box" x="190" y="28" width="150" height="64"/><text class="t" x="265" y="55" text-anchor="middle">주문 TX COMMIT</text><text class="s" x="265" y="78" text-anchor="middle">외부 호출 없음</text>
+        <path class="arr" d="M340 60 H365"/><text class="s" x="352" y="16" text-anchor="middle">@Async</text>
+        <rect class="box" x="370" y="28" width="170" height="64"/><text class="t" x="455" y="55" text-anchor="middle">벤더 발권 호출</text><text class="s" x="455" y="78" text-anchor="middle">TX NOT_SUPPORTED</text>
+        <path class="arr" d="M540 60 H565"/>
+        <rect class="box warn" x="570" y="28" width="200" height="64"/><text class="t" x="670" y="55" text-anchor="middle">서킷브레이커</text><text class="s" x="670" y="78" text-anchor="middle">벤더별 · 실패율 50% · 10s open</text>
+        <path class="arr" d="M770 60 H795"/>
+        <rect class="box" x="800" y="28" width="90" height="64"/><text class="t" x="845" y="65" text-anchor="middle">벤더</text>
+        <path class="arr dash" d="M455 92 V120 H345 V138"/>
+        <path class="arr dash" d="M455 120 H585 V138"/>
+        <rect class="box ok" x="250" y="140" width="190" height="48"/><text class="t" x="345" y="160" text-anchor="middle">60초 안에 확정</text><text class="s" x="345" y="181" text-anchor="middle">인라인 대기 → 바우처 발송</text>
+        <rect class="box warn" x="470" y="140" width="230" height="48"/><text class="t" x="585" y="160" text-anchor="middle">60초 초과 (Trip.com 폴링형)</text><text class="s" x="585" y="181" text-anchor="middle">5분 주기 reconcile 스케줄러가 구제</text>
+        <text class="s" x="715" y="160">재시도: 지수 백오프 3→6→12s</text><text class="s" x="715" y="181">대상: 5xx·소켓 오류만</text>
+      </svg>
+      <div class="cap">결제 직전 재검증은 2026-08-10 캘린더–벤더 재고 불일치를 실측한 뒤 도입. 미결제 유령 주문이 확정에 채택되지 않도록 차단.</div>
+    </div>
+
+    <div class="two">
+      <div>
+        <h3>벤더별 차이</h3>
+        <table class="v">
+          <tr><th>벤더</th><th>규격</th><th>특이점 · 처리</th></tr>
+          <tr><td>Broadway Inbound</td><td>SOAP</td><td>기존 어댑터 인계 · 안정화</td></tr>
+          <tr><td>Ventrata (BigBus)</td><td>REST</td><td>묶음 발권 → 인별 티켓 매핑</td></tr>
+          <tr><td>Galaxy Connect</td><td>REST</td><td>net 가격 없음 → 별도 조회 후 지정가 폴백</td></tr>
+          <tr><td>Trip.com</td><td>REST</td><td>비동기 확정 · 1:N 묶음 판매 · reconcile</td></tr>
+          <tr><td>Ingresso</td><td>REST</td><td>뮤지컬 다건 부분 실패 · 취소 404/410 처리</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>결정</h3>
+        <div class="decisions" style="grid-template-columns:1fr">
+          <div class="decision"><b>재시도 대상을 5xx·소켓 오류로 좁힘</b><div class="why">4xx는 다시 보내도 결과가 같고 한도만 소모한다. 연쇄 거부 사고의 직접 원인이었다.</div></div>
+          <div class="decision"><b>외부 호출은 커밋 뒤에, 트랜잭션 없이</b><div class="why">벤더 응답 시간이 DB 락 보유 시간이 되면 안 된다. 누락은 스케줄러가 줍는다.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result"><div>신규 벤더 4사 연동, 기존 1사 안정화. 자동발권 on/off와 결제 시 외부 호출 차단을 어드민 옵션으로 열어 <b>CX팀이 개발자 없이 운영</b>. 실패 유형별(매진·자동발권 불가·바우처 메일 실패) Slack 채널·문구 정리.</div><span class="contrib">기여도 약 70%</span></div>
+  </div>
+</section>
+
+<!-- ================= 4p · Case 3 ================= -->
+<section class="case" id="case3">
+  <div class="container">
+    <div class="case-head"><span class="num">CASE 03</span><h2>멤버십 구독 결제와 조회 성능</h2><span class="where">폰드메이커스 · 2024.12.09 – 2025.10.31</span></div>
+    <div class="problem"><b>문제.</b> 해외 팬 대상 유료 멤버십을 새로 열어야 했다. 결제 성공을 클라이언트 응답만으로 판단하면 결제는 됐는데 구독이 안 열리는 케이스가 생기고,
+      정기 결제·갱신·만료를 사람이 챙길 수는 없었다. 별개로 어드민 로그 조회는 동기 3중 쿼리로 3초가 걸렸다.</div>
+
+    <h3>설계 — 구독 라이프사이클</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 960 185">
+        <rect class="box soft" x="10" y="28" width="120" height="64"/><text class="t" x="70" y="65" text-anchor="middle">앱 결제 요청</text>
+        <path class="arr" d="M130 60 H155"/>
+        <rect class="box" x="160" y="28" width="160" height="64"/><text class="t" x="240" y="55" text-anchor="middle">PortOne / PayPal</text><text class="s" x="240" y="78" text-anchor="middle">해외 카드·페이팔</text>
+        <path class="arr" d="M320 60 H355"/><text class="s" x="338" y="16" text-anchor="middle">Webhook</text>
+        <rect class="box" x="360" y="28" width="190" height="64"/><text class="t" x="455" y="55" text-anchor="middle">서버 비동기 검증</text><text class="s" x="455" y="78" text-anchor="middle">금액·상태 대조 후 구독 활성화</text>
+        <path class="arr" d="M550 60 H575"/>
+        <rect class="box ok" x="580" y="28" width="110" height="64"/><text class="t" x="635" y="65" text-anchor="middle">ACTIVE</text>
+        <path class="arr" d="M690 60 H715"/>
+        <rect class="box" x="720" y="28" width="130" height="64"/><text class="t" x="785" y="55" text-anchor="middle">스케줄러</text><text class="s" x="785" y="78" text-anchor="middle">정기 결제·갱신</text>
+        <path class="arr dash" d="M785 92 V150 H735"/>
+        <rect class="box warn" x="600" y="125" width="130" height="48"/><text class="t" x="665" y="145" text-anchor="middle">만료 임박</text><text class="s" x="665" y="166" text-anchor="middle">FCM 푸시</text>
+      </svg>
+      <div class="cap">클라이언트 콜백은 참고만 하고, 구독 활성화의 신뢰 원천은 Webhook 검증 결과 하나로 둔다. Webhook은 결제 응답과 순서가 뒤바뀔 수 있어 비동기로 받아 상태를 대조한다.</div>
+    </div>
+
+    <div class="two">
+      <div>
+        <h3>로그 조회 3s → 0.3s</h3>
+        <table class="v">
+          <tr><th></th><th>이전</th><th>이후</th></tr>
+          <tr><td>쿼리</td><td>동기 3중 쿼리 순차 실행</td><td>독립 쿼리 비동기 병렬 + 인덱스 튜닝</td></tr>
+          <tr><td>결과 반환</td><td>전체 로드</td><td>페이지네이션</td></tr>
+          <tr><td>응답</td><td>약 3초</td><td><b>약 0.3초 (10배)</b></td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>같이 만든 것</h3>
+        <div class="decisions" style="grid-template-columns:1fr">
+          <div class="decision"><b>무중단 배포·이중화</b>GitHub Actions Blue-Green 배포, Redis 캐싱 이중화, 공용 RDS로 로컬 DB 파편화 해소.</div>
+          <div class="decision"><b>운영 방어</b>AWS Shield로 전체 트래픽의 약 5%였던 악성 봇 차단. 알림 히스토리 1,000건 단위 배치 삭제로 락 이슈 최소화. JMeter 부하 테스트 환경.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result"><div>결제·정기 갱신·만료 푸시까지 <b>구독 라이프사이클 전체를 시스템이 관리</b>. MongoDB 채팅 인프라를 EC2에 직접 구성.</div><span class="contrib">구독·인프라 담당</span></div>
+  </div>
+</section>
+
+<!-- ================= 5p · Side projects ================= -->
+<section class="side" id="side">
+  <div class="container">
+    <h2 class="sec-title">사이드 프로젝트</h2>
+    <p class="sec-desc">실무에서 다룬 동시성·Outbox·이벤트 아키텍처를 처음부터 끝까지 재구현해 검증했습니다. 모두 설계 → 개발 → 인프라 → 배포를 1인으로 수행. 코드는 <a href="https://github.com/yunhy96-web/D-Day">github.com/yunhy96-web/D-Day</a>.</p>
+
+    <div class="project">
+      <div class="proj-head"><h3>FlashArena</h3><span class="proj-type">동시성·장애 시뮬레이터</span></div>
+      <p class="proj-sub">"락 없이 동시 요청을 보내면 재고가 음수로 깨지고, Redis 분산 락을 걸면 정확히 막힌다"를 실시간 로그로 증명하는 대시보드.</p>
+      <ul>
+        <li><b>Race condition 재현</b> — No-Lock 모드에서 재고 오버셀을 실제로 만들고, 분산 락 모드에서 정확히 재고만큼만 차감됨을 같은 조건으로 비교</li>
+        <li><b>Transactional Outbox + Kafka</b> — 주문 TX와 outbox INSERT를 원자적으로, 릴레이어가 orderId 파티션 키·acks=all로 발행. 결제 Consumer는 수동 오프셋 커밋 + UNIQUE 제약 멱등 처리로 중복 이벤트에도 결제 1회</li>
+        <li><b>MSA 제약 시뮬레이션</b> — auth/order/payment 스키마 격리, 스키마 간 FK·JOIN·공통 TX 금지, SSE로 runId별 로그 스트리밍</li>
+      </ul>
+      <div class="flow">주문 ─▶ [TX] 재고 차감(락 모드별) + Outbox INSERT ─▶ Relayer ─▶ Kafka(3 partitions, key=orderId) ─▶ 결제 Consumer(UNIQUE 멱등 → 오프셋 커밋) ─▶ SSE 로그</div>
+    </div>
+
+    <div class="project">
+      <div class="proj-head"><h3>ThaiUnionTour</h3><span class="proj-type">이벤트 기반 예약 커머스 · M2 완료</span></div>
+      <p class="proj-sub">요구사항·도메인 모델·ERD·API 명세·인프라 설계 문서 8종을 먼저 쓰고 마일스톤 단위로 구현한 예약 커머스. Java 17 · Gradle 멀티모듈(DDD) · PostgreSQL · Redis Streams · Flyway · Next.js 14.</p>
+      <ul>
+        <li><b>선착순 동시성</b> — <code>UPDATE … WHERE stock ≥ qty</code> 원자 차감과 예약 INSERT를 한 트랜잭션으로 묶어 오버부킹 차단</li>
+        <li><b>결제 파이프라인</b> — 입금 승인 시 확정 + Outbox를 한 TX로, Relayer는 FOR UPDATE SKIP LOCKED로 경합 없이 발행, Consumer는 UNIQUE 멱등 후 XACK</li>
+        <li><b>경계 설계</b> — catalog/reservation/payment/member 스키마 분리, 교차 FK 없이 UUID 논리 참조. Flyway 소유권은 api 모듈 하나로</li>
+      </ul>
+    </div>
+
+    <div class="cards">
+      <div class="card"><h3>D-Day<span class="proj-type">운영 중</span></h3><p>한·태 다국어 커뮤니티. 게시글 커밋 후 AFTER_COMMIT + @Async로 OpenAI 번역을 트랜잭션 밖에서 실행해 외부 API 실패가 도메인 TX를 롤백시키지 않음. DB 기반 동적 RBAC, 재배포 없는 동적 스케줄러.</p><div class="stack">Spring Boot 3.2 · PostgreSQL · OpenAI API · Expo · Docker · EC2</div></div>
+      <div class="card"><h3>PackFit<span class="proj-type">알고리즘</span></h3><p>3D 상자 적재 시뮬레이터. EP-BFD bin packing 직접 구현(6방향 회전·지지율 70%·fragile·무게 제약). pack()을 결정적 순수 함수로 유지하고 불변식 테스트.</p><div class="stack">TypeScript · Three.js · Vite · Vitest</div></div>
+      <div class="card"><h3>CheckStock<span class="proj-type">실사용</span></h3><p>재입고 모니터링. 스냅샷 diff로 변경만 추출해 Expo Push·Telegram 동시 발송. Python 크롤러를 Spring Boot에서 호출하는 하이브리드 구조.</p><div class="stack">Spring Boot · Python · Jsoup · Expo Push · Telegram Bot</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 6p · Skills / Career / Education ================= -->
+<section class="last" id="last">
+  <div class="container">
+    <h2>기술 스택</h2>
+    <dl class="skills">
+      <dt>Backend</dt><dd>Java, Spring Boot, Spring Security, Spring Data JPA, QueryDSL, MyBatis, REST API, SOAP 클라이언트, Resilience4j</dd>
+      <dt>Database</dt><dd>PostgreSQL, Oracle, MySQL, Redis, MongoDB — 인덱스 설계·쿼리 튜닝, 프로시저, Flyway</dd>
+      <dt>Infra</dt><dd>AWS(EC2·RDS·S3·ELB·Shield·CloudFront), Docker, Nginx, Linux, Jenkins, GitHub Actions, Blue-Green 배포, JMeter</dd>
+      <dt>Architecture</dt><dd>Transactional Outbox, Kafka(파티션 키·수동 커밋), Redis Streams, 멱등 Consumer, 분산 락, 서킷브레이커, DDD 멀티모듈, 도메인별 스키마 분리</dd>
+      <dt>Integration</dt><dd>외부 티켓 벤더 API 5사, PortOne·PayPal, FCM, OpenAI API, Slack, Telegram Bot API</dd>
+    </dl>
+
+    <h2>경력 요약</h2>
+    <table class="v">
+      <tr><th>기간</th><th>회사 · 역할</th><th>한 줄</th></tr>
+      <tr><td>2025.11 – 재직중</td><td>앳홈트립 · 프로덕트팀 대리</td><td>여행 플랫폼 백엔드 3인 팀. 외부 벤더 발권 연동·Outbox 신뢰성 계층·가격 엔진·파트너센터. 10개월 899커밋(전체 4,390 중 2위)</td></tr>
+      <tr><td>2024.12.09 – 2025.10.31</td><td>폰드메이커스 · 프로덕트팀 대리</td><td>팬 플랫폼 구독 결제·인프라·성능. 이직 사유: 지출이 매출을 지속적으로 상회해 사업 지속성에 위기라고 판단</td></tr>
+      <tr><td>2022.09.02 – 2024.11.29</td><td>한국네트웍스 · 솔루션개발</td><td>WMS SI. APR 물류시스템 PDA PL, CJ·롯데택배 송장 인터페이스, Oracle→PostgreSQL 마이그레이션, 재고 합산 쿼리 900ms→200ms</td></tr>
+    </table>
+
+    <h2>교육 · 학력</h2>
+    <div>
+      <div class="edu"><div class="when">2023.12</div><div><b>비사이드 포텐데이 해커톤 — 트립유어마인드</b> (백엔드·서버·DB, 수료)<p>클로바 AI 연동 여행 계획 추천 앱 · EC2·RDS 구축 · JWT 카카오 로그인</p></div></div>
+      <div class="edu"><div class="when">2021.07 – 2022.06</div><div><b>SSAFY (삼성 청년 SW 아카데미) 수료</b><p>웹 프로젝트 3회 · Docker·Jenkins 자동배포 · Spring Security+JWT · Elasticsearch</p></div></div>
+      <div class="edu"><div class="when">2015.03 – 2021.02</div><div><b>한국산업기술대학교 소프트웨어 전공 졸업</b><p>졸업 작품: 인공지능을 이용한 졸음방지 시스템</p></div></div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="container">윤희영 · <a href="mailto:yunhy96@naver.com">yunhy96@naver.com</a> · <a href="https://github.com/yunhy96-web">github.com/yunhy96-web</a></div></footer>
+</body>
+</html>

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Huiyeong Yun | Backend Engineer Portfolio</title>
+<meta name="description" content="Portfolio of Huiyeong Yun, a backend engineer with 4 years of experience in global payments, external API integration, and event-driven architecture" />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  :root {
+    --navy: #0f2540;
+    --navy-2: #1b3a5f;
+    --accent: #2f6fed;
+    --accent-soft: #e8f0fe;
+    --ink: #1f2937;
+    --sub: #5b6b7f;
+    --line: #e3e8ef;
+    --bg: #f7f9fc;
+    --card: #ffffff;
+    --radius: 14px;
+    --shadow: 0 2px 12px rgba(15, 37, 64, 0.07);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+  body {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+
+  /* ===== Nav ===== */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav .container { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  nav .logo { font-weight: 800; color: var(--navy); font-size: 17px; }
+  nav ul { display: flex; gap: 22px; list-style: none; }
+  nav ul a { color: var(--sub); font-size: 14px; font-weight: 600; }
+  nav ul a:hover { color: var(--accent); text-decoration: none; }
+  @media (max-width: 720px) { nav ul { display: none; } }
+
+  /* ===== Hero ===== */
+  header.hero {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 60%, #24507f 100%);
+    color: #fff;
+    padding: 88px 0 76px;
+  }
+  .hero .eyebrow { color: #9db8dd; font-weight: 700; letter-spacing: 0.14em; font-size: 13px; text-transform: uppercase; }
+  .hero h1 { font-size: 44px; font-weight: 800; margin: 10px 0 6px; letter-spacing: -0.02em; }
+  .hero h1 small { font-size: 22px; font-weight: 600; color: #b9cbe4; margin-left: 10px; }
+  .hero .tagline { font-size: 19px; color: #dbe6f4; max-width: 640px; margin-top: 14px; }
+  .hero .tagline b { color: #fff; }
+  .hero .meta { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 30px; font-size: 14.5px; color: #c4d4e8; }
+  .hero .meta a { color: #ffffff; font-weight: 600; }
+  .hero .keywords { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+  .hero .keywords span {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px; padding: 5px 14px; font-size: 13px; font-weight: 600;
+    white-space: nowrap;
+  }
+  @media (max-width: 720px) { .hero h1 { font-size: 34px; } }
+
+  /* ===== Sections ===== */
+  section { padding: 68px 0; }
+  section:nth-of-type(even) { background: #fff; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  h2.sec-title { font-size: 27px; font-weight: 800; color: var(--navy); letter-spacing: -0.01em; }
+  h2.sec-title::after { content: ""; display: block; width: 44px; height: 4px; background: var(--accent); border-radius: 2px; margin-top: 10px; }
+  .sec-desc { color: var(--sub); margin-top: 14px; max-width: 720px; font-size: 15.5px; }
+  .sec-head { margin-bottom: 36px; }
+
+  /* ===== About ===== */
+  .about-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items: start; }
+  @media (max-width: 800px) { .about-grid { grid-template-columns: 1fr; } }
+  .about-text p { margin-bottom: 14px; font-size: 15.5px; }
+  .about-text b { color: var(--navy); }
+  .stat-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .stat {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px 16px; box-shadow: var(--shadow);
+  }
+  .stat .num { font-size: 24px; font-weight: 800; color: var(--accent); letter-spacing: -0.01em; }
+  .stat .label { font-size: 13px; color: var(--sub); margin-top: 4px; }
+
+  /* ===== Strengths ===== */
+  .strength-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  @media (max-width: 720px) { .strength-grid { grid-template-columns: 1fr; } }
+  .strength {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 24px; box-shadow: var(--shadow);
+  }
+  .strength .icon {
+    width: 40px; height: 40px; border-radius: 10px; background: var(--accent-soft);
+    display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 14px;
+  }
+  .strength h3 { font-size: 17px; color: var(--navy); margin-bottom: 8px; }
+  .strength p { font-size: 14.5px; color: var(--sub); }
+
+  /* ===== Career (timeline) ===== */
+  .job { display: grid; grid-template-columns: 200px 1fr; gap: 24px; padding: 30px 0; border-bottom: 1px solid var(--line); }
+  .job:last-child { border-bottom: none; }
+  @media (max-width: 720px) { .job { grid-template-columns: 1fr; gap: 8px; } }
+  .job .when { color: var(--sub); font-size: 14px; font-weight: 600; }
+  .job .when .badge {
+    display: inline-block; background: var(--accent-soft); color: var(--accent);
+    border-radius: 6px; font-size: 12px; font-weight: 700; padding: 2px 8px; margin-top: 6px;
+  }
+  .job h3 { font-size: 19px; color: var(--navy); }
+  .job .role { color: var(--sub); font-size: 14px; margin: 2px 0 14px; }
+  .job ul { list-style: none; }
+  .job ul li { position: relative; padding-left: 18px; margin-bottom: 10px; font-size: 15px; }
+  .job ul li::before { content: ""; position: absolute; left: 2px; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .job ul li b { color: var(--navy); }
+  .metric { color: var(--accent); font-weight: 700; }
+
+  /* ===== Projects ===== */
+  .project {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 30px; margin-bottom: 26px;
+  }
+  .project .proj-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px; margin-bottom: 6px; }
+  .project h3 { font-size: 20px; color: var(--navy); }
+  .project .proj-type { font-size: 12.5px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 3px 9px; }
+  .project .proj-sub { color: var(--sub); font-size: 14.5px; margin-bottom: 16px; }
+  .project h4 { font-size: 14px; color: var(--navy); margin: 18px 0 8px; letter-spacing: 0.02em; }
+  .project ul { list-style: none; }
+  .project ul li { position: relative; padding-left: 18px; margin-bottom: 9px; font-size: 14.5px; }
+  .project ul li::before { content: ""; position: absolute; left: 2px; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .project ul li b { color: var(--navy); }
+  .flow {
+    background: #f2f6fc; border: 1px solid #dbe6f4; border-radius: 10px;
+    font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: 12.5px; color: #33475f; padding: 14px 16px; margin: 14px 0 4px;
+    overflow-x: auto; white-space: pre; line-height: 1.7;
+  }
+  .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; }
+  .tags span {
+    font-size: 12.5px; font-weight: 600; color: var(--sub);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px;
+    white-space: nowrap;
+  }
+  .proj-links { margin-top: 14px; font-size: 14px; }
+
+  /* ===== Skills ===== */
+  .skill-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  @media (max-width: 720px) { .skill-grid { grid-template-columns: 1fr; } }
+  .skill-group { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); }
+  .skill-group h3 { font-size: 15px; color: var(--navy); margin-bottom: 12px; }
+  .skill-group .tags { margin-top: 0; }
+
+  /* ===== Education ===== */
+  .edu-item { padding: 22px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 200px 1fr; gap: 24px; }
+  .edu-item:last-child { border-bottom: none; }
+  @media (max-width: 720px) { .edu-item { grid-template-columns: 1fr; gap: 6px; } }
+  .edu-item .when { color: var(--sub); font-size: 14px; font-weight: 600; }
+  .edu-item h3 { font-size: 16.5px; color: var(--navy); }
+  .edu-item p { font-size: 14.5px; color: var(--sub); margin-top: 4px; }
+  .edu-item ul { list-style: none; margin-top: 8px; }
+  .edu-item ul li { position: relative; padding-left: 16px; margin-bottom: 6px; font-size: 14px; color: var(--ink); }
+  .edu-item ul li::before { content: ""; position: absolute; left: 0; top: 9px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+
+  /* ===== Footer ===== */
+  footer { background: var(--navy); color: #b9cbe4; padding: 44px 0; text-align: center; font-size: 14px; }
+  footer a { color: #fff; font-weight: 600; }
+
+  /* ===== Print ===== */
+  @media print {
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-shadow: none !important; backdrop-filter: none !important; }
+    nav { display: none; }
+    section { padding: 28px 0; }
+    .project, .strength, .stat, .skill-group, .job, .edu-item { break-inside: avoid; }
+    h2.sec-title { break-after: avoid; }
+    header.hero { padding: 40px 0; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="logo">YUN HUIYEONG</div>
+    <ul>
+      <li><a href="#about">About</a></li>
+      <li><a href="#strengths">Strengths</a></li>
+      <li><a href="#career">Experience</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#education">Education</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <p class="eyebrow">Backend Engineer · 4 Years</p>
+    <h1>Huiyeong Yun<small>윤희영</small></h1>
+    <p class="tagline">
+      A backend engineer who builds <b>systems whose data stays intact through failures</b><br />
+      with <b>payments, external API integration, and event-driven architecture</b>.
+    </p>
+    <div class="meta">
+      <span>📧 <a href="mailto:yunhy96@naver.com">yunhy96@naver.com</a></span>
+      <span>💻 <a href="https://github.com/yunhy96-web" target="_blank" rel="noopener">github.com/yunhy96-web</a></span>
+      <span>📍 Seongdong-gu, Seoul</span>
+    </div>
+    <div class="keywords">
+      <span>Java · Spring Boot</span>
+      <span>Global Payments (PortOne · PayPal)</span>
+      <span>Transactional Outbox · Idempotency</span>
+      <span>Concurrency Control</span>
+      <span>Query Tuning</span>
+      <span>AWS Infrastructure</span>
+    </div>
+  </div>
+</header>
+
+<section id="about">
+  <div class="container">
+    <div class="sec-head">
+      <h2 class="sec-title">About Me</h2>
+    </div>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>
+          I believe that lifelong learning and <b>building well-crafted systems</b> are what prove
+          an engineer's value. Across business domains including logistics (WMS), fan platforms, and
+          travel commerce, I have led <b>external API integration interface design</b> between
+          heterogeneous systems, <b>global payment system builds</b>, and <b>data consistency verification</b>.
+        </p>
+        <p>
+          I designed the payment lifecycle and asynchronous webhook verification on
+          PortOne/PayPal to guarantee payment consistency. While abstracting the ticketing specs of
+          five external ticket vendors, I used
+          <b>Transactional Outbox-based idempotency, retries, and refund blocking</b> to build systems where
+          money and data never drift apart even when an integration fails.
+        </p>
+        <p>
+          I pursue the same topics outside of work. Building a simulator that reproduces and proves
+          concurrency failures, an event-driven reservation commerce service, and a bilingual
+          community with an AI translation pipeline — each from design through deployment — is how I
+          keep growing into an engineer who builds <b>scalable, reliable API ecosystems</b>.
+        </p>
+      </div>
+      <div class="stat-cards">
+        <div class="stat"><div class="num">4 yrs</div><div class="label">Backend experience</div></div>
+        <div class="stat"><div class="num">10x</div><div class="label">Faster log queries<br />(3s → 0.3s)</div></div>
+        <div class="stat"><div class="num">5 vendors</div><div class="label">External ticket vendor integrations<br />(sole designer of the Outbox reliability layer)</div></div>
+        <div class="stat"><div class="num">5</div><div class="label">Side projects taken from<br />concept to deployment</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="strengths">
+  <div class="container">
+    <div class="sec-head">
+      <h2 class="sec-title">Core Strengths</h2>
+    </div>
+    <div class="strength-grid">
+      <div class="strength">
+        <div class="icon">🔗</div>
+        <h3>Global Payments · Integration Interface Design</h3>
+        <p>Five external ticket vendors (SOAP and REST), PortOne/PayPal payments, CJ Logistics and Lotte Global Logistics shipping labels,
+          and FCM — abstracting disparate external specs and guaranteeing consistency
+          through asynchronous webhook verification.</p>
+      </div>
+      <div class="strength">
+        <div class="icon">⚙️</div>
+        <h3>Concurrency · Event-Driven Architecture</h3>
+        <p>Atomic first-come-first-served stock decrements, Redis distributed locks, Transactional Outbox + Redis Streams,
+          idempotent&nbsp;consumers, and compensation logic — designed and verified firsthand to keep data intact under failure.</p>
+      </div>
+      <div class="strength">
+        <div class="icon">🚀</div>
+        <h3>Performance Optimization · Query Tuning</h3>
+        <p>Async parallel processing, index design, and query simplification cut log queries from 3s to 0.3s (10x)
+          and stock aggregation from 900ms to 200ms (4x). Built a repeatable JMeter load-testing environment.</p>
+      </div>
+      <div class="strength">
+        <div class="icon">☁️</div>
+        <h3>AWS Infrastructure · Operations Automation</h3>
+        <p>Zero-downtime Blue-Green deployment on EC2, RDS, S3, and load balancing; bot traffic defense with AWS Shield;
+          GitHub Actions and Jenkins CI/CD; and a Slack alerting scheme for failed integrations (one-shot DEAD alert, operator-verification notices).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="career">
+  <div class="container">
+    <div class="sec-head">
+      <h2 class="sec-title">Experience</h2>
+      <p class="sec-desc">4 years total · Backend / server development</p>
+    </div>
+
+    <div class="job">
+      <div class="when">
+        2025.11 – Present
+        <div><span class="badge">AthomeTrip · Assistant Manager, Product Team</span></div>
+      </div>
+      <div>
+        <h3>AthomeTrip <span style="font-weight:500; font-size:14px; color:var(--sub);">— Travel platform</span></h3>
+        <p class="role">External vendor ticketing · Pricing/option engine · Partner center · Admin dashboard</p>
+        <ul>
+          <li><b>Sole designer of the vendor ticketing/cancellation reliability layer (Transactional Outbox)</b> — per-reservation idempotency keys,
+            exponential-backoff retries, operator verification for timeouts, and <b>refund blocking on failed cancellation</b> to eliminate money/data drift. Applied to all 5 vendors</li>
+          <li><b>Integrated 5 external ticket vendors (SOAP and REST)</b> — per-vendor circuit breakers and backoff, long external calls moved outside DB transactions, stock and price re-validation right before payment</li>
+          <li><b>External product pricing and option engine</b> — consolidated fixed/margin pricing and special-period surcharges into a single path, removing cart-vs-checkout amount mismatches</li>
+          <li><b>Partner center and admin permission system</b> — DB-driven dynamic menu permissions, guides see only their assigned orders, admin dashboard sales aggregation with query tuning</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="job">
+      <div class="when">
+        2024.12.09 – 2025.10.31
+        <div><span class="badge">Pondmakers · Assistant Manager, Product Team</span></div>
+      </div>
+      <div>
+        <h3>Pondmakers <span style="font-weight:500; font-size:14px; color:var(--sub);">— Artist fan platform</span></h3>
+        <p class="role">Subscription service · Backend development · Infrastructure · Performance optimization</p>
+        <ul>
+          <li><b>Service performance optimization</b> — cut a log query that took 3 seconds on three synchronous queries to
+            <span class="metric">0.3 seconds through async processing, query tuning, and pagination (10x faster in practice)</span></li>
+          <li><b>Built the membership subscription service</b> — PortOne/PayPal overseas payment integration with asynchronous webhook verification, scheduler-driven recurring billing
+            and auto-renewal, and expiry push notifications — managing the <b>full subscription lifecycle</b> in the system</li>
+          <li><b>Zero-downtime deployment and server redundancy</b> — Blue-Green deployment on GitHub Actions, with a redundant Redis caching (likes) setup</li>
+          <li><b>Security hardening</b> — adopted AWS Shield to block <span class="metric">malicious bot traffic that made up about 5% of all traffic</span></li>
+          <li><b>Operations automation</b> — Spring Scheduler–based batch jobs and batch deletion of notification history (in units of 1,000) to minimize lock issues</li>
+          <li><b>Chat infrastructure</b> — MongoDB data modeling and hands-on NoSQL infrastructure setup on EC2</li>
+          <li><b>Better collaboration environment</b> — built a shared RDS to end local DB fragmentation and introduced a JMeter load-testing environment</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="job">
+      <div class="when">
+        2022.09.02 – 2024.11.29
+        <div><span class="badge">Korea Networks · Solution Development</span></div>
+      </div>
+      <div>
+        <h3>Korea Networks <span style="font-weight:500; font-size:14px; color:var(--sub);">— Logistics solution (WMS) SI</span></h3>
+        <p class="role">Project Lead (PL) for the APR logistics system · Solution migration · Interface development</p>
+        <ul>
+          <li><b>APR logistics system build (2023.06–2024.06)</b> — PL for PDA mobile. Designed and implemented the CJ Logistics and
+            Lotte Global Logistics shipping label interface tables, and developed core logistics features including export packing,
+            putaway strategy procedures, and item label printing</li>
+          <li><b>Query tuning</b> — added indexes and removed unnecessary JOINs in the stock aggregation logic for <span class="metric">900ms → 200ms (4x faster)</span>,
+            and batched master data Excel uploads for <span class="metric">10s → 5s (2x faster)</span></li>
+          <li><b>Infrastructure</b> — zero-downtime deployment across two load-balanced servers on EC2, Jenkins, and RDS; diagnosed and resolved an LB timeout issue</li>
+          <li><b>Neo solution migration</b> — converted JSP to React (AgGrid), migrated Oracle to PostgreSQL (RDS),
+            and blocked concurrent logins with Spring Security session control</li>
+          <li><b>Samyang Foods and Kleannara projects</b> — migrated the WMS-SAP integration and verified and corrected stock data consistency</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="container">
+    <div class="sec-head">
+      <h2 class="sec-title">Side Projects</h2>
+      <p class="sec-desc">
+        I re-implemented the payment, concurrency, and event architecture I handle at work end to end in personal projects to validate it.
+        I handled design, development, infrastructure, and deployment solo on all of them.
+      </p>
+    </div>
+
+    <div class="project">
+      <div class="proj-head">
+        <h3>D-Day — Korean–Thai bilingual community platform</h3>
+        <span class="proj-type">Solo full-cycle · In production</span>
+      </div>
+      <p class="proj-sub">
+        A community shared by Korean and Thai speakers. When someone posts, <b>AI translates it automatically</b> so readers
+        in the other language see it in their own, and a crawler collects content from external communities to seed the platform.<br />
+        <b>Stack:</b> Spring Boot 3.2 · Java 17 · PostgreSQL · OpenAI API · Expo(React Native) · GitHub Actions · EC2
+      </p>
+      <h4>Backend design highlights</h4>
+      <ul>
+        <li><b>Async AI translation pipeline outside the transaction boundary</b> — <code>@TransactionalEventListener(AFTER_COMMIT)</code> plus <code>@Async</code>
+          separate post persistence from translation. An external API (OpenAI) failure never rolls back the domain transaction, and
+          <code>PENDING→PROCESSING→COMPLETED/FAILED</code> state transitions keep failures traceable</li>
+        <li><b>Dynamic scheduler framework without redeployment</b> — job settings live in the DB and a REST API toggles them on/off and switches the interval (Cron ↔ fixedRate) at runtime.
+          An interface registry pattern means adding a new job only requires registering one implementation</li>
+        <li><b>Restart-safe crawler</b> — the crawl cursor (last page) is persisted in the DB so collection resumes after an interruption,
+          a unique sourceId key makes it idempotent, and sleeps between requests handle rate limiting</li>
+        <li><b>DB-driven dynamic RBAC</b> — the role × post-type permission matrix lives in a table rather than in code,
+          and allowed types are pushed down as query conditions to filter at the DB level</li>
+        <li><b>Timezone-based localization</b> — stored in UTC and converted to the user's timezone in responses; the client infers language from the timezone
+          and falls back between the translation and the original (localization from server data, without an i18n library)</li>
+        <li><b>Frontend token refresh concurrency control</b> — the axios interceptor performs the refresh only once on a 401,
+          queuing concurrently failing requests and retrying them together with the new token</li>
+        <li><b>CI/CD</b> — GitHub Actions → Docker Hub → automated EC2 deployment; the frontend serves an Expo web build through a multi-stage Nginx image</li>
+      </ul>
+      <div class="flow">Post created ─▶ [TX] Save Article ─▶ COMMIT
+                          └─(AFTER_COMMIT, @Async)─▶ OpenAI translation ─▶ save ko/th columns
+Crawler ─▶ Page cursor (DB) ─▶ Jsoup parsing ─▶ sourceId dedupe check ─▶ Load</div>
+      <div class="tags">
+        <span>Spring Boot 3.2</span><span>Java 17</span><span>PostgreSQL</span><span>Spring Security · JWT</span>
+        <span>OpenAI API</span><span>Jsoup</span><span>Expo · React Native</span><span>GitHub Actions</span><span>Docker · EC2</span>
+      </div>
+    </div>
+
+    <div class="project">
+      <div class="proj-head">
+        <h3>FlashArena — Concurrency &amp; distributed system failure simulator</h3>
+        <span class="proj-type">Solo build · Technical proof</span>
+      </div>
+      <p class="proj-sub">
+        A dashboard that uses a first-come-first-served flash sale to <b>prove visually, through live logs</b>, that concurrent requests
+        without a lock drive stock negative while a Redis distributed lock stops it exactly. I built it to demonstrate what I know
+        through reproducible experiments instead of explaining it in words.<br />
+        <b>Stack:</b> Java 21 · Spring Boot 3 · Redis · PostgreSQL · SSE · Vite + React + TypeScript
+      </p>
+      <ul>
+        <li><b>Race condition reproduction</b> — No-Lock mode actually produces oversold and negative stock, and Redis distributed lock mode
+          proves under identical conditions that exactly the available stock is decremented</li>
+        <li><b>Transactional Outbox + Redis Streams</b> — the order transaction and event publication are recorded atomically, then a relayer publishes asynchronously,
+          and the payment consumer uses UNIQUE-constraint idempotency so duplicate events still charge only once</li>
+        <li><b>MSA constraint simulation</b> — isolates auth/order/payment schemas within a single DB and forbids cross-schema FKs, JOINs, and shared transactions
+          to reproduce the constraints of a distributed environment (UUID for all PKs)</li>
+        <li><b>SSE live log streaming</b> — streams processing steps per run (runId) to the frontend dashboard in real time</li>
+      </ul>
+      <div class="tags">
+        <span>Java 21</span><span>Spring Boot 3</span><span>Redis distributed lock</span><span>Redis Streams</span>
+        <span>Transactional Outbox</span><span>SSE</span><span>React · Vite</span>
+      </div>
+    </div>
+
+    <div class="project">
+      <div class="proj-head">
+        <h3>ThaiUnionTour — Event-driven travel reservation commerce</h3>
+        <span class="proj-type">Solo full-cycle · In development (M2 complete)</span>
+      </div>
+      <p class="proj-sub">
+        A reservation commerce service designed around events, covering everything from tour product discovery to first-come-first-served booking,
+        deposit approval, and payment confirmation. I completed the design docs (requirements, domain model, ERD, API spec, infrastructure) first, then built it milestone by milestone.<br />
+        <b>Stack:</b> Java 17 · Spring Boot 3.2 · Gradle multi-module (DDD) · PostgreSQL · Redis Streams · Flyway · Next.js 14
+      </p>
+      <ul>
+        <li><b>Concurrency control for first-come-first-served booking</b> — an atomic <code>UPDATE ... WHERE stock &gt;= qty</code> decrement and the reservation INSERT
+          are bound into a single transaction, eliminating overbooking at the source</li>
+        <li><b>Event-driven payment pipeline</b> — deposit approval records the reservation confirmation and the Outbox INSERT in one transaction,
+          a relayer publishes to Redis Streams contention-free with <code>FOR UPDATE SKIP LOCKED</code>, and the consumer XACKs after UNIQUE-based idempotent handling</li>
+        <li><b>Schema-per-domain architecture</b> — catalog/reservation/payment/member schemas are separated, using UUID logical references instead of cross-schema FKs
+          to draw boundaries ready for a future service split</li>
+        <li><b>Multi-module DDD</b> — common (Money · DomainEvent · AggregateRoot) / domain / api / admin modules are separated,
+          with Flyway migration ownership consolidated into the api module</li>
+        <li><b>Two tracks for customers and operators</b> — a Next.js 14 customer site (category landing, filters, booking flow, status polling) plus a Thymeleaf operations console (products, schedules, deposit approval)</li>
+      </ul>
+      <div class="flow">Reserve: [TX] atomic stock decrement + Reservation INSERT ─▶ PENDING
+Approve: [TX] CONFIRMED + Outbox INSERT ─▶ Relayer(SKIP LOCKED) ─▶ Redis XADD
+Pay: Stream subscribe ─▶ payment_history INSERT(UNIQUE idempotent) ─▶ XACK ─▶ customer polls PAID</div>
+      <div class="tags">
+        <span>Java 17</span><span>Spring Boot 3.2</span><span>DDD multi-module</span><span>PostgreSQL</span>
+        <span>Redis Streams</span><span>Outbox Pattern</span><span>Flyway</span><span>Next.js 14</span><span>Docker Compose</span>
+      </div>
+    </div>
+
+    <div class="project">
+      <div class="proj-head">
+        <h3>PackFit — 3D box-packing simulator</h3>
+        <span class="proj-type">Solo build · Algorithm implementation</span>
+      </div>
+      <p class="proj-sub">
+        Enter box and item dimensions, and a 3D bin-packing algorithm computes the layout, replayed step by step in Three.js.
+        Built with pure TypeScript and browser rendering only — no framework, no backend.<br />
+        <b>Stack:</b> TypeScript · Three.js · Vite · Vitest
+      </p>
+      <ul>
+        <li><b>Hand-implemented EP-BFD (Extreme-Point + Best-Fit-Decreasing)</b> — 6-way rotation, 70% floor-support check,
+          fragile (nothing stacked on top) and max-weight constraints; tries 4 sort strategies and keeps the layout with the most items packed and highest fill rate</li>
+        <li><b>A pure function that knows nothing about spacing</b> — the box shrinks by wall clearance and items inflate by their gap,
+          so <code>pack()</code> stays a deterministic, DOM-free function that is easy to test</li>
+        <li><b>Invariant-based tests</b> — a shared assertion ("inside the bounds, no two items overlap") applied to every case (Vitest),
+          plus recommending the smallest Korea Post standard box (No. 1–6) that fits everything</li>
+        <li><b>Visualization UX</b> — step-by-step packing replay slider, hover tooltips, localStorage input restore</li>
+      </ul>
+      <div class="tags">
+        <span>TypeScript</span><span>Three.js</span><span>Bin Packing (EP-BFD)</span><span>Vite</span><span>Vitest</span>
+      </div>
+    </div>
+
+    <div class="project">
+      <div class="proj-head">
+        <h3>CheckStock — Restock monitoring &amp; alert service</h3>
+        <span class="proj-type">Solo build · In real use</span>
+      </div>
+      <p class="proj-sub">
+        A service that crawls watched product pages on a schedule and, when it detects a change (restock or price), sends an instant mobile push and Telegram alert.<br />
+        <b>Stack:</b> Spring Boot · Jsoup · Expo Push · Telegram Bot API · Expo(React Native)
+      </p>
+      <ul>
+        <li><b>Snapshot-diff change detection</b> — stores a snapshot per site and extracts only change events from the diff, with keyword filters to remove noise</li>
+        <li><b>Multi-channel alerts</b> — device token management with simultaneous delivery via Expo Push and a Telegram bot</li>
+        <li><b>Scheduler-driven automatic monitoring</b> — periodic crawling alongside an on-demand check-now API</li>
+      </ul>
+      <div class="tags">
+        <span>Spring Boot</span><span>Jsoup</span><span>Expo Push</span><span>Telegram API</span><span>Scheduler</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="container">
+    <div class="sec-head">
+      <h2 class="sec-title">Tech Stack</h2>
+    </div>
+    <div class="skill-grid">
+      <div class="skill-group">
+        <h3>Backend</h3>
+        <div class="tags">
+          <span>Java</span><span>Spring Boot</span><span>Spring Data JPA</span><span>Spring Security</span>
+          <span>MyBatis</span><span>QueryDSL</span><span>JWT</span><span>REST API</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <h3>Database</h3>
+        <div class="tags">
+          <span>PostgreSQL</span><span>Oracle</span><span>MySQL</span><span>MSSQL</span>
+          <span>Redis</span><span>MongoDB</span><span>Query tuning</span><span>Index design</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <h3>Infra · DevOps</h3>
+        <div class="tags">
+          <span>AWS (EC2 · RDS · S3 · Shield · ELB)</span><span>Docker</span><span>Jenkins</span>
+          <span>GitHub Actions</span><span>Nginx</span><span>Linux · Ubuntu</span><span>CloudFront</span><span>JMeter</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <h3>Integration · etc</h3>
+        <div class="tags">
+          <span>PortOne · PayPal</span><span>5 external ticket vendor APIs</span><span>FCM</span><span>OpenAI API</span>
+          <span>Redis Streams</span><span>Vue.js</span><span>React</span><span>TypeScript</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="education">
+  <div class="container">
+    <div class="sec-head">
+      <h2 class="sec-title">Education · Activities</h2>
+    </div>
+
+    <div class="edu-item">
+      <div class="when">2023.12</div>
+      <div>
+        <h3>bside "Potenday" Hackathon — Trip Your Mind</h3>
+        <p>Generative AI travel plan recommendation app · Backend development / server setup / DB design · Certificate of completion</p>
+        <ul>
+          <li>Developed the REST API integrating CLOVA AI, and designed prompts and implemented the AI interface to get the intended results</li>
+          <li>Set up the EC2 (Ubuntu) server, configured RDS PostgreSQL, and built JWT-based Kakao login</li>
+          <li>Developed the service logic and APIs for adding itinerary details and reordering priorities</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="edu-item">
+      <div class="when">2021.07 – 2022.06</div>
+      <div>
+        <h3>SSAFY (Samsung Software Academy For Youth), completed</h3>
+        <p>Algorithm training and three web projects · Full-stack</p>
+        <ul>
+          <li><b>Agit</b> — OpenVidu video conferencing and team schedule management. RESTful CRUD, JPA, automated deployment with Docker and Jenkins
+            (<a href="https://github.com/dev-yunhy96/AgitProject" target="_blank" rel="noopener">GitHub</a>)</li>
+          <li><b>Milk Market</b> — blockchain-based secondhand marketplace. Spring Security + JWT authentication and authorization, AWS S3 uploads, Elasticsearch product search
+            (<a href="https://github.com/dev-yunhy96/MilkProject" target="_blank" rel="noopener">GitHub</a>)</li>
+          <li><b>Savior</b> — game open API match history search and skill-based matchmaking. React frontend, JWT login, 1:1 matching logic</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="edu-item">
+      <div class="when">2015.03 – 2021.02</div>
+      <div>
+        <h3>B.S. in Software, Korea Polytechnic University (now Tech University of Korea)</h3>
+        <p>Capstone project: an AI-based drowsiness prevention system</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>I'm Huiyeong Yun — an engineer who proves value through well-crafted systems.</p>
+    <p style="margin-top:10px;">
+      <a href="mailto:yunhy96@naver.com">yunhy96@naver.com</a> ·
+      <a href="https://github.com/yunhy96-web" target="_blank" rel="noopener">github.com/yunhy96-web</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
