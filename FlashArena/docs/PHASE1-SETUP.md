@@ -9,7 +9,8 @@
 |---|---|---|
 | Backend | **Java 21 / Spring Boot 3.x** | 스레드 풀(최대 50), Redisson 분산 락, `@Scheduled` 릴레이어 |
 | Frontend | **Vite + React + TypeScript + Tailwind** | 단일 Playground 대시보드, SSE 실시간 로그 |
-| Cache/Queue | **Redis 1대** | 분산 락 + 비동기 메시지 브로커 겸용 (메모리 절약) |
+| Cache | **Redis 1대** | 분산 락(Redisson) + DECR 카운터 |
+| Queue | **Kafka 1대** | KRaft 단일 노드. Outbox 릴레이어 → `flasharena.order-events`(3 파티션) → payment 소비자 그룹 |
 | Database | **PostgreSQL 1 인스턴스** | EC2 프리티어 RAM 1GB 제약 가정 |
 
 ### 핵심 제약 (절대 위반 금지)
@@ -59,9 +60,14 @@ done
 > 운영 단계에선 Spring Boot **Flyway** 로 `V1~V5` 마이그레이션 자동화 권장
 > (`ddl-auto: none` 로 두고 DDL을 단일 진실 소스로 유지).
 
-### 3-3. Redis (분산 락 + 큐 겸용)
+### 3-3. Redis (분산 락 + 카운터)
 ```bash
 docker run -d --name flasharena-redis -p 6379:6379 redis:7-alpine
+```
+
+### 3-4. Kafka (KRaft 단일 노드, 토픽은 앱 기동 시 자동 생성)
+```bash
+docker run -d --name flasharena-kafka -p 9092:9092 apache/kafka:3.9.0
 ```
 
 ## 4. 생성되는 스키마 한눈에 보기

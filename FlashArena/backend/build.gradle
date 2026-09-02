@@ -27,6 +27,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.redisson:redisson-spring-boot-starter:3.40.2'
 
+    // Kafka: Outbox 릴레이어(생산자) ↔ payment 소비자 사이의 이벤트 브로커.
+    implementation 'org.springframework.kafka:spring-kafka'
+
     // Spring Security 풀 필터체인은 쓰지 않는다. BCryptPasswordEncoder 만 사용.
     implementation 'org.springframework.security:spring-security-crypto'
 

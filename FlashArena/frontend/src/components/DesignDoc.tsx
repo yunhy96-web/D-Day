@@ -15,8 +15,8 @@ export default function DesignDoc() {
         <h2 className="mb-1 text-lg font-bold text-slate-100">아키텍처 개요</h2>
         <p className="mb-4 text-sm text-slate-400">
           진짜 MSA가 아니라 <strong className="text-slate-200">모듈러 모놀리스</strong>다. 단일 Spring
-          Boot 앱이지만 order·payment·auth 를 도메인+DB 스키마로 분리하고, 스키마 간 FK 없이 이벤트(Redis
-          Stream)로만 연결해 — 필요해지면 독립 서비스로 쪼갤 수 있는 경계를 미리 그어뒀다.
+          Boot 앱이지만 order·payment·auth 를 도메인+DB 스키마로 분리하고, 스키마 간 FK 없이 이벤트(Kafka
+          토픽)로만 연결해 — 필요해지면 독립 서비스로 쪼갤 수 있는 경계를 미리 그어뒀다.
         </p>
         <div className="space-y-5">
           <DiagramCard title="전체 아키텍처" chart={ARCHITECTURE} />

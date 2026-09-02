@@ -12,7 +12,7 @@ import com.tngtech.archunit.lang.ArchRule;
  * 모듈러 모놀리스 경계를 빌드 타임에 강제하는 ArchUnit 규칙.
  * <p>경계는 "규약"이 아니라 "테스트로 강제되는 불변식"이다 — 위반하면 빌드가 실패한다.
  * 도메인(order/payment/auth)은 서로의 내부(infrastructure/domain)를 직접 건드릴 수 없고,
- * 교차 통신은 공개 application 포트 또는 이벤트(Redis Stream)로만 한다.
+ * 교차 통신은 공개 application 포트 또는 이벤트(Kafka)로만 한다.
  */
 @AnalyzeClasses(packages = "com.flasharena", importOptions = ImportOption.DoNotIncludeTests.class)
 class ModularBoundaryTest {

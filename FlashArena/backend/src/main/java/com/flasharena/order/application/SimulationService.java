@@ -8,6 +8,7 @@ import com.flasharena.payment.application.PaymentResetService;
 import jakarta.annotation.PreDestroy;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.kafka.core.KafkaAdmin;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.OffsetSpec;
+import org.apache.kafka.clients.admin.RecordsToDelete;
+import org.apache.kafka.clients.admin.TopicDescription;
+import org.apache.kafka.common.TopicPartition;
 import org.springframework.stereotype.Service;
 
 /**
@@ -56,7 +63,8 @@ public class SimulationService {
     private final OutboxRepository outboxRepository;
     private final PaymentResetService paymentResetService;
     private final StringRedisTemplate redisTemplate;
-    private final String streamKey;
+    private final KafkaAdmin kafkaAdmin;
+    private final String topic;
 
     // run 오케스트레이션 전용 executor (워커 50-풀과 별개). 각 run 1 스레드를 점유한 채 50-풀을 굴린다.
     private final ExecutorService orchestrator = Executors.newCachedThreadPool(r -> {
@@ -80,7 +88,8 @@ public class SimulationService {
             OutboxRepository outboxRepository,
             PaymentResetService paymentResetService,
             StringRedisTemplate redisTemplate,
-            @Value("${app.stream.key:flasharena:order-events}") String streamKey) {
+            KafkaAdmin kafkaAdmin,
+            @Value("${app.kafka.topic:flasharena.order-events}") String topic) {
         this.orderProcessor = orderProcessor;
         this.redissonClient = redissonClient;
         this.logger = logger;
@@ -88,7 +97,8 @@ public class SimulationService {
         this.outboxRepository = outboxRepository;
         this.paymentResetService = paymentResetService;
         this.redisTemplate = redisTemplate;
-        this.streamKey = streamKey;
+        this.kafkaAdmin = kafkaAdmin;
+        this.topic = topic;
     }
 
     /**
@@ -199,16 +209,23 @@ public class SimulationService {
      * ⚠️ 이들은 서로 다른 스키마/저장소에 대한 "별개의" 작업이다 — 단일 교차 스키마 트랜잭션이 아니다.
      *   - outbox 행 삭제(order 스키마, 자체 트랜잭션)
      *   - payment_history 행 삭제(payment 스키마, 자체 트랜잭션)
-     *   - 스트림은 XTRIM MAXLEN 0 으로 비운다(키를 지우지 않아 소비자 그룹은 유지).
+     *   - 토픽은 deleteRecords(각 파티션 최신 오프셋 이전 삭제)로 비운다 — Kafka 의 XTRIM 격.
+     *     토픽·소비자 그룹은 그대로 남고, 소비자 오프셋이 새 시작점보다 뒤처지면 auto-offset-reset=earliest 로 따라온다.
      */
     private void resetMessagingResidue() {
         outboxRepository.deleteAllOutbox();
         paymentResetService.resetHistory();
-        try {
-            // 스트림 키를 삭제하면 소비자 그룹까지 사라지므로, 길이만 0 으로 잘라 잔여 메시지를 제거한다.
-            redisTemplate.opsForStream().trim(streamKey, 0);
-        } catch (RuntimeException e) {
-            // 첫 run 등 스트림이 아직 없을 수 있음 — 무시.
+        try (AdminClient admin = AdminClient.create(kafkaAdmin.getConfigurationProperties())) {
+            TopicDescription desc = admin.describeTopics(List.of(topic)).topicNameValues().get(topic).get();
+            Map<TopicPartition, OffsetSpec> latest = new HashMap<>();
+            desc.partitions().forEach(p -> latest.put(new TopicPartition(topic, p.partition()), OffsetSpec.latest()));
+            Map<TopicPartition, RecordsToDelete> toDelete = new HashMap<>();
+            admin.listOffsets(latest).all().get()
+                    .forEach((tp, info) -> toDelete.put(tp, RecordsToDelete.beforeOffset(info.offset())));
+            admin.deleteRecords(toDelete).all().get();
+        } catch (Exception e) {
+            // 첫 run 등 토픽이 아직 없을 수 있음 — 무시.
+            log.debug("토픽 잔여 메시지 정리 생략: {}", e.getMessage());
         }
     }
 

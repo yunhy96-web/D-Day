@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
  * payment.payment_history 매핑 엔티티 (소비자 멱등성 = Inbox).
  * order_id 에 DB UNIQUE(uq_payment_history_order_id) 가 걸려 있어 같은 주문은 한 번만 결제 처리된다.
  * → exists() 선체크는 빠른 경로일 뿐, 동시 중복 도착 시 진짜 방어선은 이 UNIQUE 제약(DuplicateKey).
- * payment 도메인은 order 스키마/아웃박스를 절대 조회하지 않고 Redis Stream 만 구독한다.
+ * payment 도메인은 order 스키마/아웃박스를 절대 조회하지 않고 Kafka 토픽만 구독한다.
  */
 @Entity
 @Table(name = "payment_history", schema = "payment")

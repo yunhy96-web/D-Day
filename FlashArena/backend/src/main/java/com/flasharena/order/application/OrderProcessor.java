@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
  * SimulationService 가 직접 호출하면 self-invocation 이라 프록시 트랜잭션이 안 걸리므로
  * 별도 빈으로 분리해 각 워커 호출마다 REQUIRES_NEW 트랜잭션이 시작되게 한다.
  * <p>구매 성공 시 orders INSERT 와 outbox INSERT 를 같은 트랜잭션에서 원자적으로 커밋한다
- * (Transactional Outbox). Redis 는 이 트랜잭션 안에서 절대 건드리지 않는다(dual-write 회피).
+ * (Transactional Outbox). 브로커(Kafka)는 이 트랜잭션 안에서 절대 건드리지 않는다(dual-write 회피).
  */
 @Component
 public class OrderProcessor {

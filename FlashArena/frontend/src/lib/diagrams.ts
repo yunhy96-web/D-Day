@@ -12,7 +12,7 @@ export const ARCHITECTURE = `flowchart LR
         Sim["SimulationService<br/>동시성 시뮬레이터"]
         OP["OrderProcessor<br/>재고차감+주문+outbox<br/>원자 커밋"]
         Relay["OutboxRelayer<br/>@Scheduled 0.5s"]
-        Consumer["PaymentConsumer<br/>멱등 소비 → XACK"]
+        Consumer["PaymentConsumer<br/>멱등 소비 → 오프셋 커밋"]
     end
 
     subgraph PG["PostgreSQL"]
@@ -22,8 +22,11 @@ export const ARCHITECTURE = `flowchart LR
     end
 
     subgraph R["Redis"]
-        Stream["Stream<br/>flasharena:order-events"]
         Lock["Redisson 분산락"]
+    end
+
+    subgraph K["Kafka"]
+        Stream["topic flasharena.order-events<br/>3 partitions · key=orderId"]
     end
 
     Browser -->|"POST /run → 202 + runId"| Sim
@@ -32,8 +35,8 @@ export const ARCHITECTURE = `flowchart LR
     Sim -.->|"REDIS_LOCK 모드"| Lock
     OP -->|"한 트랜잭션"| Order
     Relay -->|"① READY SELECT<br/>FOR UPDATE SKIP LOCKED"| Order
-    Relay -->|"② XADD"| Stream
-    Stream -->|"③ XREADGROUP"| Consumer
+    Relay -->|"② send (acks=all)"| Stream
+    Stream -->|"③ poll (group payment-group)"| Consumer
     Consumer -->|"UNIQUE order_id 멱등 INSERT"| Pay`
 
 /** E. Redis 카운터(DECR) 게이트키핑 — 락 없이 당첨자만 DB로. */
@@ -56,10 +59,10 @@ export const MODULAR_MONOLITH = `flowchart TB
         O["order 모듈<br/>schema order"]
         P["payment 모듈<br/>schema payment"]
         A["auth 모듈<br/>schema auth"]
-        O -. "이벤트만<br/>(Redis Stream)" .-> P
+        O -. "이벤트만<br/>(Kafka 토픽)" .-> P
     end
 
-    Bus(["Redis Stream<br/>(도메인 간 유일한 통신 채널)"])
+    Bus(["Kafka 토픽<br/>(도메인 간 유일한 통신 채널)"])
     now --- Bus
 
     subgraph later["분리 시 — 독립 서비스 (경계 그대로 승격)"]
@@ -114,22 +117,22 @@ export const EVENT_PIPELINE = `sequenceDiagram
     participant OP as OrderProcessor
     participant DB as PostgreSQL (order)
     participant Relay as OutboxRelayer
-    participant Stream as Redis Stream
+    participant Stream as Kafka topic
     participant Con as PaymentConsumer
     participant Pay as PostgreSQL (payment)
 
     rect rgb(30, 41, 59)
     Note over OP,DB: ① 주문 트랜잭션 — 원자적 (한 커밋)
     OP->>DB: 재고 차감 + orders INSERT + outbox INSERT(READY)
-    Note over OP,DB: Redis 안 건드림 → dual-write 회피
+    Note over OP,DB: 브로커 안 건드림 → dual-write 회피
     end
 
     rect rgb(15, 42, 30)
     Note over Relay,Stream: ② 릴레이 — 0.5초 폴링 (별도 트랜잭션)
     Relay->>DB: READY SELECT … FOR UPDATE SKIP LOCKED
     DB-->>Relay: READY 이벤트 배치
-    Relay->>Stream: XADD
-    alt XADD 성공
+    Relay->>Stream: send(key=orderId), acks=all
+    alt 브로커 ack
         Relay->>DB: outbox → PUBLISHED
     else 실패
         Relay->>DB: retry_count++ (상한 초과 시 FAILED)
@@ -138,12 +141,12 @@ export const EVENT_PIPELINE = `sequenceDiagram
 
     rect rgb(42, 35, 15)
     Note over Con,Pay: ③ 멱등 소비 — at-least-once 방어
-    Stream->>Con: XREADGROUP
+    Stream->>Con: poll (수동 커밋)
     Con->>Pay: existsByOrderId?
     alt 이미 처리됨
-        Con->>Stream: XACK (skip)
+        Con->>Stream: 오프셋 커밋 (skip)
     else 신규
         Con->>Pay: INSERT (UNIQUE order_id = 최종 방어선)
-        Con->>Stream: XACK
+        Con->>Stream: 오프셋 커밋
     end
     end`

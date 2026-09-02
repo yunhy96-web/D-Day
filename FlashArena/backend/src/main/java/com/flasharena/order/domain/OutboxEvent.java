@@ -17,7 +17,7 @@ import org.hibernate.type.SqlTypes;
 /**
  * "order".outbox 매핑 엔티티 (Transactional Outbox).
  * 핵심: orders INSERT 와 이 outbox INSERT 가 같은 order-스키마 로컬 트랜잭션에서 원자적으로 커밋된다.
- * → 교차 스키마 트랜잭션 / Redis dual-write 없이 이벤트 유실 0%.
+ * → 교차 스키마 트랜잭션 / 브로커 dual-write 없이 이벤트 유실 0%.
  * payload 는 JSONB 컬럼 → Hibernate 6 @JdbcTypeCode(JSON) 로 String 에 매핑(round-trip 검증됨).
  * created_at 은 DB default(now()) 가 채우므로 쓰기를 막는다.
  */
@@ -50,7 +50,7 @@ public class OutboxEvent {
     @Column(name = "payload", nullable = false)
     private String payload;
 
-    // READY → 발행 대상 / PUBLISHED → Redis(XADD) 적재 완료 / FAILED → 재시도 초과(준-DLQ)
+    // READY → 발행 대상 / PUBLISHED → Kafka 브로커 ack 수신 / FAILED → 재시도 초과(준-DLQ)
     @Column(name = "status", nullable = false, length = 20)
     private String status;
 

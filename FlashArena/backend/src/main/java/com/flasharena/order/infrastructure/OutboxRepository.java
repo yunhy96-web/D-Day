@@ -27,7 +27,7 @@ public interface OutboxRepository extends JpaRepository<OutboxEvent, UUID> {
             """, nativeQuery = true)
     List<OutboxEvent> findReadyBatchForUpdate(@Param("limit") int limit);
 
-    /** XADD 성공 → PUBLISHED + published_at 기록. */
+    /** 브로커 ack 수신 → PUBLISHED + published_at 기록. */
     @Modifying
     @Query("""
             UPDATE OutboxEvent o

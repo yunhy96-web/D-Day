@@ -14,6 +14,21 @@ spring:
       # Redisson starter 가 이 설정으로 RedissonClient 를 자동 구성한다 (REDIS_LOCK 모드의 분산 락).
       host: ${REDIS_HOST:127.0.0.1}
       port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:127.0.0.1:9092}
+    producer:
+      # acks=all: ISR 전체가 적재해야 send 가 완료된다. 릴레이어는 이 완료를 받은 뒤에만 PUBLISHED 로 전이.
+      acks: all
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      auto-offset-reset: earliest
+      # 오프셋 커밋은 리스너가 처리 성공 시에만 수동으로 한다(at-least-once).
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    listener:
+      ack-mode: manual
   jpa:
     hibernate:
       # DDL 스크립트(db/ddl/*.sql)가 단일 진실 소스. Hibernate 가 테이블을 만들거나 변경하지 않는다.
@@ -47,8 +62,8 @@ app:
     relay-interval-ms: ${OUTBOX_RELAY_INTERVAL_MS:500}   # 릴레이어 폴링 주기
     batch-size: ${OUTBOX_BATCH_SIZE:100}                 # 틱당 발행 배치 크기
     max-retry: ${OUTBOX_MAX_RETRY:10}                    # 재시도 상한 → 초과 시 FAILED(준-DLQ)
-  # Redis Stream 설정 (생산자=릴레이어 / 소비자=payment 공용)
-  stream:
-    key: ${STREAM_KEY:flasharena:order-events}           # XADD/XREADGROUP 대상 스트림 키
-    group: ${STREAM_GROUP:payment-group}                 # 소비자 그룹
-    consumer: ${STREAM_CONSUMER:payment-1}               # 소비자 이름
+  # Kafka 토픽 설정 (생산자=릴레이어 / 소비자=payment 공용)
+  kafka:
+    topic: ${KAFKA_TOPIC:flasharena.order-events}        # 릴레이어가 발행하고 payment 가 구독하는 토픽
+    group: ${KAFKA_GROUP:payment-group}                  # 소비자 그룹
+    partitions: ${KAFKA_PARTITIONS:3}                    # 키(orderId) 기준 파티셔닝 → 주문 단위 순서 보장

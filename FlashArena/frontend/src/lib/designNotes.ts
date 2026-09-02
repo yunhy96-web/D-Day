@@ -64,7 +64,7 @@ export const DESIGN_NOTES: DesignNote[] = [
     problem:
       '진짜 MSA(독립 배포·네트워크 경계)는 운영 복잡도(분산 트랜잭션, 서비스 디스커버리, 인프라)가 크다. 1인 사이드 프로젝트에서 이를 다 짊어지면 본질(동시성·이벤트 설계)에 집중할 수 없다.',
     decision:
-      '단일 Spring Boot 앱(모듈러 모놀리스)으로 두되, MSA로 분리할 때 필요한 경계는 미리 지킨다 — (1) 도메인을 패키지+DB 스키마로 분리, (2) 스키마 간 물리 FK 금지(ID로만 참조), (3) 도메인 간 통신은 직접 호출이 아니라 이벤트(Redis Stream)로만. payment 는 order 스키마를 절대 조회하지 않는다.',
+      '단일 Spring Boot 앱(모듈러 모놀리스)으로 두되, MSA로 분리할 때 필요한 경계는 미리 지킨다 — (1) 도메인을 패키지+DB 스키마로 분리, (2) 스키마 간 물리 FK 금지(ID로만 참조), (3) 도메인 간 통신은 직접 호출이 아니라 이벤트(Kafka 토픽)로만. payment 는 order 스키마를 절대 조회하지 않는다.',
     why: '이 세 가지만 지키면 나중에 각 모듈을 독립 서비스로 "추출"하는 게 안전해진다. 즉 지금은 단순함을 얻고, 미래의 확장 경로는 닫지 않는다. 이 경계는 규약이 아니라 ArchUnit 테스트로 강제된다 — 다른 도메인의 내부를 import 하면 빌드가 실패한다.',
     chart: MODULAR_MONOLITH,
   },
@@ -72,12 +72,12 @@ export const DESIGN_NOTES: DesignNote[] = [
     id: 'idempotent-consumer',
     date: '2026-05-22',
     title: '멱등 소비자 — at-least-once 환경에서 중복 결제 방지',
-    tags: ['Redis Stream', '멱등성', 'payment'],
+    tags: ['Kafka', '멱등성', 'payment'],
     problem:
-      'Redis Stream 은 메시지를 한 번 이상 전달할 수 있다(at-least-once). 같은 주문 이벤트가 두 번 도착하면 결제가 중복 적재될 수 있다.',
+      'Kafka 는 수동 커밋 환경에서 메시지를 한 번 이상 전달할 수 있다(at-least-once). 리밸런스나 커밋 전 장애가 나면 같은 오프셋부터 다시 읽는다. 같은 주문 이벤트가 두 번 도착하면 결제가 중복 적재될 수 있다.',
     decision:
-      'payment_history 의 order_id 에 UNIQUE 제약을 걸고, 소비자는 (1) existsByOrderId 빠른 경로 → (2) INSERT 시도 → UNIQUE 충돌이면 "이미 처리됨"으로 간주해 스킵한다. 성공 시에만 XACK.',
-    why: 'UNIQUE 제약을 "최종 방어선"으로 두면 애플리케이션 레벨 체크에 경합이 있어도 DB 가 중복을 막아준다. 비-중복 오류는 XACK 하지 않아 재처리되게 한다.',
+      'payment_history 의 order_id 에 UNIQUE 제약을 걸고, 소비자는 (1) existsByOrderId 빠른 경로 → (2) INSERT 시도 → UNIQUE 충돌이면 "이미 처리됨"으로 간주해 스킵한다. 성공 시에만 오프셋을 커밋한다.',
+    why: 'UNIQUE 제약을 "최종 방어선"으로 두면 애플리케이션 레벨 체크에 경합이 있어도 DB 가 중복을 막아준다. 비-중복 오류는 커밋하지 않아 같은 오프셋부터 재처리되게 한다.',
     chart: EVENT_PIPELINE,
   },
   {
@@ -88,7 +88,7 @@ export const DESIGN_NOTES: DesignNote[] = [
     problem:
       'DB 에 주문을 쓰면서 동시에 메시지 브로커로 이벤트를 발행하면, 한쪽만 성공해 "주문은 있는데 이벤트는 사라진" 상태가 생길 수 있다(dual-write).',
     decision:
-      '재고 차감 + 주문 INSERT + outbox INSERT 를 같은 로컬 트랜잭션에서 원자적으로 커밋한다. Redis 는 이 트랜잭션 안에서 절대 건드리지 않고, 별도 릴레이어가 outbox 를 폴링해 발행한다.',
+      '재고 차감 + 주문 INSERT + outbox INSERT 를 같은 로컬 트랜잭션에서 원자적으로 커밋한다. 브로커(Kafka)는 이 트랜잭션 안에서 절대 건드리지 않고, 별도 릴레이어가 outbox 를 폴링해 발행한다(key=orderId, acks=all).',
     why: '비즈니스 데이터와 "발행할 이벤트"를 한 커밋으로 묶으면 이벤트 유실이 원천 차단된다. 발행 실패는 릴레이어가 재시도하므로 at-least-once 가 보장된다.',
   },
   {

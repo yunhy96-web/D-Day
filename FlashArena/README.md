@@ -15,7 +15,7 @@ Redis 분산 락을 걸면 정확히 막힌다"를 면접관에게 **실시간 �
 ## 스택
 - Backend: Java 21 / Spring Boot 3.x  (port 8092)
 - Frontend: Vite + React + TS + Tailwind
-- Redis 1대 (분산 락 + 메시지 큐 겸용) · PostgreSQL 1 인스턴스(3 스키마 격리)
+- Redis 1대 (분산 락·카운터) · Kafka 1대 (KRaft 단일 노드, 주문 이벤트 토픽) · PostgreSQL 1 인스턴스(3 스키마 격리)
 
 ## 아키텍처 제약
 단일 물리 DB 안에서 `auth` / `order` / `payment` 스키마로 도메인을 격리하고,
@@ -25,11 +25,11 @@ Redis 분산 락을 걸면 정확히 막힌다"를 면접관에게 **실시간 �
 - [x] **Phase 1** — 초기 설정 가이드 & DB DDL → [`docs/PHASE1-SETUP.md`](docs/PHASE1-SETUP.md)
 - [x] **Phase 2** — auth: JWT 공용 계정(user/1234) 로그인 + 인가 인터셉터 (`backend/`)
 - [x] **Phase 3** — order: 동시성 시뮬레이터 (SYNC 오버셀 연출 / REDIS_LOCK 정확 차감), `POST /api/simulator/run`
-- [x] **Phase 4** — Transactional Outbox(`order.outbox`) + Redis Streams 릴레이어 + payment 멱등 소비(`payment.payment_history`)
+- [x] **Phase 4** — Transactional Outbox(`order.outbox`) + Kafka 릴레이어(key=orderId 파티셔닝, acks=all) + payment 멱등 소비(수동 오프셋 커밋, `payment.payment_history`)
 - [x] **Phase 5** — Frontend Playground 대시보드(`frontend/`, Vite+React+Tailwind) + 백엔드 SSE 실시간 로그(`/api/simulator/stream/{runId}`)
 
 ## 실행 방법 (로컬)
-> 사전: 공용 PostgreSQL(`checkstock-postgres`)·Redis(`flasharena-redis`) 컨테이너가 떠 있어야 함.
+> 사전: 공용 PostgreSQL(`checkstock-postgres`)·Redis(`flasharena-redis`)·Kafka(`flasharena-kafka`) 컨테이너가 떠 있어야 함.
 1. 백엔드: `cd backend && ./gradlew bootRun`  (port 8092)
 2. 프론트: `cd frontend && npm install && npm run dev` → 브라우저에서 안내된 주소(기본 5173, 점유 시 5174/5175) 열기
 3. 자동 로그인(user/1234) → 모드 선택 → 동시 요청/재고 입력 → 🚀 시작 → 실시간 로그 + 결과 리포트

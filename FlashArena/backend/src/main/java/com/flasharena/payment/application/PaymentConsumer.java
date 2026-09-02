@@ -13,13 +13,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 멱등 소비자: Redis Stream 으로 전달된 ORDER_COMPLETED 이벤트를 결제 이력으로 멱등하게 적재한다.
+ * 멱등 소비자: Kafka 토픽으로 전달된 ORDER_COMPLETED 이벤트를 결제 이력으로 멱등하게 적재한다.
  * <p>멱등성 보장 순서:
- *   1) existsByOrderId 빠른 경로 → 이미 처리됨이면 스킵(호출부가 XACK).
+ *   1) existsByOrderId 빠른 경로 → 이미 처리됨이면 스킵(호출부가 오프셋 커밋).
  *   2) INSERT 시도 → DB UNIQUE(uq_payment_history_order_id) 위반(DuplicateKey)이면 "이미 처리됨"으로 간주(스킵).
  *      ← 동시 중복 도착까지 막는 진짜 방어선.
- *   3) 정상 처리 → 호출부가 XACK.
- * <p>중복이 아닌 오류면 예외를 던져 XACK 하지 않게 한다(PEL 에 남아 재전달).
+ *   3) 정상 처리 → 호출부가 오프셋 커밋.
+ * <p>중복이 아닌 오류면 예외를 던져 커밋하지 않게 한다(같은 오프셋부터 재시도).
  * payment 는 order 스키마/아웃박스를 절대 조회하지 않는다.
  */
 @Component
@@ -38,8 +38,8 @@ public class PaymentConsumer {
     /**
      * 한 메시지를 멱등하게 처리한다.
      *
-     * @return true = 처리(또는 중복 스킵) 완료 → 호출부가 XACK 해야 함.
-     *         예외 throw = 비-중복 오류 → XACK 하지 않음(재전달 대상).
+     * @return true = 처리(또는 중복 스킵) 완료 → 호출부가 오프셋을 커밋해야 함.
+     *         예외 throw = 비-중복 오류 → 커밋하지 않음(재시도 대상).
      */
     @Transactional
     public boolean handle(Map<String, String> fields) {

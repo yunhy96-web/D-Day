@@ -1,6 +1,6 @@
 # FlashArena 배포 가이드
 
-배포 단위는 셋이다: **정적 프론트(Vite dist) / 백엔드(Spring Boot) / 인프라(PostgreSQL + Redis)**.
+배포 단위는 셋이다: **정적 프론트(Vite dist) / 백엔드(Spring Boot) / 인프라(PostgreSQL + Redis + Kafka)**.
 
 ## 두 가지 토폴로지
 
@@ -8,7 +8,7 @@
 
 ```
 방문자 ─HTTPS─▶ app.example.com   (정적 프론트: Vercel/Netlify/S3 등)
-   └────HTTPS───▶ api.example.com   (백엔드)  ──▶ Postgres + Redis
+   └────HTTPS───▶ api.example.com   (백엔드)  ──▶ Postgres + Redis + Kafka
 ```
 
 - 프론트 빌드: `VITE_API_BASE=https://api.example.com`
@@ -19,7 +19,7 @@
 ```
 방문자 ─HTTPS─▶ flasharena.example.com (nginx)
                   ├─ /      → 정적 프론트 파일
-                  └─ /api/  → 백엔드(:8092) 프록시  ──▶ Postgres + Redis
+                  └─ /api/  → 백엔드(:8092) 프록시  ──▶ Postgres + Redis + Kafka
 ```
 
 - nginx 설정: [`nginx/flasharena.conf`](./nginx/flasharena.conf)
@@ -36,6 +36,8 @@
 | `DB_URL` / `DB_USER` / `DB_PASSWORD` | PostgreSQL 접속 | `...20251220` |
 | `AUTH_PW` | 데모 계정 비밀번호 | `1234` |
 | `REDIS_HOST` / `REDIS_PORT` | Redis 접속 | `127.0.0.1:6379` |
+| `KAFKA_BOOTSTRAP` | Kafka 부트스트랩 서버 | `127.0.0.1:9092` |
+| `KAFKA_TOPIC` / `KAFKA_GROUP` | 주문 이벤트 토픽 / 소비자 그룹 | `flasharena.order-events` / `payment-group` |
 
 ## 배포 체크리스트
 
