@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>환불 사고, 쉽게 이해하기 — 5살도 이해하는 설명</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif;
+    background: #f6f7fb; color: #1f2430; line-height: 1.6;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-size: 30px; text-align: center; margin-bottom: 8px; }
+  .subtitle { text-align: center; color: #6b7280; margin-bottom: 48px; font-size: 16px; }
+  .scene {
+    background: #fff; border-radius: 20px; padding: 32px 28px;
+    margin-bottom: 28px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+  }
+  .scene .step {
+    display: inline-block; background: #4f6ef7; color: #fff;
+    font-size: 13px; font-weight: 700; border-radius: 999px;
+    padding: 4px 14px; margin-bottom: 14px;
+  }
+  .scene h2 { font-size: 21px; margin-bottom: 18px; }
+  .big { font-size: 56px; text-align: center; margin: 18px 0; letter-spacing: 6px; }
+  .caption { text-align: center; color: #6b7280; font-size: 15px; margin-top: -6px; }
+  .row { display: flex; gap: 14px; margin: 18px 0; flex-wrap: wrap; }
+  .card {
+    flex: 1; min-width: 150px; border-radius: 14px; padding: 18px 14px;
+    text-align: center; font-size: 15px;
+  }
+  .card .icon { font-size: 40px; display: block; margin-bottom: 8px; }
+  .card .amt { font-weight: 800; font-size: 18px; margin-top: 4px; }
+  .bank { background: #e8f5ee; border: 2px solid #34a86b; }
+  .ledger { background: #fdf0e7; border: 2px solid #e8853d; }
+  .neutral { background: #eef1f8; border: 2px solid #c3cbe0; }
+  .bad { background: #fdeaea; border: 2px solid #e05252; }
+  .good { background: #e8f5ee; border: 2px solid #34a86b; }
+  .wallets { display: flex; gap: 10px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
+  .wallet {
+    width: 130px; border-radius: 14px; padding: 14px 10px; text-align: center;
+    background: #eef1f8; border: 2px solid #c3cbe0; font-size: 14px;
+  }
+  .wallet .icon { font-size: 34px; display: block; }
+  .wallet .amt { font-weight: 800; font-size: 16px; }
+  .wallet.empty { background: #f3f4f6; border-style: dashed; color: #9ca3af; }
+  .wallet.empty .amt { text-decoration: line-through; }
+  .tag { font-size: 12px; color: #6b7280; display: block; margin-top: 2px; }
+  .arrow { text-align: center; font-size: 34px; color: #9ca3af; margin: 6px 0; }
+  .note {
+    background: #fff8dc; border-left: 5px solid #f0c33c; border-radius: 8px;
+    padding: 14px 18px; font-size: 15px; margin-top: 18px;
+  }
+  .talk {
+    background: #eef1f8; border-radius: 14px; padding: 14px 18px;
+    font-size: 16px; margin: 10px 0;
+  }
+  .talk b { color: #4f6ef7; }
+  .vs { display: flex; align-items: stretch; gap: 14px; margin: 18px 0; }
+  .final { text-align: center; }
+  .final .emoji { font-size: 64px; }
+  ul.fix { list-style: none; margin-top: 12px; }
+  ul.fix li { padding: 10px 14px; margin-bottom: 8px; background: #eef1f8; border-radius: 10px; font-size: 15px; }
+  ul.fix li b { color: #4f6ef7; }
+  .strike { text-decoration: line-through; color: #9ca3af; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>💸 환불은 됐는데, 기록이 사라졌어요</h1>
+<p style="text-align:center;font-size:13px;color:#888;margin-bottom:24px">※ 실제 사례를 바탕으로 주문번호·금액·회사명 등 식별 정보를 바꾼 가상 사례입니다.</p>
+  <p class="subtitle">어느 티켓 주문에서 무슨 일이 있었는지, 그림으로 5분 설명</p>
+
+  <!-- SCENE 1 -->
+  <div class="scene">
+    <span class="step">1단계 · 등장인물</span>
+    <h2>서비스에는 "은행"과 "장부"가 따로 있어요</h2>
+    <div class="vs">
+      <div class="card bank">
+        <span class="icon">🏦</span>
+        <b>은행 (PG사)</b><br>
+        진짜 돈이 오가는 곳<br>
+        <span class="tag">한번 보낸 돈은 못 돌려세움</span>
+      </div>
+      <div class="card ledger">
+        <span class="icon">📒</span>
+        <b>장부 (서비스 DB)</b><br>
+        서비스가 적어두는 기록<br>
+        <span class="tag">어드민 화면은 이걸 보여줌</span>
+      </div>
+    </div>
+    <p class="note">이 사고의 핵심: <b>은행에서는 돈이 나갔는데, 장부에는 안 적힌 것.</b><br>고객 돈 문제가 아니라 <b>기록 불일치</b> 문제예요. (고객은 전액 다 돌려받았어요 ✅)</p>
+  </div>
+
+  <!-- SCENE 2 -->
+  <div class="scene">
+    <span class="step">2단계 · 주문 구조</span>
+    <h2>티켓 3장인데, 돈은 지갑 4개에 나눠 담겨 있었어요</h2>
+    <div class="big">🎫 🎫 🎫</div>
+    <p class="caption">티켓 1 ($180) · 티켓 2 ($180) · 티켓 3 ($160) = 총 $520</p>
+    <div class="arrow">⬇️ 결제는 이렇게 나눠서 됨</div>
+    <div class="wallets">
+      <div class="wallet"><span class="icon">👛</span><span class="amt">$440</span><span class="tag">처음 산 날 결제</span></div>
+      <div class="wallet"><span class="icon">🪙</span><span class="amt">$30</span><span class="tag">업그레이드 (티켓1 몫)</span></div>
+      <div class="wallet"><span class="icon">🪙</span><span class="amt">$30</span><span class="tag">업그레이드 (티켓2 몫)</span></div>
+      <div class="wallet"><span class="icon">🪙</span><span class="amt">$20</span><span class="tag">업그레이드 (티켓3 몫)</span></div>
+    </div>
+    <p class="note">즉, <b>티켓 하나를 환불하려면 여러 지갑에서 조금씩 꺼내야</b> 해요.<br>각 티켓의 몫이 어느 지갑에 얼마씩 있는지 장부에 적혀 있어요.</p>
+  </div>
+
+  <!-- SCENE 3 -->
+  <div class="scene">
+    <span class="step">3단계 · 첫 번째 환불 (성공했지만...)</span>
+    <h2>티켓 1 환불이 남의 지갑부터 털어갔어요</h2>
+    <div class="talk">🧑‍💼 고객: "티켓 1 환불해주세요" → ✅ 성공! $180 돌려받음</div>
+    <p style="margin:14px 0 6px; font-size:15px;">그런데 시스템 규칙이 <b>"최신 지갑부터 꺼내기"</b>였어요:</p>
+    <div class="wallets">
+      <div class="wallet"><span class="icon">👛</span><span class="amt">$440 → $340</span><span class="tag">여기서 $100</span></div>
+      <div class="wallet empty"><span class="icon">🪙</span><span class="amt">$30</span><span class="tag">텅 빔! (티켓1 몫)</span></div>
+      <div class="wallet empty"><span class="icon">🪙</span><span class="amt">$30</span><span class="tag">텅 빔! (티켓2 몫 😱)</span></div>
+      <div class="wallet empty"><span class="icon">🪙</span><span class="amt">$20</span><span class="tag">텅 빔! (티켓3 몫 😱)</span></div>
+    </div>
+    <p class="note">티켓 1은 자기 몫만 가져가면 됐는데, <b>티켓 2·3 몫이 든 지갑까지 먼저 비워버렸어요.</b><br>여기가 사고의 <b>시작점</b>이에요.</p>
+  </div>
+
+  <!-- SCENE 4 -->
+  <div class="scene">
+    <span class="step">4단계 · 두 번째 환불 (여기서 사고)</span>
+    <h2>$30이 모자라자, 시스템이 "없던 일"로 만들었어요</h2>
+    <div class="talk">🧑‍💼 고객: "티켓 2도 환불해주세요" ($180 필요)</div>
+    <p style="margin:14px 0 6px; font-size:15px;">시스템이 지갑을 돌며 꺼낸 돈:</p>
+    <div class="row">
+      <div class="card good"><span class="icon">✅</span>큰 지갑에서<div class="amt">$150 송금됨</div><span class="tag">은행에서 진짜 나감!</span></div>
+      <div class="card bad"><span class="icon">❌</span>업그레이드 지갑<div class="amt">$30 못 꺼냄</div><span class="tag">티켓1이 이미 비움</span></div>
+    </div>
+    <div class="arrow">⬇️</div>
+    <div class="talk">🤖 시스템: "$30 모자라네? <b>실패! 장부 기록 전부 지워!</b>" 🧽📒</div>
+    <div class="arrow">⬇️</div>
+    <div class="vs">
+      <div class="card bank"><span class="icon">🏦</span>은행<div class="amt">$150 이미 나감</div><span class="tag">돈은 회수 불가 😰</span></div>
+      <div class="card ledger"><span class="icon">📒</span>장부<div class="amt">기록 $0</div><span class="tag">지워져서 깨끗함</span></div>
+    </div>
+    <p class="note"><b>여기가 버그예요.</b> "돈이 충분한가?"를 <b>돈을 보내기 전에</b> 확인했어야 하는데,<br><b>보낸 후에</b> 확인하고 실패시켰어요. 은행 송금은 지우개로 못 지우는데, 장부만 지운 거죠.<br>그리고 "이미 보낸 $150"을 따로 적어두는 <b>보완 장치(보상 로직)도 없었어요.</b></p>
+  </div>
+
+  <!-- SCENE 5 -->
+  <div class="scene">
+    <span class="step">5단계 · 반복</span>
+    <h2>고객이 다시 누를 때마다 같은 일이 반복됐어요</h2>
+    <div class="talk">🧑‍💼 "어? 실패했네. 다시 눌러야지" × 십수 번</div>
+    <div class="big">🔁 💸 🧽 → 🔁 💸 🧽 → 🔁 ❌</div>
+    <p class="caption">누를 때마다: 은행에서 남은 돈 또 나감 → 실패 → 장부 또 지움</p>
+    <p class="note">장부가 매번 지워지니 시스템은 <b>"아직 환불 안 했네?"</b> 하고 은행에서 또 꺼냈어요.<br>다행히 <b>은행(PG사)은 받은 돈($520)보다 더 내주지 않아서</b>, 정확히 전액에서 멈췄어요.<br>→ 그래서 "PG사는 전액 환불" 상태가 된 거예요. 과환불은 없어요 ✅</p>
+  </div>
+
+  <!-- SCENE 6 -->
+  <div class="scene">
+    <span class="step">6단계 · 최종 상태</span>
+    <h2>그래서 지금 이렇게 보이는 거예요</h2>
+    <div class="vs">
+      <div class="card bank"><span class="icon">🏦</span><b>은행 (PG사)</b><div class="amt">$520 전액 환불 ✅</div><span class="tag">고객 피해 없음</span></div>
+      <div class="card ledger"><span class="icon">📒</span><b>장부 (어드민)</b><div class="amt">$180만 기록</div><span class="tag">티켓 2·3 기록 없음 ❌</span></div>
+    </div>
+    <ul class="fix">
+      <li>🖥️ <b>"어드민에 환불 금액이 남아있어요"</b> → 장부가 안 적혀서 그래요. 정정 SQL로 맞추면 끝.</li>
+      <li>🎫 <b>"코드는 다 취소됐어요"</b> → 운영팀 수동 처리 때 취소는 정상 저장됐어요.</li>
+      <li>📧 <b>"이메일이 안 갔어요"</b> → 고객이 직접 시도한 날엔 실패로 못 갔고, 운영팀 처리 땐 발송 성공 기록이 있어요. 스팸함 확인 필요.</li>
+    </ul>
+  </div>
+
+  <!-- SCENE 7 -->
+  <div class="scene final">
+    <span class="step">한 줄 요약</span>
+    <div class="emoji">🏦 ≠ 📒</div>
+    <h2 style="margin-top:10px;">돈은 다 돌려줬는데, 장부 적기를 실패할 때마다<br>지우개로 지워버려서 생긴 "기록 불일치" 사고예요</h2>
+    <ul class="fix" style="text-align:left; margin-top:20px;">
+      <li>1️⃣ <b>기록 정정</b>: 장부를 은행 실제 내역과 똑같이 맞추기 (SQL 준비 완료)</li>
+      <li>2️⃣ <b>재발 방지</b>: 돈 보내기 <b>전에</b> 충분한지 먼저 확인하도록 코드 수정</li>
+      <li>3️⃣ <b>안전장치</b>: 실패하더라도 이미 보낸 돈은 반드시 장부에 남기기</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

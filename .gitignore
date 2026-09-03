@@ -44,3 +44,6 @@ resume/*
 portfolio/*
 !portfolio/index.html
 !portfolio/index_en.html
+
+# --- eli5 원본(익명화 전) ---
+eli5/pickpass-*

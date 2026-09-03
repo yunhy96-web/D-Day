@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>지워지지 않는 장부 만들기 — 아웃박스 패턴</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif;
+    background: #f6f7fb; color: #1f2430; line-height: 1.6;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-size: 30px; text-align: center; margin-bottom: 8px; }
+  .subtitle { text-align: center; color: #6b7280; margin-bottom: 48px; font-size: 16px; }
+  .scene {
+    background: #fff; border-radius: 20px; padding: 32px 28px;
+    margin-bottom: 28px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+  }
+  .scene .step {
+    display: inline-block; background: #4f6ef7; color: #fff;
+    font-size: 13px; font-weight: 700; border-radius: 999px;
+    padding: 4px 14px; margin-bottom: 14px;
+  }
+  .scene h2 { font-size: 21px; margin-bottom: 18px; }
+  .big { font-size: 52px; text-align: center; margin: 18px 0; letter-spacing: 6px; }
+  .caption { text-align: center; color: #6b7280; font-size: 15px; margin-top: -6px; }
+  .row { display: flex; gap: 14px; margin: 18px 0; flex-wrap: wrap; }
+  .card {
+    flex: 1; min-width: 150px; border-radius: 14px; padding: 18px 14px;
+    text-align: center; font-size: 15px;
+  }
+  .card .icon { font-size: 40px; display: block; margin-bottom: 8px; }
+  .card .amt { font-weight: 800; font-size: 17px; margin-top: 4px; }
+  .bank { background: #e8f5ee; border: 2px solid #34a86b; }
+  .ledger { background: #fdf0e7; border: 2px solid #e8853d; }
+  .neutral { background: #eef1f8; border: 2px solid #c3cbe0; }
+  .bad { background: #fdeaea; border: 2px solid #e05252; }
+  .good { background: #e8f5ee; border: 2px solid #34a86b; }
+  .tag { font-size: 12px; color: #6b7280; display: block; margin-top: 2px; }
+  .arrow { text-align: center; font-size: 34px; color: #9ca3af; margin: 6px 0; }
+  .note {
+    background: #fff8dc; border-left: 5px solid #f0c33c; border-radius: 8px;
+    padding: 14px 18px; font-size: 15px; margin-top: 18px;
+  }
+  .talk {
+    background: #eef1f8; border-radius: 14px; padding: 14px 18px;
+    font-size: 16px; margin: 10px 0;
+  }
+  .talk b { color: #4f6ef7; }
+  .vs { display: flex; align-items: stretch; gap: 14px; margin: 18px 0; }
+  .final { text-align: center; }
+  .final .emoji { font-size: 64px; }
+  ul.fix { list-style: none; margin-top: 12px; }
+  ul.fix li { padding: 10px 14px; margin-bottom: 8px; background: #eef1f8; border-radius: 10px; font-size: 15px; }
+  ul.fix li b { color: #4f6ef7; }
+  .memo {
+    background: #fffef5; border: 2px solid #e5dfb8; border-radius: 12px;
+    padding: 16px 18px; margin: 14px 0; font-size: 15px;
+    font-family: "Apple SD Gothic Neo", monospace;
+  }
+  .memo .title { font-weight: 800; margin-bottom: 8px; }
+  .memo .line { padding: 6px 10px; border-radius: 8px; margin-bottom: 6px; background: #f6f4e4; }
+  .memo .line.done { background: #e8f5ee; }
+  .memo .line.pending { background: #fdeaea; }
+  .stamp { display: inline-block; background: #e05252; color: #fff; font-weight: 800;
+    border-radius: 8px; padding: 2px 10px; font-size: 13px; transform: rotate(-4deg); }
+  .stamp.green { background: #34a86b; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>🖊️ 지워지지 않는 장부 만들기</h1>
+<p style="text-align:center;font-size:13px;color:#888;margin-bottom:24px">※ 실제 사례를 바탕으로 주문번호·금액·회사명 등 식별 정보를 바꾼 가상 사례입니다.</p>
+  <p class="subtitle">지난번 환불 사고, 궁극적으로 어떻게 고쳐야 할까요? — 아웃박스 패턴 5분 설명</p>
+
+  <!-- SCENE 0 -->
+  <div class="scene">
+    <span class="step">복습 · 지난 사고</span>
+    <h2>문제는 "연필로 적다가 통째로 지운 것"이었어요</h2>
+    <div class="talk">🤖 예전 시스템: 은행 송금 3건 중 <b>2번째가 실패하면 → 1번째 기록까지 싹 지움</b> 🧽</div>
+    <div class="vs">
+      <div class="card bank"><span class="icon">🏦</span>은행(PG사)<div class="amt">돈은 이미 나감</div><span class="tag">송금은 지우개로 못 지움</span></div>
+      <div class="card ledger"><span class="icon">📒</span>장부(DB)<div class="amt">기록은 사라짐</div><span class="tag">연필+지우개(롤백)라서</span></div>
+    </div>
+    <p class="note">DB 트랜잭션 = <b>연필로 적다가 실패하면 통째로 지우는 규칙.</b><br>회사 안에서만 쓰면 완벽하지만, <b>은행 송금은 지워지지 않아서</b> 둘이 어긋나요.</p>
+  </div>
+
+  <!-- SCENE 1 -->
+  <div class="scene">
+    <span class="step">핵심 아이디어</span>
+    <h2>"하기 전에 적고, 할 때마다 볼펜으로 적는다"</h2>
+    <div class="big">📝 → 💸 → 🖊️ → 🤖</div>
+    <p class="caption">① 할 일 먼저 적기 → ② 돈 보내기 → ③ 한 건마다 즉시 기록 → ④ 순찰 로봇</p>
+    <p class="note">한 문장 요약: <b>돈 보내는 일과 장부 적는 일을 한 묶음(트랜잭션)에 넣지 않는다.</b><br>대신 "적기 → 실행 → 적기"로 쪼개고, 한번 적은 건 절대 안 지워요(볼펜 🖊️).</p>
+  </div>
+
+  <!-- SCENE 2 -->
+  <div class="scene">
+    <span class="step">1단계 · 의도 기록 (Outbox)</span>
+    <h2>돈 보내기 전에, "보낼 예정" 목록부터 적고 도장 꽝</h2>
+    <div class="talk">🧑‍💼 고객: "티켓 2 환불해주세요"</div>
+    <div class="arrow">⬇️ 돈은 아직 1원도 안 움직임</div>
+    <div class="memo">
+      <div class="title">📮 아웃박스 (보낼 편지함)</div>
+      <div class="line">□ 큰 지갑에서 $150 환불하기 — 접수번호 <b>#A1</b></div>
+      <div class="line">□ 업그레이드 지갑에서 $30 환불하기 — 접수번호 <b>#A2</b></div>
+      <div class="line">상태: <b>진행중</b> <span class="stamp green">커밋 도장 ✓</span></div>
+    </div>
+    <p class="note">이 단계에서 실패하면? <b>그냥 없던 일.</b> 돈이 안 움직였으니 아무 피해 없어요.<br>도장(커밋)을 찍었으니 이 목록은 <b>이제 안 지워져요.</b></p>
+  </div>
+
+  <!-- SCENE 3 -->
+  <div class="scene">
+    <span class="step">2단계 · 실행 (Idempotency Key)</span>
+    <h2>접수번호를 들고 은행에 가요 — 같은 번호는 한 번만!</h2>
+    <div class="talk">💁 은행 창구: "접수번호 <b>#A1</b>? 처음 보는 번호네요. 송금해드릴게요 ✅"</div>
+    <div class="talk">💁 은행 창구: "또 <b>#A1</b>? 그건 <b>아까 처리했어요.</b> 두 번 안 보내요 🙅"</div>
+    <p class="note"><b>접수번호 = idempotency key.</b> 지난 사고 때 고객이 십수 번 다시 눌러 매번 돈이 또 나갔죠?<br>이제는 몇 번을 다시 시도해도 <b>같은 번호면 은행이 한 번만 실행</b>해요. 재시도가 안전해져요.</p>
+  </div>
+
+  <!-- SCENE 4 -->
+  <div class="scene">
+    <span class="step">3단계 · 건별 볼펜 기록</span>
+    <h2>한 건 끝날 때마다 볼펜으로 바로 적어요</h2>
+    <div class="memo">
+      <div class="title">📮 아웃박스</div>
+      <div class="line done">☑ #A1 $150 — <b>완료</b> 🖊️ <span class="stamp green">즉시 커밋</span></div>
+      <div class="line pending">□ #A2 $30 — ❌ 실패! (은행 오류)</div>
+      <div class="line">상태: <b>부분완료</b></div>
+    </div>
+    <p class="note"><b>여기가 지난 사고와의 결정적 차이.</b> #A2가 실패해도 #A1 기록은 <b>이미 볼펜으로 적혀서 안 지워져요.</b><br>예전엔 큰 트랜잭션 하나에 묶여서 #A2 실패가 #A1 기록까지 지웠어요(연필 🧽).<br>이제 은행과 장부가 <b>절대 어긋나지 않아요.</b></p>
+  </div>
+
+  <!-- SCENE 5 -->
+  <div class="scene">
+    <span class="step">4단계 · 순찰 로봇 (대사 스케줄러)</span>
+    <h2>못 끝낸 일은 로봇이 주기적으로 마무리해요</h2>
+    <div class="big">🤖 🔍 📮</div>
+    <p class="caption">로봇이 아웃박스를 순찰: "진행중·부분완료가 남아있네?"</p>
+    <ul class="fix">
+      <li>❌ <b>실패한 건(#A2)</b> → 같은 접수번호로 <b>다시 시도</b> (두 번 나갈 걱정 없음)</li>
+      <li>❓ <b>응답을 못 받은 건(타임아웃)</b> → 은행에 <b>"#A3 처리됐어요?"</b> 물어보고 장부를 진실에 맞춤</li>
+      <li>✅ 다 끝나면 상태를 <b>완료</b>로 바꾸고 순찰 끝</li>
+    </ul>
+    <p class="note">"보냈는지 안 보냈는지 모르는" 애매한 실패도 <b>미아가 되지 않아요.</b><br>접수번호가 남아있으니 언제든 은행에 확인해서 맞출 수 있거든요.</p>
+  </div>
+
+  <!-- SCENE 6 -->
+  <div class="scene">
+    <span class="step">보너스 · 하이브리드</span>
+    <h2>고객은 빠르게, 실패는 로봇이 — 두 길을 같이 써요</h2>
+    <div class="vs">
+      <div class="card good"><span class="icon">🏃</span><b>빠른 길 (동기)</b><div class="amt">커밋 직후 바로 실행</div><span class="tag">고객은 몇 초 만에 결과 확인</span></div>
+      <div class="card neutral"><span class="icon">🤖</span><b>안전망 (비동기)</b><div class="amt">실패 건만 로봇이 재처리</div><span class="tag">고객은 기다릴 필요 없음</span></div>
+    </div>
+    <p class="note">평소엔 지금처럼 <b>즉시 환불되는 경험 그대로</b>,<br>문제가 생긴 건만 로봇이 뒤에서 조용히 마무리해요. 둘 중 하나가 아니라 <b>둘 다</b>예요.</p>
+  </div>
+
+  <!-- SCENE 7 -->
+  <div class="scene final">
+    <span class="step">한 줄 요약</span>
+    <div class="emoji">🧽 → 🖊️</div>
+    <h2 style="margin-top:10px;">"실패하면 통째로 지우기"에서<br>"하기 전에 적고, 한 건마다 볼펜으로 적기"로</h2>
+    <ul class="fix" style="text-align:left; margin-top:20px;">
+      <li>📝 <b>1단계</b>: 보낼 목록(아웃박스)부터 적고 커밋 — 실패해도 피해 0</li>
+      <li>🎫 <b>2단계</b>: 접수번호(idempotency key)로 실행 — 재시도해도 한 번만</li>
+      <li>🖊️ <b>3단계</b>: 한 건 끝날 때마다 즉시 커밋 — 뒤가 실패해도 앞 기록 보존</li>
+      <li>🤖 <b>4단계</b>: 순찰 로봇이 남은 건 재시도·확인 — 애매한 실패도 회수</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
