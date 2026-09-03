@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>B-tree 인덱스 - 5살도 이해하는 설명</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
+    background: #fdf9f0;
+    color: #333;
+    line-height: 1.6;
+  }
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  .slide:nth-child(even) { background: #fff; }
+  h1 { font-size: 3rem; margin-bottom: 20px; }
+  h2 { font-size: 2.2rem; margin-bottom: 10px; }
+  .level {
+    font-size: 1.1rem;
+    color: #fff;
+    background: #333;
+    border-radius: 999px;
+    padding: 6px 20px;
+    margin-bottom: 30px;
+    display: inline-block;
+  }
+  .big { font-size: 6rem; margin: 20px 0; }
+  .row {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 25px 0;
+  }
+  .box {
+    background: #fff;
+    border: 4px solid #333;
+    border-radius: 20px;
+    padding: 25px 35px;
+    font-size: 1.4rem;
+    box-shadow: 6px 6px 0 #333;
+  }
+  .box .emoji { font-size: 4rem; display: block; margin-bottom: 10px; }
+  .box.mini { padding: 15px 22px; font-size: 1.15rem; box-shadow: 4px 4px 0 #333; }
+  .box.mini .emoji { font-size: 2.2rem; margin-bottom: 5px; }
+  .arrow { font-size: 3rem; }
+  .arrow.down { font-size: 2.2rem; }
+  .bad { border-color: #d33; box-shadow: 6px 6px 0 #d33; }
+  .good { border-color: #2a9d3f; box-shadow: 6px 6px 0 #2a9d3f; }
+  .hot { border-color: #e8a10c; box-shadow: 6px 6px 0 #e8a10c; }
+  .caption { font-size: 1.5rem; max-width: 660px; margin-top: 20px; }
+  .small { font-size: 1.1rem; color: #888; margin-top: 40px; }
+  .meter {
+    font-size: 1.3rem;
+    margin-top: 25px;
+    background: #fff;
+    border: 3px solid #333;
+    border-radius: 15px;
+    padding: 15px 30px;
+    max-width: 680px;
+  }
+  .tree { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<div class="slide">
+  <h1>🌳 B-tree 인덱스</h1>
+  <div class="big">📖🔍</div>
+  <p class="caption"><b>"천만 줄짜리 공책에서<br>딱 3번만 넘겨서 찾게 해주는<br>마법의 안내판"</b></p>
+  <p class="small">아래로 스크롤 ⬇️</p>
+</div>
+
+<div class="slide">
+  <h2>😫 인덱스가 없으면</h2>
+  <div class="row">
+    <div class="box bad">
+      <span class="emoji">📖</span>
+      "김철수 찾아줘!"<br><br>1쪽... 2쪽... 3쪽...<br><b>천만 쪽 전부</b> 넘겨봐야 해요
+    </div>
+  </div>
+  <p class="caption">이게 <b>풀 스캔(Full Scan)</b>.<br>확실하지만... 너무 오래 걸려요 🐢</p>
+</div>
+
+<div class="slide">
+  <h2>🏢 B-tree는 3층 건물이에요</h2>
+  <div class="tree">
+    <div class="box mini hot"><span class="emoji">🏢</span><b>루트</b> — 1층 안내 데스크<br><small>"ㄱ~ㅁ은 왼쪽, ㅂ~ㅎ은 오른쪽"</small></div>
+    <div class="arrow down">⬇️ ⬇️</div>
+    <div class="row" style="margin:0; gap:15px;">
+      <div class="box mini"><span class="emoji">🪧</span><b>브랜치</b> — 층 안내판<br><small>"ㄱ~ㄷ은 1번 방..."</small></div>
+      <div class="box mini"><span class="emoji">🪧</span><b>브랜치</b><br><small>"ㅂ~ㅅ은 3번 방..."</small></div>
+    </div>
+    <div class="arrow down">⬇️ ⬇️ ⬇️</div>
+    <div class="row" style="margin:0; gap:15px;">
+      <div class="box mini good"><span class="emoji">🗄️</span><b>리프</b><br>강감찬→3쪽<br>김철수→87쪽</div>
+      <div class="box mini good"><span class="emoji">🗄️</span><b>리프</b><br>나영희→12쪽<br>박민수→55쪽</div>
+      <div class="box mini good"><span class="emoji">🗄️</span><b>리프</b><br>이몽룡→9쪽<br>홍길동→31쪽</div>
+    </div>
+  </div>
+  <p class="caption">맨 아래 <b>리프</b>에는 이름이 <b>가나다순</b>으로,<br>옆에는 <b>"본책 몇 쪽인지" 주소</b>가 적혀 있어요</p>
+</div>
+
+<div class="slide">
+  <h2>🔍 찾기는 딱 3걸음</h2>
+  <div class="row">
+    <div class="box mini hot"><span class="emoji">1️⃣</span>데스크에서<br>"ㄱ이니까 왼쪽!"</div>
+    <div class="arrow">➡️</div>
+    <div class="box mini"><span class="emoji">2️⃣</span>안내판에서<br>"1번 방!"</div>
+    <div class="arrow">➡️</div>
+    <div class="box mini good"><span class="emoji">3️⃣</span>서랍에서<br>"김철수→87쪽!"</div>
+    <div class="arrow">➡️</div>
+    <div class="box mini"><span class="emoji">📖</span>본책<br>87쪽 펴기</div>
+  </div>
+  <p class="caption">천만 명이어도 <b>3~4걸음</b>이면 도착!<br>데이터가 10배 늘어도 걸음은 <b>딱 1개</b> 늘까 말까 ✨</p>
+  <p class="small">이게 로그(log) 시간의 힘 — 트리의 '높이'만큼만 걸어요</p>
+</div>
+
+<div class="slide">
+  <h2>🔗 리프끼리는 손잡고 있어요</h2>
+  <div class="row">
+    <div class="box mini good">🗄️ 강감찬<br>김철수</div>
+    <div class="arrow">↔️</div>
+    <div class="box mini good">🗄️ 나영희<br>박민수</div>
+    <div class="arrow">↔️</div>
+    <div class="box mini good">🗄️ 이몽룡<br>홍길동</div>
+  </div>
+  <p class="caption">"김씨부터 박씨까지 전부!" 같은 <b>범위 검색</b>은<br>시작점만 찾고 → <b>옆으로 죽~ 걸어가면</b> 끝이에요</p>
+  <div class="meter">📌 SQLP 포인트: 찾기 = <b>수직 탐색</b>(루트→리프) 한 번<br>+ <b>수평 스캔</b>(리프 옆으로) — 이 두 동작이 전부예요</div>
+</div>
+
+<div class="slide">
+  <h2>⚖️ 공짜는 아니에요</h2>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">✍️</span>
+      새 학생이 오면<br>안내판도 <b>고쳐야</b> 해요<br><small>(INSERT/UPDATE가 느려짐)</small>
+    </div>
+    <div class="box">
+      <span class="emoji">📚</span>
+      안내판 자체도<br><b>자리를 차지</b>해요<br><small>(저장 공간)</small>
+    </div>
+  </div>
+  <p class="caption">그래서 인덱스는 <b>많이 만들수록 좋은 게 아니라</b><br>자주 찾는 것에만 골라 만들어요</p>
+</div>
+
+<div class="slide">
+  <h2>🚫 안내판이 무용지물 되는 순간</h2>
+  <div class="row" style="flex-direction: column; gap: 15px;">
+    <div class="box bad" style="max-width: 620px; font-size: 1.25rem;">
+      🔧 이름을 <b>가공</b>해서 물어보기<br><small>SUBSTR(name,1,1) = '김' — 안내판은 원본 순서로만 정렬돼 있어요</small>
+    </div>
+    <div class="box bad" style="max-width: 620px; font-size: 1.25rem;">
+      🔚 <b>끝 글자</b>로 찾기<br><small>LIKE '%철수' — 가나다순 안내판은 첫 글자부터 봐야 해요</small>
+    </div>
+    <div class="box bad" style="max-width: 620px; font-size: 1.25rem;">
+      🙅 "김씨 <b>아닌</b> 사람 전부"<br><small>부정형(!=)은 결국 거의 다 봐야 해요</small>
+    </div>
+  </div>
+  <p class="caption">인덱스 컬럼은 <b>가공하지 말고 그대로</b> 비교!<br>(좌변 가공 금지 — SQLP 단골 문제 ⭐)</p>
+</div>
+
+<div class="slide">
+  <h2>📝 정리하면</h2>
+  <div class="row" style="flex-direction: column; gap: 15px;">
+    <div class="box good" style="max-width: 600px;">
+      B-tree = <b>루트 → 브랜치 → 리프</b> 3층 안내판,<br>리프에는 정렬된 값 + 본책 주소
+    </div>
+    <div class="box good" style="max-width: 600px;">
+      찾기 = 수직 탐색 <b>몇 걸음</b> + 리프 <b>옆으로 스캔</b><br>→ 천만 건도 순식간
+    </div>
+    <div class="box good" style="max-width: 600px;">
+      대신 쓰기가 느려지고 공간을 먹으니 <b>골라서</b> 만들고,<br>컬럼을 <b>가공하면 못 쓴다</b>
+    </div>
+  </div>
+  <p class="small">다음 편 예고: 안내판 순서와 책장 순서가 다르면? → 클러스터링 팩터 🎬</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>클러스터링 팩터 - 5살도 이해하는 설명</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
+    background: #f5f0fd;
+    color: #333;
+    line-height: 1.6;
+  }
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  .slide:nth-child(even) { background: #fff; }
+  h1 { font-size: 3rem; margin-bottom: 20px; }
+  h2 { font-size: 2.2rem; margin-bottom: 30px; }
+  .big { font-size: 6rem; margin: 20px 0; }
+  .row {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 25px 0;
+  }
+  .box {
+    background: #fff;
+    border: 4px solid #333;
+    border-radius: 20px;
+    padding: 25px 35px;
+    font-size: 1.4rem;
+    box-shadow: 6px 6px 0 #333;
+  }
+  .box .emoji { font-size: 4rem; display: block; margin-bottom: 10px; }
+  .box.mini { padding: 15px 22px; font-size: 1.15rem; box-shadow: 4px 4px 0 #333; }
+  .box.mini .emoji { font-size: 2.2rem; margin-bottom: 5px; }
+  .arrow { font-size: 3rem; }
+  .bad { border-color: #d33; box-shadow: 6px 6px 0 #d33; }
+  .good { border-color: #2a9d3f; box-shadow: 6px 6px 0 #2a9d3f; }
+  .caption { font-size: 1.5rem; max-width: 680px; margin-top: 20px; }
+  .small { font-size: 1.1rem; color: #888; margin-top: 40px; }
+  .meter {
+    font-size: 1.3rem;
+    margin-top: 25px;
+    background: #fff;
+    border: 3px solid #333;
+    border-radius: 15px;
+    padding: 15px 30px;
+    max-width: 680px;
+  }
+  .shelf {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 15px 0;
+    flex-wrap: wrap;
+  }
+  .shelf .cell {
+    border: 3px solid #333;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 1.2rem;
+    background: #fff;
+    min-width: 110px;
+  }
+  .shelf .cell b { display: block; font-size: 0.95rem; color: #888; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<div class="slide">
+  <h1>📚 클러스터링 팩터</h1>
+  <div class="big">🪧🆚📚</div>
+  <p class="caption"><b>"안내판(인덱스) 순서와<br>실제 책장(테이블) 순서가<br>얼마나 비슷한가?"</b>를 재는 점수</p>
+  <p class="small">B-tree 편에 이어지는 이야기예요 · 아래로 스크롤 ⬇️</p>
+</div>
+
+<div class="slide">
+  <h2>😇 착한 책장 (점수 좋음)</h2>
+  <p class="caption">안내판도 가나다순, <b>책장도 가나다순</b></p>
+  <div class="shelf">
+    <div class="cell"><b>책장 1</b>강감찬<br>김철수</div>
+    <div class="cell"><b>책장 2</b>나영희<br>박민수</div>
+    <div class="cell"><b>책장 3</b>이몽룡<br>홍길동</div>
+  </div>
+  <div class="row">
+    <div class="box good">
+      <span class="emoji">🚶✨</span>
+      "김~박씨 전부 줘!"<br>책장 1 열고 → 옆칸 2 열고 → 끝!<br><b>책장 2번만 열면 돼요</b>
+    </div>
+  </div>
+  <p class="caption">한 책장을 열면 <b>이웃들이 같이</b> 들어 있으니<br>한 번 연 김에 왕창 꺼내요</p>
+</div>
+
+<div class="slide">
+  <h2>😈 엉망 책장 (점수 나쁨)</h2>
+  <p class="caption">안내판은 가나다순인데, <b>책장은 뒤죽박죽</b></p>
+  <div class="shelf">
+    <div class="cell"><b>책장 1</b>홍길동<br>김철수</div>
+    <div class="cell"><b>책장 2</b>강감찬<br>이몽룡</div>
+    <div class="cell"><b>책장 3</b>박민수<br>나영희</div>
+  </div>
+  <div class="row">
+    <div class="box bad">
+      <span class="emoji">🏃💦</span>
+      "김~박씨 전부 줘!"<br>1번 갔다 → 3번 갔다 → 다시 1번...<br><b>같은 책장을 몇 번씩 다시 열어요</b>
+    </div>
+  </div>
+  <p class="caption">안내판 순서대로 걸을 때마다<br><b>매번 다른 책장</b>으로 뛰어다녀요 😵</p>
+</div>
+
+<div class="slide">
+  <h2>🔢 점수 매기는 법</h2>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">🚶</span>
+      안내판(리프)을 순서대로 걸으며<br><b>"책장을 몇 번 갈아탔나?"</b> 세기
+    </div>
+  </div>
+  <div class="row">
+    <div class="box mini good"><span class="emoji">😇</span>최고 점수<br>= <b>책장(블록) 수</b><br><small>갈아타기 최소</small></div>
+    <div class="box mini bad"><span class="emoji">😈</span>최악 점수<br>= <b>책(행) 수</b><br><small>한 권마다 갈아탐</small></div>
+  </div>
+  <p class="caption">이 숫자가 <b>클러스터링 팩터(CF)</b>.<br><b>낮을수록 착한 책장!</b></p>
+  <p class="small">DB는 블록 단위로 읽으니까, 진짜 비용은 "몇 권"이 아니라 "책장을 몇 번 여나"예요</p>
+</div>
+
+<div class="slide">
+  <h2>🧭 옵티마이저가 이 점수를 봐요</h2>
+  <div class="row">
+    <div class="box good">
+      <span class="emoji">😇</span>
+      점수 좋음<br>➡️ "인덱스로 가자!"<br><small>넓은 범위도 인덱스 OK</small>
+    </div>
+    <div class="box bad">
+      <span class="emoji">😈</span>
+      점수 나쁨<br>➡️ "차라리 첫 장부터<br>다 읽자(풀 스캔)"
+    </div>
+  </div>
+  <p class="caption">같은 인덱스라도 CF가 나쁘면<br>옵티마이저가 <b>인덱스를 버려요</b>.<br>"인덱스 있는데 왜 안 타지?"의 <b>단골 범인</b> ⭐</p>
+</div>
+
+<div class="slide">
+  <h2>🤔 어떤 컬럼이 착할까?</h2>
+  <div class="row">
+    <div class="box good">
+      <span class="emoji">📅</span>
+      <b>쌓이는 순서</b> 컬럼<br>주문번호, 입사일, 등록일<br><small>들어온 순서 = 저장 순서</small>
+    </div>
+    <div class="box bad">
+      <span class="emoji">🎲</span>
+      <b>제멋대로</b> 컬럼<br>전화번호, 이메일, UUID<br><small>저장 순서와 무관</small>
+    </div>
+  </div>
+  <p class="caption">테이블은 보통 <b>들어온 순서</b>로 쌓이니까,<br>그 순서와 닮은 컬럼의 인덱스가 착해요</p>
+  <p class="small">CF는 인덱스마다 달라요 — 같은 테이블이라도 어떤 인덱스는 착하고 어떤 인덱스는 엉망</p>
+</div>
+
+<div class="slide">
+  <h2>📝 정리하면</h2>
+  <div class="row" style="flex-direction: column; gap: 15px;">
+    <div class="box good" style="max-width: 620px;">
+      CF = 인덱스 순서대로 걸을 때<br><b>책장(블록)을 갈아타는 횟수</b> — 낮을수록 좋음
+    </div>
+    <div class="box good" style="max-width: 620px;">
+      최선 = <b>블록 수</b> · 최악 = <b>행 수</b>
+    </div>
+    <div class="box good" style="max-width: 620px;">
+      CF가 나쁘면 옵티마이저는 넓은 범위에서<br><b>인덱스 대신 풀 스캔</b>을 고른다
+    </div>
+  </div>
+  <p class="small">다음 편 예고: 이 점수들로 경로를 고르는 내비게이션 → 옵티마이저와 실행계획 🎬</p>
+</div>
+
+</body>
+</html>

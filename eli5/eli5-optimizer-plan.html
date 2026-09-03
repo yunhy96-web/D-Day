@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>옵티마이저와 실행계획 - 5살도 이해하는 설명</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
+    background: #eef7fb;
+    color: #333;
+    line-height: 1.6;
+  }
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  .slide:nth-child(even) { background: #fff; }
+  h1 { font-size: 3rem; margin-bottom: 20px; }
+  h2 { font-size: 2.2rem; margin-bottom: 30px; }
+  .big { font-size: 6rem; margin: 20px 0; }
+  .row {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 25px 0;
+  }
+  .box {
+    background: #fff;
+    border: 4px solid #333;
+    border-radius: 20px;
+    padding: 25px 35px;
+    font-size: 1.4rem;
+    box-shadow: 6px 6px 0 #333;
+  }
+  .box .emoji { font-size: 4rem; display: block; margin-bottom: 10px; }
+  .box.mini { padding: 15px 22px; font-size: 1.15rem; box-shadow: 4px 4px 0 #333; }
+  .box.mini .emoji { font-size: 2.2rem; margin-bottom: 5px; }
+  .arrow { font-size: 3rem; }
+  .bad { border-color: #d33; box-shadow: 6px 6px 0 #d33; }
+  .good { border-color: #2a9d3f; box-shadow: 6px 6px 0 #2a9d3f; }
+  .hot { border-color: #e8a10c; box-shadow: 6px 6px 0 #e8a10c; }
+  .caption { font-size: 1.5rem; max-width: 680px; margin-top: 20px; }
+  .small { font-size: 1.1rem; color: #888; margin-top: 40px; }
+  .meter {
+    font-size: 1.3rem;
+    margin-top: 25px;
+    background: #fff;
+    border: 3px solid #333;
+    border-radius: 15px;
+    padding: 15px 30px;
+    max-width: 680px;
+  }
+  .plan {
+    text-align: left;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 1.05rem;
+    background: #1e2530;
+    color: #d7e3f0;
+    border-radius: 15px;
+    padding: 25px 30px;
+    margin-top: 20px;
+    line-height: 1.9;
+  }
+  .plan .hl { color: #ffd166; }
+</style>
+</head>
+<body>
+
+<div class="slide">
+  <h1>🧭 옵티마이저와 실행계획</h1>
+  <div class="big">🗺️🚗</div>
+  <p class="caption"><b>"SQL은 목적지만 말하고,<br>길은 DB 안의 내비게이션이 골라요"</b></p>
+  <p class="small">아래로 스크롤 ⬇️</p>
+</div>
+
+<div class="slide">
+  <h2>🚗 SQL은 목적지만 말해요</h2>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">🗣️</span>
+      "김씨인 주문<br>다 보여줘!"<br><small>(무엇을 = SQL)</small>
+    </div>
+    <div class="arrow">➡️</div>
+    <div class="box hot">
+      <span class="emoji">🧭</span>
+      "어떻게 갈지는<br>내가 정할게"<br><small>(어떻게 = 옵티마이저)</small>
+    </div>
+  </div>
+  <p class="caption">우리는 <b>"무엇을"</b>만 말해요.<br><b>"어떻게"</b>(인덱스? 풀스캔? 어떤 조인?)는<br>내비게이션인 <b>옵티마이저</b>가 골라요</p>
+</div>
+
+<div class="slide">
+  <h2>⚖️ 여러 길에 점수를 매겨요</h2>
+  <div class="row">
+    <div class="box mini"><span class="emoji">🛣️</span>고속도로<br>(풀 스캔)<br><b>비용 80</b></div>
+    <div class="box mini good"><span class="emoji">🏘️</span>골목길<br>(인덱스 + NL 조인)<br><b>비용 12 ⭐</b></div>
+    <div class="box mini"><span class="emoji">🌉</span>다리 건너기<br>(해시 조인)<br><b>비용 35</b></div>
+  </div>
+  <p class="caption">후보 경로마다 <b>비용(cost) 점수</b>를 계산하고<br><b>제일 싼 길</b>을 골라요.<br>이게 <b>비용 기반 옵티마이저(CBO)</b></p>
+  <p class="small">비용 = 블록을 몇 번 읽을까 + CPU + 메모리... 의 예상치예요</p>
+</div>
+
+<div class="slide">
+  <h2>🗺️ 점수의 재료는 '지도 데이터'</h2>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">📊</span>
+      <b>통계정보</b><br>행이 몇 개인지<br>값이 어떻게 퍼져 있는지<br>클러스터링 팩터는 몇인지
+    </div>
+  </div>
+  <p class="caption">내비가 좋아도 <b>지도가 낡으면</b> 엉뚱한 길로 가요.<br>통계가 오래되면 옵티마이저도 <b>이상한 계획</b>을 세워요 😵</p>
+  <div class="meter">📌 "갑자기 쿼리가 느려졌어요!"의 단골 범인<br>= 데이터는 확 늘었는데 통계는 옛날 것</div>
+</div>
+
+<div class="slide">
+  <h2>📋 실행계획 = 확정된 경로표</h2>
+  <p class="caption">내비가 고른 길을 <b>출발 전에 미리</b> 볼 수 있어요</p>
+  <div class="plan">
+<span class="hl">EXPLAIN</span> SELECT ... ;<br><br>
+1. tb_order 테이블을<br>
+&nbsp;&nbsp;&nbsp;<span class="hl">ref</span> — 인덱스(idx_name)로 콕 집어 접근<br>
+2. tb_product 테이블을<br>
+&nbsp;&nbsp;&nbsp;<span class="hl">eq_ref</span> — PK로 한 건씩 매칭 (NL 조인)
+  </div>
+  <p class="caption">"어느 테이블 먼저? 인덱스 탔나? 무슨 조인?"<br>이 <b>전부 적혀 있는 계획서</b>예요</p>
+  <p class="small">MariaDB는 EXPLAIN, Oracle은 실행계획 트리를 안쪽(들여쓰기 깊은 곳)부터 읽어요</p>
+</div>
+
+<div class="slide">
+  <h2>🚨 계획서에서 이런 게 보이면 빨간불</h2>
+  <div class="row" style="flex-direction: column; gap: 15px;">
+    <div class="box bad" style="max-width: 620px; font-size: 1.25rem;">
+      🐢 <b>ALL</b> (풀 스캔) — 큰 테이블인데 첫 장부터 다 읽는 중
+    </div>
+    <div class="box bad" style="max-width: 620px; font-size: 1.25rem;">
+      📚 <b>filesort / temporary</b> — 줄 세우기·임시 공책을 따로 만드는 중
+    </div>
+    <div class="box bad" style="max-width: 620px; font-size: 1.25rem;">
+      🔢 <b>rows가 예상 밖으로 큼</b> — 생각보다 많이 읽을 예정
+    </div>
+  </div>
+  <p class="caption">튜닝 = 계획서를 읽고 → 빨간불을 찾고 →<br>인덱스·SQL을 고쳐 <b>더 싼 길을 열어주는 것</b></p>
+</div>
+
+<div class="slide">
+  <h2>👉 힌트 = "이 길로 가!"</h2>
+  <div class="row">
+    <div class="box">
+      <span class="emoji">🧭</span>
+      내비 추천대로<br><small>(기본: 옵티마이저 믿기)</small>
+    </div>
+    <div class="box hot">
+      <span class="emoji">☝️</span>
+      "아니야, 골목길로 가"<br><small>USE INDEX(...), STRAIGHT_JOIN<br>= 힌트로 수동 지시</small>
+    </div>
+  </div>
+  <p class="caption">내비가 계속 이상한 길을 고르면<br>사람이 <b>직접 길을 지정</b>할 수 있어요.<br>단, 지도가 바뀌어도 <b>고집</b>하니 조심!</p>
+</div>
+
+<div class="slide">
+  <h2>📝 정리하면</h2>
+  <div class="row" style="flex-direction: column; gap: 15px;">
+    <div class="box good" style="max-width: 620px;">
+      SQL = <b>무엇을</b> · 옵티마이저 = <b>어떻게</b><br>후보 경로마다 비용 계산 → 제일 싼 길 선택 (CBO)
+    </div>
+    <div class="box good" style="max-width: 620px;">
+      점수의 재료는 <b>통계정보</b> —<br>낡은 지도는 이상한 계획을 만든다
+    </div>
+    <div class="box good" style="max-width: 620px;">
+      <b>실행계획(EXPLAIN)</b>은 출발 전 경로표 —<br>튜닝은 여기서 빨간불을 찾는 것부터
+    </div>
+  </div>
+  <p class="small">지금까지: 조인 3형제 → B-tree → 클러스터링 팩터 → 옵티마이저 ✅<br>다음 추천: MVCC와 Undo 🎬</p>
+</div>
+
+</body>
+</html>
