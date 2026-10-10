@@ -1,0 +1,52 @@
+app:
+  data-dir: ${APP_DATA_DIR:./data}
+
+spring:
+  datasource:
+    url: jdbc:sqlite:${app.data-dir}/wedding.db?journal_mode=WAL&busy_timeout=5000
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 4
+  sql:
+    init:
+      mode: always            # schema.sql(IF NOT EXISTS) + data.sql(INSERT OR IGNORE) 매 기동 실행
+  thymeleaf:
+    cache: ${THYMELEAF_CACHE:true}
+  servlet:
+    multipart:
+      enabled: false
+  mvc:
+    static-path-pattern: /static/**
+
+server:
+  port: 8080
+  max-http-request-header-size: 8KB
+  tomcat:
+    max-http-form-post-size: 16KB
+    max-swallow-size: 16KB
+  error:
+    include-stacktrace: never
+    include-message: never
+    include-exception: false
+
+management:
+  endpoints:
+    enabled-by-default: false
+
+# 번역 불필요한 값만. 문구는 label 테이블(data.sql)
+wedding:
+  base-url: ${WEDDING_BASE_URL:}
+  date-time: 2027-05-15T12:00:00+09:00     # TODO 실제 예식 일시
+  lat: 37.5665                              # TODO 식장 위경도
+  lng: 126.9780
+  kakao-js-key: ${KAKAO_JS_KEY:}
+  turnstile-site-key: ${TURNSTILE_SITE_KEY:}
+  turnstile-secret: ${TURNSTILE_SECRET:}
+  master-pw-hash: ${GUESTBOOK_MASTER_PW_HASH:}
+  address:
+    ko: 서울특별시 중구 세종대로 110 (TODO)
+    en: 110 Sejong-daero, Jung-gu, Seoul (TODO)
+    th: 110 ถนนเซจง เขตจุง กรุงโซล (TODO)
+  account:
+    groom: { holder: 윤희영, bank: 국민은행, number: 000000-00-000000 }
+    bride: { holder: 신부, bank: 신한은행, number: 000-000-000000 }

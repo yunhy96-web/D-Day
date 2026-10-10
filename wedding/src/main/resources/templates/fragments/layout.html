@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title th:text="${t['og.title']}">Wedding</title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" th:content="${t['og.title']}">
+  <meta property="og:description" th:content="${t['og.description']}">
+  <meta property="og:url" th:content="${p.baseUrl} + '/'">
+  <meta property="og:image" th:content="${p.baseUrl} + '/photos/og.jpg'">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=Noto+Serif+Thai:wght@300;400;600&family=Noto+Sans+Thai:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com" th:attr="nonce=${cspNonce}"></script>
+  <script th:attr="nonce=${cspNonce}">
+    tailwind.config = { theme: { extend: { colors: { hanji:'#F6F0E6', ink:'#1F1B18', indigo:'#2B4C7E', yeonji:'#B8413F', gold:'#C9A24D', marigold:'#E8A33D', jasmine:'#FBF8F1' } } } }
+  </script>
+  <link rel="stylesheet" href="/static/app.css">
+  <script id="labels" type="application/json" th:utext="${labelsJson}">{}</script>
+</head>
+<body>
+
+<!-- 언어 토글: 우상단 pill -->
+<div th:fragment="langToggle" class="fixed top-3 right-3 z-40"><div th:replace="~{fragments/layout :: langPill}"></div></div>
+<div th:fragment="langPill" class="flex rounded-full border border-gold bg-jasmine/90 backdrop-blur text-xs overflow-hidden">
+  <button type="button" data-lang="ko" class="px-3 py-1.5 aria-pressed:bg-ink aria-pressed:text-hanji" th:attr="aria-pressed=${lang=='ko'}">KO</button>
+  <button type="button" data-lang="en" class="px-3 py-1.5 aria-pressed:bg-ink aria-pressed:text-hanji" th:attr="aria-pressed=${lang=='en'}">EN</button>
+  <button type="button" data-lang="th" class="px-3 py-1.5 aria-pressed:bg-ink aria-pressed:text-hanji" th:attr="aria-pressed=${lang=='th'}">TH</button>
+</div>
+
+<!-- 컨텐츠 페이지 상단바 -->
+<header th:fragment="topbar(titleKey)" class="sticky top-0 z-30 bg-hanji/90 backdrop-blur border-b border-gold/40">
+  <div class="max-w-[420px] mx-auto flex items-center h-12 px-3">
+    <a href="/" class="p-2 -ml-2" th:attr="aria-label=${t['nav.back']}" data-i18n-aria="nav.back">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 5l-7 7 7 7"/></svg>
+    </a>
+    <h1 class="serif text-base ml-1 flex-1" th:text="${t[titleKey]}" th:attr="data-i18n=${titleKey}">title</h1>
+    <div th:replace="~{fragments/layout :: langPill}"></div>
+  </div>
+</header>
+
+<!-- 까녹(กนก) 금선 구분선 -->
+<div th:fragment="divider" class="flex justify-center my-10" aria-hidden="true">
+  <svg width="140" height="18" viewBox="0 0 140 18" fill="none" stroke="#C9A24D" stroke-width="1.2" stroke-linecap="round">
+    <path d="M2 9c12-9 18 9 30 0s18-9 30 0"/><path d="M78 9c12-9 18 9 30 0s18-9 30 0"/>
+    <path d="M70 3c-2 2-3 4-3 6s1 4 3 6c2-2 3-4 3-6s-1-4-3-6z" fill="#C9A24D" stroke="none"/>
+  </svg>
+</div>
+
+<!-- 컨텐츠 하단: 다른 컨텐츠 / 청첩장으로 -->
+<nav th:fragment="bottomNav" class="max-w-[420px] mx-auto px-4 pb-10 pt-6 flex gap-3">
+  <a href="/#hub" class="flex-1 text-center py-3 rounded-full border border-gold text-sm" data-i18n="nav.more" th:text="${t['nav.more']}">more</a>
+  <a href="/" class="flex-1 text-center py-3 rounded-full bg-ink text-hanji text-sm" data-i18n="nav.home" th:text="${t['nav.home']}">home</a>
+</nav>
+
+<!-- 푸터: 접속자 + 공유 -->
+<footer th:fragment="footer" class="max-w-[420px] mx-auto px-4 pb-12 text-center text-sm text-ink/70">
+  <div th:replace="~{fragments/layout :: divider}"></div>
+  <p class="flex items-center justify-center gap-2">
+    <span class="inline-block w-1.5 h-1.5 rounded-full bg-indigo"></span><span class="inline-block w-1.5 h-1.5 rounded-full bg-yeonji -ml-1"></span>
+    <span data-online data-i18n="footer.online" data-args="0" th:text="${t['footer.online']}">online</span>
+  </p>
+  <p class="mt-1 text-xs" data-total data-i18n="footer.total" data-args="0" th:text="${t['footer.total']}">total</p>
+  <button type="button" data-share class="mt-6 px-6 py-3 rounded-full border border-gold text-ink" data-i18n="btn.share" th:text="${t['btn.share']}">share</button>
+</footer>
+
+<th:block th:fragment="scripts"><script src="/static/app.js" defer th:attr="nonce=${cspNonce}"></script></th:block>
+
+<!-- 허브 카드 아이콘 (연꽃·모란·액자·핀) -->
+<th:block th:fragment="icon(name)">
+  <svg th:if="${name=='lotus'}" width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#C9A24D" stroke-width="1.5" stroke-linejoin="round"><path d="M14 24c-6 0-10-4-11-9 4 0 7 2 9 5-1-5 0-10 2-14 2 4 3 9 2 14 2-3 5-5 9-5-1 5-5 9-11 9z"/></svg>
+  <svg th:if="${name=='peony'}" width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#B8413F" stroke-width="1.5" stroke-linejoin="round"><circle cx="14" cy="14" r="3"/><path d="M14 11c0-4 3-6 5-6 0 3-2 5-5 6zm3 3c4 0 6 3 6 5-3 0-5-2-6-5zm-3 3c0 4-3 6-5 6 0-3 2-5 5-6zm-3-3c-4 0-6-3-6-5 3 0 5 2 6 5z"/></svg>
+  <svg th:if="${name=='frame'}" width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#2B4C7E" stroke-width="1.5"><rect x="4" y="6" width="20" height="16" rx="1"/><path d="M4 18l6-6 5 5 3-3 6 6"/><circle cx="18" cy="11" r="1.5"/></svg>
+  <svg th:if="${name=='pin'}" width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#C9A24D" stroke-width="1.5"><path d="M14 25s-8-7-8-13a8 8 0 0116 0c0 6-8 13-8 13z"/><circle cx="14" cy="12" r="3"/></svg>
+</th:block>
+</body>
+</html>

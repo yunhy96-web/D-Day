@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}">
+<head th:replace="~{fragments/layout :: head}"></head>
+<body class="paper min-h-screen" th:attr="data-datetime=${p.dateTime},data-lat=${p.lat},data-lng=${p.lng}">
+<header th:replace="~{fragments/layout :: topbar('content.map.title')}"></header>
+
+<main class="max-w-[420px] mx-auto px-4 pt-6">
+  <p class="serif text-lg text-center" data-i18n="venue.name" th:text="${t['venue.name']}">venue</p>
+  <p class="text-sm text-center" data-i18n="venue.hall" th:text="${t['venue.hall']}">hall</p>
+  <p class="text-sm text-center text-ink/70 mt-1"><span data-date-long></span> · <span data-date-time></span></p>
+
+  <div data-map class="mt-5 w-full h-64 rounded-2xl border border-gold bg-jasmine flex items-center justify-center text-xs text-ink/40">
+    <span th:if="${#strings.isEmpty(p.kakaoJsKey)}">KAKAO_JS_KEY 미설정</span>
+  </div>
+  <script th:if="${!#strings.isEmpty(p.kakaoJsKey)}" th:src="'https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=' + ${p.kakaoJsKey}" th:attr="nonce=${cspNonce}"></script>
+
+  <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+    <a data-nav="kakao" th:href="'https://map.kakao.com/link/to/' + ${t['venue.name']} + ',' + ${p.lat} + ',' + ${p.lng}" target="_blank" rel="noopener" class="py-3 text-center rounded-full border border-gold" data-i18n="map.kakao" th:text="${t['map.kakao']}">kakao</a>
+    <a data-nav="naver" th:href="'nmap://route/car?dlat=' + ${p.lat} + '&dlng=' + ${p.lng} + '&dname=' + ${t['venue.name']} + '&appname=wedding'" class="py-3 text-center rounded-full border border-gold" data-i18n="map.naver" th:text="${t['map.naver']}">naver</a>
+    <a data-nav="tmap" th:href="'tmap://route?goalname=' + ${t['venue.name']} + '&goaly=' + ${p.lat} + '&goalx=' + ${p.lng}" class="py-3 text-center rounded-full border border-gold" data-i18n="map.tmap" th:text="${t['map.tmap']}">tmap</a>
+    <a data-nav="google" th:href="'https://maps.google.com/?q=' + ${p.lat} + ',' + ${p.lng}" target="_blank" rel="noopener" class="py-3 text-center rounded-full border border-gold" data-i18n="map.google" th:text="${t['map.google']}">google</a>
+  </div>
+  <button type="button" data-copy-address class="mt-2 w-full py-3 rounded-full bg-ink text-hanji text-sm" data-i18n="btn.copy_address" th:text="${t['btn.copy_address']}">copy</button>
+
+  <div th:replace="~{fragments/layout :: divider}"></div>
+  <dl class="space-y-5 text-sm">
+    <div><dt class="serif text-gold text-xs tracking-[.3em]" data-i18n="map.transit_title" th:text="${t['map.transit_title']}">transit</dt><dd class="mt-1 leading-6" data-i18n="map.transit_body" th:text="${t['map.transit_body']}">…</dd></div>
+    <div><dt class="serif text-gold text-xs tracking-[.3em]" data-i18n="map.parking_title" th:text="${t['map.parking_title']}">parking</dt><dd class="mt-1 leading-6" data-i18n="map.parking_body" th:text="${t['map.parking_body']}">…</dd></div>
+    <div class="p-4 rounded-2xl bg-jasmine border border-gold/60"><dt class="serif text-yeonji text-xs tracking-[.3em]" data-i18n="map.tip_title" th:text="${t['map.tip_title']}">tip</dt><dd class="mt-1 leading-6" data-i18n="map.tip_body" th:text="${t['map.tip_body']}">…</dd></div>
+  </dl>
+</main>
+
+<nav th:replace="~{fragments/layout :: bottomNav}"></nav>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script th:attr="nonce=${cspNonce}">
+  (function () {
+    const b = document.body, lat = +b.dataset.lat, lng = +b.dataset.lng, el = document.querySelector('[data-map]');
+    if (window.kakao && kakao.maps) kakao.maps.load(() => {
+      el.textContent = '';
+      const pos = new kakao.maps.LatLng(lat, lng);
+      const map = new kakao.maps.Map(el, { center: pos, level: 3 });
+      new kakao.maps.Marker({ map, position: pos });
+      map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
+    });
+    document.querySelectorAll('[data-nav]').forEach(a => a.addEventListener('click', () => W.track('map.navigate', a.dataset.nav)));
+  })();
+</script>
+</body>
+</html>

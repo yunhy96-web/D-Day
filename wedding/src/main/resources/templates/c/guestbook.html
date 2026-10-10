@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}">
+<head th:replace="~{fragments/layout :: head}"></head>
+<body class="paper min-h-screen" th:attr="data-datetime=${p.dateTime},data-turnstile=${p.turnstileSiteKey}">
+<header th:replace="~{fragments/layout :: topbar('content.guestbook.title')}"></header>
+<script th:if="${!#strings.isEmpty(p.turnstileSiteKey)}" src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer th:attr="nonce=${cspNonce}"></script>
+
+<main class="max-w-[420px] mx-auto px-4 pt-6">
+  <p class="text-center text-sm leading-7 text-ink/80 whitespace-pre-line" data-i18n="guestbook.intro" th:text="${t['guestbook.intro']}">intro</p>
+
+  <form data-form class="mt-6 p-4 rounded-2xl bg-jasmine border border-gold/60 space-y-3">
+    <input name="name" maxlength="20" required class="w-full bg-transparent border-b border-gold/50 py-2 text-sm outline-none focus:border-gold" data-i18n-ph="guestbook.name" th:placeholder="${t['guestbook.name']}">
+    <textarea name="message" maxlength="300" rows="3" required class="w-full bg-transparent border-b border-gold/50 py-2 text-sm outline-none focus:border-gold resize-none" data-i18n-ph="guestbook.message" th:placeholder="${t['guestbook.message']}"></textarea>
+    <input name="password" inputmode="numeric" pattern="\d{4}" maxlength="4" required class="w-full bg-transparent border-b border-gold/50 py-2 text-sm outline-none focus:border-gold tabular" data-i18n-ph="guestbook.password" th:placeholder="${t['guestbook.password']}">
+    <p class="text-[11px] text-ink/50" data-i18n="guestbook.password_hint" th:text="${t['guestbook.password_hint']}">hint</p>
+    <div th:if="${!#strings.isEmpty(p.turnstileSiteKey)}" class="cf-turnstile" th:attr="data-sitekey=${p.turnstileSiteKey}" data-size="flexible"></div>
+    <button type="submit" class="w-full py-3 rounded-full bg-ink text-hanji text-sm disabled:opacity-50" data-i18n="guestbook.submit" th:text="${t['guestbook.submit']}">post</button>
+    <p data-msg class="text-center text-xs min-h-[1rem]"></p>
+  </form>
+
+  <ul data-list class="mt-8 space-y-3">
+    <li th:each="g : ${entries}" th:attr="data-id=${g.id}" class="memo p-4 rounded-lg bg-jasmine border border-gold/40 shadow-sm">
+      <div class="flex justify-between items-baseline text-xs">
+        <span class="font-medium" th:text="${g.name}">name</span>
+        <span class="text-ink/40 tabular" th:text="${#strings.substring(g.createdAt,0,10)}">date</span>
+      </div>
+      <p class="mt-2 text-sm leading-6 whitespace-pre-line break-words" th:text="${g.message}">msg</p>
+      <button type="button" data-del class="mt-2 text-[11px] text-ink/40 underline" data-i18n="guestbook.delete" th:text="${t['guestbook.delete']}">delete</button>
+    </li>
+  </ul>
+  <p data-empty th:classappend="${entries.isEmpty()} ? '' : 'hidden'" class="mt-8 text-center text-sm text-ink/50" data-i18n="guestbook.empty" th:text="${t['guestbook.empty']}">empty</p>
+  <button type="button" data-more th:classappend="${hasNext} ? '' : 'hidden'" class="block mx-auto mt-6 px-6 py-2.5 rounded-full border border-gold text-sm" data-i18n="guestbook.more" th:text="${t['guestbook.more']}">more</button>
+
+  <dialog data-del-dialog class="rounded-2xl p-5 w-[300px] bg-jasmine border border-gold backdrop:bg-ink/40">
+    <form method="dialog">
+      <p class="text-sm" data-i18n="guestbook.delete_prompt" th:text="${t['guestbook.delete_prompt']}">pw?</p>
+      <input name="pw" inputmode="numeric" maxlength="4" class="mt-3 w-full bg-transparent border-b border-gold py-2 text-sm outline-none tabular" autocomplete="off">
+      <p data-del-msg class="text-xs text-yeonji mt-2 min-h-[1rem]"></p>
+      <div class="mt-4 flex gap-2 justify-end">
+        <button value="cancel" class="px-4 py-2 text-sm rounded-full border border-gold" data-i18n="nav.back" th:text="${t['nav.back']}">cancel</button>
+        <button value="ok" class="px-4 py-2 text-sm rounded-full bg-ink text-hanji" data-i18n="guestbook.delete" th:text="${t['guestbook.delete']}">ok</button>
+      </div>
+    </form>
+  </dialog>
+</main>
+
+<nav th:replace="~{fragments/layout :: bottomNav}"></nav>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script src="/static/guestbook.js" defer th:attr="nonce=${cspNonce}"></script>
+</body>
+</html>

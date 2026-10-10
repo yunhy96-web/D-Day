@@ -1,0 +1,78 @@
+# 배포(라즈베리파이) 스택. 실행: docker-compose -f docker-compose.prod.yml up -d --build
+# 외부 노출은 cloudflared 터널 → frontend:3000 만. admin은 Pi 로컬(127.0.0.1:18081)에만 바인딩 → ssh -L 로 접근.
+# 필요한 .env: DB_PASSWORD
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tut-postgres
+    environment:
+      POSTGRES_DB: thaiuniontour
+      POSTGRES_USER: tut
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tut -d thaiuniontour"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: tut-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: { context: ../backend, args: { MODULE: api } }
+    image: tut-api
+    container_name: tut-api
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/thaiuniontour
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: "6379"
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    restart: always
+
+  admin:
+    build: { context: ../backend, args: { MODULE: admin } }
+    image: tut-admin
+    container_name: tut-admin
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/thaiuniontour
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+    ports: ["127.0.0.1:18081:8081"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: always
+
+  frontend:
+    build: ../frontend
+    image: tut-frontend
+    container_name: tut-frontend
+    environment:
+      API_INTERNAL_BASE: http://api:8080
+    depends_on: [api]
+    restart: always
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: tut-cloudflared
+    # 로컬 관리 터널(CLI 생성). ../cloudflared/ 에 cert.pem·<uuid>.json·config.yml
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes: ["../cloudflared:/etc/cloudflared:ro"]
+    depends_on: [frontend]
+    restart: always
+
+volumes:
+  pgdata:
+  redisdata:

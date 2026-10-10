@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}">
+<head th:replace="~{fragments/layout :: head}"></head>
+<body class="paper min-h-screen" th:attr="data-datetime=${p.dateTime}">
+<header th:replace="~{fragments/layout :: topbar('content.gallery.title')}"></header>
+
+<main class="max-w-[420px] mx-auto px-3 pt-4">
+  <p th:if="${photos.isEmpty()}" class="mt-10 text-center text-sm text-ink/50" data-i18n="gallery.empty" th:text="${t['gallery.empty']}">empty</p>
+  <div class="grid grid-cols-3 gap-[1px] bg-gold border border-gold">
+    <button type="button" th:each="u, s : ${photos}" th:attr="data-idx=${s.index}" class="aspect-square bg-jasmine overflow-hidden">
+      <img th:src="${u}" alt="" loading="lazy" class="w-full h-full object-cover">
+    </button>
+  </div>
+
+  <dialog data-viewer class="bg-ink/95 p-0 w-screen h-[100svh] max-w-none max-h-none backdrop:bg-ink">
+    <button type="button" data-close class="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-hanji/20 text-hanji text-xl" aria-label="close">×</button>
+    <div data-strip class="h-full flex overflow-x-auto snap-x snap-mandatory">
+      <figure th:each="u : ${photos}" class="shrink-0 w-screen h-full snap-center flex items-center justify-center m-0">
+        <img th:attr="data-src=${u}" alt="" class="max-w-full max-h-full object-contain">
+      </figure>
+    </div>
+  </dialog>
+</main>
+
+<nav th:replace="~{fragments/layout :: bottomNav}"></nav>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script th:attr="nonce=${cspNonce}">
+  (function () {
+    const dlg = document.querySelector('[data-viewer]'), strip = document.querySelector('[data-strip]');
+    const figs = [...strip.children];
+    document.querySelectorAll('[data-idx]').forEach(b => b.addEventListener('click', () => {
+      const i = +b.dataset.idx;
+      [i - 1, i, i + 1].filter(j => figs[j]).forEach(j => { const im = figs[j].querySelector('img'); if (!im.src) im.src = im.dataset.src; });
+      dlg.showModal(); figs[i].scrollIntoView({ inline: 'center', behavior: 'instant' });
+      W.track('gallery.open', i);
+    }));
+    strip.addEventListener('scroll', () => {   // 보이는 것 ±1 만 로드
+      const i = Math.round(strip.scrollLeft / strip.clientWidth);
+      [i - 1, i, i + 1].filter(j => figs[j]).forEach(j => { const im = figs[j].querySelector('img'); if (!im.src) im.src = im.dataset.src; });
+    }, { passive: true });
+    document.querySelector('[data-close]').addEventListener('click', () => dlg.close());
+    dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  })();
+</script>
+</body>
+</html>
