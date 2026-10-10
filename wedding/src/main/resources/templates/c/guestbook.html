@@ -14,7 +14,7 @@
     <input name="password" inputmode="numeric" pattern="\d{4}" maxlength="4" required class="w-full bg-transparent border-b border-gold/50 py-2 text-sm outline-none focus:border-gold tabular" data-i18n-ph="guestbook.password" th:placeholder="${t['guestbook.password']}">
     <p class="text-[11px] text-ink/50" data-i18n="guestbook.password_hint" th:text="${t['guestbook.password_hint']}">hint</p>
     <div th:if="${!#strings.isEmpty(p.turnstileSiteKey)}" class="cf-turnstile" th:attr="data-sitekey=${p.turnstileSiteKey}" data-size="flexible"></div>
-    <button type="submit" class="w-full py-3 rounded-full bg-ink text-hanji text-sm disabled:opacity-50" data-i18n="guestbook.submit" th:text="${t['guestbook.submit']}">post</button>
+    <button type="submit" class="w-full py-3 rounded-full bg-ink text-mist text-sm disabled:opacity-50" data-i18n="guestbook.submit" th:text="${t['guestbook.submit']}">post</button>
     <p data-msg class="text-center text-xs min-h-[1rem]"></p>
   </form>
 
@@ -38,7 +38,7 @@
       <p data-del-msg class="text-xs text-yeonji mt-2 min-h-[1rem]"></p>
       <div class="mt-4 flex gap-2 justify-end">
         <button value="cancel" class="px-4 py-2 text-sm rounded-full border border-gold" data-i18n="nav.back" th:text="${t['nav.back']}">cancel</button>
-        <button value="ok" class="px-4 py-2 text-sm rounded-full bg-ink text-hanji" data-i18n="guestbook.delete" th:text="${t['guestbook.delete']}">ok</button>
+        <button value="ok" class="px-4 py-2 text-sm rounded-full bg-ink text-mist" data-i18n="guestbook.delete" th:text="${t['guestbook.delete']}">ok</button>
       </div>
     </form>
   </dialog>

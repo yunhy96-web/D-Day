@@ -25,7 +25,9 @@ public class PhotoService {
         if (System.currentTimeMillis() - scannedAt < 60_000) return;
         try (Stream<Path> s = Files.list(dir)) {
             List<String> files = s.map(p -> p.getFileName().toString())
-                    .filter(n -> n.matches("(?i)[\\w-]+\\.(webp|jpe?g|png|svg)")).sorted().toList();
+                    .filter(n -> n.matches("(?i)[\\w-]+\\.(webp|jpe?g|png|svg)"))
+                    .filter(n -> !n.toLowerCase().startsWith("og."))      // og.jpg 는 카톡 미리보기 전용
+                    .sorted().toList();
             urlById = files.stream().collect(java.util.stream.Collectors.toUnmodifiableMap(
                     n -> n.substring(0, n.lastIndexOf('.')), n -> "/photos/" + n, (a, b) -> a));
             ids = files.stream().map(n -> n.substring(0, n.lastIndexOf('.'))).distinct().toList();

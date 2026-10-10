@@ -12,7 +12,7 @@
     <h2 class="serif text-xl mt-4" data-i18n="content.worldcup.title" th:text="${t['content.worldcup.title']}">title</h2>
     <p class="mt-4 text-sm leading-7 text-ink/80 whitespace-pre-line" data-i18n="worldcup.intro" th:text="${t['worldcup.intro']}">intro</p>
     <p class="mt-2 text-xs text-marigold tabular" data-participants></p>
-    <button type="button" data-start class="mt-8 px-10 py-3 rounded-full bg-ink text-hanji" data-i18n="worldcup.start" th:text="${t['worldcup.start']}">start</button>
+    <button type="button" data-start class="mt-8 px-10 py-3 rounded-full bg-ink text-mist" data-i18n="worldcup.start" th:text="${t['worldcup.start']}">start</button>
     <p data-not-enough class="hidden mt-6 text-sm text-ink/60" data-i18n="worldcup.not_enough" th:text="${t['worldcup.not_enough']}">no photos</p>
   </section>
 
@@ -21,7 +21,7 @@
     <p class="text-center text-xs tracking-widest text-gold tabular" data-progress></p>
     <p class="serif text-center mt-2" data-i18n="worldcup.choose" th:text="${t['worldcup.choose']}">choose</p>
     <div class="mt-5 grid grid-cols-2 gap-3">
-      <button type="button" data-side="0" class="wc-card rounded-xl border-indigo bg-jasmine"><img alt=""></button>
+      <button type="button" data-side="0" class="wc-card rounded-xl border-sky bg-jasmine"><img alt=""></button>
       <button type="button" data-side="1" class="wc-card rounded-xl border-yeonji bg-jasmine"><img alt=""></button>
     </div>
     <div class="mt-4 h-1 rounded bg-gold/30"><div data-bar class="h-1 rounded bg-gold transition-all"></div></div>
@@ -33,7 +33,7 @@
     <div class="garland inline-block mt-6 w-56 h-56 rounded-full overflow-hidden border-2 border-gold"><img data-champion alt="" class="w-full h-full object-cover"></div>
     <div class="mt-8 flex gap-3 justify-center">
       <button type="button" data-retry class="px-5 py-2.5 rounded-full border border-gold text-sm" data-i18n="worldcup.retry" th:text="${t['worldcup.retry']}">retry</button>
-      <button type="button" data-share-result class="px-5 py-2.5 rounded-full bg-ink text-hanji text-sm" data-i18n="worldcup.share" th:text="${t['worldcup.share']}">share</button>
+      <button type="button" data-share-result class="px-5 py-2.5 rounded-full bg-ink text-mist text-sm" data-i18n="worldcup.share" th:text="${t['worldcup.share']}">share</button>
     </div>
     <div th:replace="~{fragments/layout :: divider}"></div>
     <h3 class="serif text-gold text-xs tracking-[.3em]" data-i18n="worldcup.ranking_title" th:text="${t['worldcup.ranking_title']}">top3</h3>

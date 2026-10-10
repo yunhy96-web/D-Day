@@ -26,7 +26,7 @@ public class PresenceController {
 
     @PostMapping("/api/heartbeat")
     public Map<String, Object> heartbeat(@RequestBody Map<String, String> body, HttpServletRequest req) {
-        limiter.check(req, "hb", 3, 10);
+        limiter.check(req, "hb", 12, 10);   // 탭 여러 개·빠른 페이지 이동 허용
         String sid = Valid.sid(body.get("sid"));
         Instant now = Instant.now();
         seen.put(sid, new Seen(now, ClientIp.of(req)));

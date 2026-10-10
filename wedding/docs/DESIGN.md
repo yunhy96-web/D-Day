@@ -170,15 +170,15 @@ CREATE TABLE IF NOT EXISTS content (
 ### 팔레트 (Tailwind `theme.extend.colors`)
 | 토큰 | HEX | 유래 | 쓰임 |
 |---|---|---|---|
-| `hanji` | `#F6F0E6` | 한지 | 전체 배경. 미세한 종이 질감(SVG noise 1장, 2KB) |
-| `ink` | `#1F1B18` | 먹 | 본문 텍스트 |
-| `indigo` | `#2B4C7E` | 쪽빛 · 청실 | 신랑 측, 1차 포인트, 링크 |
-| `yeonji` | `#B8413F` | 연지 · 홍실 | 신부 측, 2차 포인트, 강조 |
+| `mist` | `#EEF5FB` | 하늘빛 한지 | 전체 배경. 미세한 종이 질감(SVG noise 1장, 2KB). **사용자 요청: 스카이블루 메인 테마** (2026-10-10) |
+| `ink` | `#1B2430` | 먹(푸른 기) | 본문 텍스트 |
+| `sky` | `#4A9BDC` | 스카이블루 · 청실 | 신랑 측, 1차 포인트, 링크, 버튼 |
+| `yeonji` | `#C25B5B` | 연지 · 홍실 | 신부 측, 2차 포인트, 강조 |
 | `gold` | `#C9A24D` | 태국 금(ทอง), 사원 장식 | 구분선, 선문양, 버튼 테두리, 숫자(D-day) |
 | `marigold` | `#E8A33D` | 태국 금잔화(ดาวเรือง) 화환 | 호버/활성 상태, 월드컵 선택 피드백 |
-| `jasmine` | `#FBF8F1` | 재스민(มะลิ) 흰 꽃, 몽콜 흰 실 | 카드 배경 |
+| `jasmine` | `#F8FBFE` | 재스민(มะลิ) 흰 꽃, 몽콜 흰 실 | 카드 배경 |
 
-청·홍은 한국, 금·주황은 태국. 둘 다 **크림(한지) 위에서만** 쓰고 면적은 10% 이하 → 사진이 주인공이라는 원칙 유지. 어두운 톤 포토북 컨셉은 폐기(태국 금색은 밝은 바탕에서 산다).
+하늘·홍은 한국 청실홍실, 금·주황은 태국. 전부 **연한 하늘빛 바탕 위에서만** 쓰고 포인트 면적은 10% 이하 → 사진이 주인공이라는 원칙 유지. 금은 밝은 바탕에서 살기 때문에 어두운 테마는 쓰지 않는다.
 
 ### 타이포
 - 제목: `Noto Serif KR` (한·영) / `Noto Serif Thai` (태국어) — 같은 Noto Serif 계열이라 전환해도 무게가 같음. 두 이름은 `font-weight 300`, 자간 넓게.
@@ -188,7 +188,7 @@ CREATE TABLE IF NOT EXISTS content (
 ### 모티프 (전부 inline SVG, 이미지 파일 없음)
 | 모티프 | 어디에 | 구현 |
 |---|---|---|
-| **실 라인** | 인트로: 왼쪽 위에서 쪽빛 실, 오른쪽 위에서 연지 실이 내려와 두 이름 사이에서 **하나의 금색 매듭(몽콜 고리 형태)** 으로 묶임 | SVG `<path>` 2개 + `stroke-dashoffset` 애니메이션 2.4s. 매듭은 두 원이 겹친 형태(몽콜 2고리 = ∞) |
+| ~~실 라인~~ | 인트로의 실·매듭 애니메이션은 **사용자 요청으로 제거**(2026-10-11). 모티프는 문구("두 가닥의 실, 하나의 매듭")와 푸터의 청홍 점 2개로만 남김 | |
 | **까녹(กนก) 선문양** | 섹션 구분선 | 태국 불꽃형 당초문을 선 1개로 단순화한 금색 path, 폭 120px, 중앙 정렬. 한국 당초문과 형태가 닮아 이질감 없음 |
 | **조각보 그리드** | 갤러리 미리보기 6장, 월드컵 결과 TOP3 | 크기 다른 사각형을 이어붙인 한국 조각보 레이아웃(CSS grid `grid-template-areas`). 패치 사이 1px 금색 선 |
 | **연꽃 + 모란 라인아트** | 허브 카드 아이콘, 빈 상태(방명록 0건) 일러스트 | 태국 연꽃(บัว)·한국 모란(부귀) 를 같은 선 굵기 1.5px 로. 이모지 대신 사용 |
@@ -198,7 +198,7 @@ CREATE TABLE IF NOT EXISTS content (
 ### 섹션별 적용
 | 섹션 | 한국 | 태국 | 합 |
 |---|---|---|---|
-| 인트로 | 한지 배경, 세리프 이름, 청·홍 실 | 금 매듭, 금색 날짜 | 사진 위 반투명 한지 레이어 → 실 애니메이션 → 이름 fade-in |
+| 인트로 | 세리프 이름 | 금색 날짜·D-day | 메인 사진 위 반투명 레이어 + 이름/날짜. 실 애니메이션 없음 |
 | 인사말 | 세로쓰기 짧은 구절 1줄(`writing-mode: vertical-rl`, 한국어·영어만. 태국어는 세로쓰기 불가 → 가로 유지) | 양가 성함 위에 작은 금색 연꽃 점 | |
 | 일시 | 달력(한국 청첩장 관례) 당일 칸을 연지 원 | 요일·월 금색 세리프 | 태국어 시 불기 연도 병기 `พ.ศ. 2570 (2027)` |
 | 오시는 길 | | 태국어 사용자에게 "서울 교통 팁" 안내문 (지하철·택시 앱) 라벨 | 한국 하객만 보는 정보와 태국 하객만 보는 정보를 **라벨로 분기** |
@@ -215,7 +215,7 @@ CREATE TABLE IF NOT EXISTS content (
 ### 하지 않는 것
 - 태국 사원·코끼리·한복 일러스트 같은 **관광 기념품식 클리셰**. 두 문화 모두 "장식"이 아니라 "상징" 수준으로만.
 - 금색 그라데이션·반짝임 효과. 금은 **선(line)** 으로만 쓴다.
-- 다크 모드. 한지 컨셉과 충돌, 작업량 대비 효용 낮음.
+- ~~다크 모드~~ → 사용자 요청으로 추가(2026-10-10). 색은 전부 CSS 변수(RGB triplet)라 `html[data-theme=dark]` 변수 세트 하나로 전환. 초기값 localStorage → OS 설정. 갤러리 뷰어는 항상 어둡게(`night` 고정색).
 
 ## 5. 사진 월드컵 (토너먼트)
 
@@ -286,7 +286,7 @@ CREATE TABLE IF NOT EXISTS label (
 **언어별 특수 처리**
 - 날짜·요일·카운트다운: `Intl.DateTimeFormat(lang)`. `th-TH` 는 자동으로 불기(พ.ศ. 2569) 표시됨 — 원하면 `calendar:'gregory'` 옵션으로 서기 고정. 구현 시 결정.
 - 폰트: 한/영은 Pretendard, 태국어는 `Noto Sans Thai`(Google Fonts). `<html lang>` 값으로 CSS `:lang(th)` 셀렉터에서 폰트 스택 교체.
-- 지도: 카카오맵 타일은 한국어 고정(SDK 제약). 식장명·주소 오버레이 텍스트만 라벨로 번역. 영/태 사용자는 구글맵 링크(`https://maps.google.com/?q=lat,lng`)를 길찾기 버튼에 추가.
+- 지도: 카카오맵 타일은 한국어 고정(SDK 제약). 식장명·주소 오버레이 텍스트만 라벨로 번역. 해외 하객에겐 안내문(`map.tip_body`)으로 카카오맵 앱 설치를 권유.
 - 방명록 글은 사용자 입력이므로 번역하지 않음. 라벨은 UI 문구만.
 - OG 태그(`og:title/description`)는 서버 렌더링 시 초기 언어 기준. 카톡 공유 미리보기는 공유하는 사람의 언어로 나감.
 
@@ -315,10 +315,7 @@ CREATE TABLE IF NOT EXISTS label (
 - `<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}">` + 마커 1개 + 줌 컨트롤. 커스텀 오버레이로 식장명.
 - JS 키는 어차피 브라우저에 노출되는 키. 도메인 제한이 보호 수단. `application.properties` 의 `kakao.js-key` 로 주입(환경변수 `KAKAO_JS_KEY`).
 - 주소 복사: HTML 에 주소를 렌더링하지 않고 버튼 클릭 시 `GET /api/address?lang=` 로 받아 클립보드에만(§13-2). 딥링크 좌표는 위경도만 노출.
-- 길찾기 버튼(앱 설치 안 돼 있으면 스토어/웹으로 fallback 되는 URL):
-  - 카카오내비 `https://map.kakao.com/link/to/{식장명},{lat},{lng}`
-  - 네이버지도 `nmap://route/car?dlat={lat}&dlng={lng}&dname={식장명}&appname=wedding.thaiuniontour.com`
-  - 티맵 `tmap://route?goalname={식장명}&goaly={lat}&goalx={lng}`
+- 길찾기 버튼은 **카카오맵 하나만** (사용자 결정 2026-10-10). `https://map.kakao.com/link/search/{검색어}` — 장소명 검색이라 좌표 오차와 무관, 앱 미설치 시 웹으로 열림. 네이버·티맵·구글 버튼은 제거.
 - 무료 쿼터 30만/일. 300명이면 무관.
 
 ## 9. 데이터 모델 (SQLite, `schema.sql`)
@@ -466,7 +463,7 @@ networks:
   > Tailwind CDN 은 런타임에 `<style>` 을 주입해 `style-src 'unsafe-inline'` 이 필요. 거슬리면 구현 시 Tailwind CLI 로 정적 CSS 빌드(빌드 1단계 추가). 구현 때 결정.
 - **CSRF**: 세션 쿠키 기반 인증이 없으니 전통적 CSRF 영향 없음. 그래도 `/api/**` 는 `Content-Type: application/json` 필수 + `Origin` 이 `wedding.base-url` 과 일치할 때만 허용(한 줄 인터셉터). `lang` 쿠키는 `SameSite=Lax; Secure`.
 - **보안 헤더**: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: geolocation=(), camera=()`. Spring Security 없이 `OncePerRequestFilter` 한 개.
-- **앱 레벨 레이트리밋**(Cloudflare 뒤 2차): `CF-Connecting-IP` 기준 메모리 토큰버킷. heartbeat 1회/10초, pick 40회/분, guestbook 1회/30초, event 20회/분. 초과 429. 맵은 `ConcurrentHashMap` + 1분 주기 만료 — §6 heartbeat 와 같은 패턴 재사용.
+- **앱 레벨 레이트리밋**(Cloudflare 뒤 2차): `CF-Connecting-IP` 기준 메모리 토큰버킷. heartbeat 12회/10초, pick 40회/분, guestbook 1회/30초, event 20회/분. 초과 429. 맵은 `ConcurrentHashMap` + 1분 주기 만료 — §6 heartbeat 와 같은 패턴 재사용.
   > `X-Forwarded-For` 는 믿지 않는다. 터널 경유라 `CF-Connecting-IP` 만 신뢰. 로컬 개발은 `remoteAddr` fallback.
 - **접속자 수 조작**: 1 IP 당 online 집계 최대 3 sid. 그 이상은 count 안 함. 완벽하지 않지만 "1000명 보는 중" 장난은 막힘.
 - **월드컵 조작**: sid 당 round 별 pick 횟수 상한(32강 16·16강 8·8강 4·4강 2·결승 1). 초과 무시. 랭킹은 `round=5` 만 쓰므로 sid 당 우승 1표.

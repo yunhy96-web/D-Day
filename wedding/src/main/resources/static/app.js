@@ -40,6 +40,12 @@
     if (want !== lang) setLang(want); else applyLang();
   })();
 
+  // 다크모드 토글 (초기 적용은 head 인라인 스크립트)
+  document.querySelectorAll('[data-theme-toggle]').forEach(b => b.addEventListener('click', () => {
+    const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = t; try { localStorage.theme = t; } catch {}
+  }));
+
   // API
   const api = (path, method, body) => fetch(path, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
   const track = (name, meta) => { api('/api/event', 'POST', { sid, name, meta: meta == null ? undefined : String(meta) }).catch(() => {}); };
@@ -117,9 +123,6 @@
     for (let d = 1; d <= days; d++) html += `<span class="${d === when.getDate() ? 'rounded-full bg-yeonji text-white font-semibold' : ''}">${d}</span>`;
     el.innerHTML = html;   // 숫자만 생성. 외부 입력 없음
   })();
-
-  // 인트로 실 애니메이션 1회
-  try { if (sessionStorage.threadDone) document.documentElement.classList.add('thread-done'); else sessionStorage.threadDone = '1'; } catch {}
 
   // 스크롤 reveal
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .15 });

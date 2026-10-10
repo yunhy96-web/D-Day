@@ -24,11 +24,12 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
         req.setAttribute("cspNonce", nonce);
         res.setHeader("Content-Security-Policy", String.join("; ",
                 "default-src 'self'",
-                "script-src 'self' 'nonce-" + nonce + "' https://dapi.kakao.com https://*.daumcdn.net https://challenges.cloudflare.com https://cdn.tailwindcss.com",
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",   // Tailwind CDN 런타임 주입 때문
+                // 카카오맵 SDK 는 dapi → *.kakaocdn.net(메인 js) → *.daumcdn.net(타일) 순으로 부른다. 스킴 생략 = 페이지 스킴 따름(로컬 http·운영 https)
+                "script-src 'self' 'nonce-" + nonce + "' dapi.kakao.com *.kakaocdn.net *.daumcdn.net https://challenges.cloudflare.com https://cdn.tailwindcss.com",
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net *.daumcdn.net",   // Tailwind CDN 런타임 주입 때문
                 "font-src https://fonts.gstatic.com https://cdn.jsdelivr.net",
-                "img-src 'self' data: https://*.daumcdn.net https://*.kakaocdn.net",
-                "connect-src 'self' https://dapi.kakao.com https://*.daumcdn.net",
+                "img-src 'self' data: *.daumcdn.net *.kakaocdn.net",
+                "connect-src 'self' dapi.kakao.com *.daumcdn.net *.kakaocdn.net",
                 "frame-src https://challenges.cloudflare.com",
                 "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'"));
         res.setHeader("X-Content-Type-Options", "nosniff");

@@ -6,22 +6,16 @@
 
 <main class="max-w-[420px] mx-auto">
 
-  <!-- 1. 인트로: 메인 사진 + 두 가닥 실 → 금 매듭 + 이름/날짜/D-day -->
+  <!-- 1. 인트로: 메인 사진 + 이름/날짜/D-day -->
   <section class="relative h-[100svh] min-h-[560px] overflow-hidden">
     <img th:if="${!previewPhotos.isEmpty()}" th:src="${previewPhotos[0]}" alt="" class="absolute inset-0 w-full h-full object-cover">
-    <div class="absolute inset-0 bg-gradient-to-b from-hanji/80 via-hanji/30 to-hanji"></div>
-    <svg class="absolute inset-0 w-full h-full" viewBox="0 0 420 800" fill="none" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <path class="thread" d="M-10 -10 C 120 160, 60 360, 190 470" stroke="#2B4C7E" stroke-width="1.6" stroke-linecap="round"/>
-      <path class="thread" d="M430 -10 C 300 160, 360 360, 230 470" stroke="#B8413F" stroke-width="1.6" stroke-linecap="round"/>
-      <g class="thread knot" stroke="#C9A24D" stroke-width="1.8">
-        <circle cx="198" cy="482" r="14"/><circle cx="222" cy="482" r="14"/>
-      </g>
-    </svg>
-    <div class="absolute inset-x-0 bottom-0 pb-14 text-center fade-late">
-      <p class="serif font-light tracking-[.3em] text-3xl">
-        <span data-i18n="intro.groom" th:text="${t['intro.groom']}">A</span>
-        <span class="text-gold mx-2">&amp;</span>
-        <span data-i18n="intro.bride" th:text="${t['intro.bride']}">B</span>
+    <div class="absolute inset-0 bg-gradient-to-b from-mist/80 via-mist/30 to-mist"></div>
+    <div class="absolute inset-x-0 bottom-0 pb-14 text-center reveal in">
+      <!-- letter-spacing 은 마지막 글자 뒤에도 붙어 중앙이 왼쪽으로 치우침 → 각 이름에 -mr 로 상쇄 -->
+      <p class="serif font-light text-3xl flex items-baseline justify-center gap-4">
+        <span class="tracking-[.3em] -mr-[.3em]" data-i18n="intro.groom" th:text="${t['intro.groom']}">A</span>
+        <span class="text-gold">&amp;</span>
+        <span class="tracking-[.3em] -mr-[.3em]" data-i18n="intro.bride" th:text="${t['intro.bride']}">B</span>
       </p>
       <p class="serif mt-4 text-gold tabular tracking-widest text-sm" data-date-short></p>
       <p class="mt-1 text-xs text-ink/70"><span data-date-long></span> · <span data-date-time></span></p>
@@ -36,7 +30,7 @@
     <h2 class="serif text-lg" data-i18n="greeting.title" th:text="${t['greeting.title']}">title</h2>
     <p class="mt-5 text-[15px] leading-8 whitespace-pre-line" data-i18n="greeting.body" th:text="${t['greeting.body']}">body</p>
     <div class="mt-8 grid grid-cols-2 gap-4 text-sm">
-      <div><p class="text-indigo text-xs tracking-widest" data-i18n="greeting.groom_side" th:text="${t['greeting.groom_side']}">groom</p>
+      <div><p class="text-sky text-xs tracking-widest" data-i18n="greeting.groom_side" th:text="${t['greeting.groom_side']}">groom</p>
         <p class="mt-1 text-ink/80" data-i18n="greeting.groom_parents" th:text="${t['greeting.groom_parents']}">parents</p></div>
       <div><p class="text-yeonji text-xs tracking-widest" data-i18n="greeting.bride_side" th:text="${t['greeting.bride_side']}">bride</p>
         <p class="mt-1 text-ink/80" data-i18n="greeting.bride_parents" th:text="${t['greeting.bride_parents']}">parents</p></div>
@@ -51,7 +45,7 @@
     <p class="serif mt-3 text-lg"><span data-date-long></span></p>
     <p class="text-sm text-ink/70" data-date-time></p>
     <div class="mt-6 grid grid-cols-7 gap-y-2 text-sm tabular max-w-[300px] mx-auto">
-      <span class="text-yeonji text-xs">S</span><span class="text-xs text-ink/50">M</span><span class="text-xs text-ink/50">T</span><span class="text-xs text-ink/50">W</span><span class="text-xs text-ink/50">T</span><span class="text-xs text-ink/50">F</span><span class="text-indigo text-xs">S</span>
+      <span class="text-yeonji text-xs">S</span><span class="text-xs text-ink/50">M</span><span class="text-xs text-ink/50">T</span><span class="text-xs text-ink/50">W</span><span class="text-xs text-ink/50">T</span><span class="text-xs text-ink/50">F</span><span class="text-sky text-xs">S</span>
     </div>
     <div class="grid grid-cols-7 gap-y-2 text-sm tabular max-w-[300px] mx-auto [&>span]:h-8 [&>span]:leading-8 [&>span]:w-8 [&>span]:mx-auto" data-calendar></div>
     <p class="mt-6 text-sm text-ink/70 tabular" data-countdown></p>
@@ -66,7 +60,7 @@
     <p class="text-sm" data-i18n="venue.hall" th:text="${t['venue.hall']}">hall</p>
     <p class="mt-1 text-sm text-ink/70" data-i18n="venue.summary" th:text="${t['venue.summary']}">summary</p>
     <div class="mt-5 flex gap-3 justify-center">
-      <a href="/c/map" data-content-link="map" class="px-5 py-2.5 rounded-full bg-ink text-hanji text-sm" data-i18n="btn.directions" th:text="${t['btn.directions']}">directions</a>
+      <a href="/c/map" data-content-link="map" class="px-5 py-2.5 rounded-full bg-ink text-mist text-sm" data-i18n="btn.directions" th:text="${t['btn.directions']}">directions</a>
       <button type="button" data-copy-address class="px-5 py-2.5 rounded-full border border-gold text-sm" data-i18n="btn.copy_address" th:text="${t['btn.copy_address']}">copy</button>
     </div>
   </section>
@@ -101,7 +95,7 @@
           <span th:if="${c.stat != null and t.containsKey('content.'+c.key+'.stat')}" class="block text-[11px] text-marigold mt-1 tabular"
                 th:attr="data-i18n='content.'+${c.key}+'.stat',data-args=${c.stat}" th:text="${#strings.replace(t['content.'+c.key+'.stat'],'{0}',c.stat)}">stat</span>
         </span>
-        <span class="shrink-0 text-xs px-3 py-1.5 rounded-full bg-ink text-hanji" th:attr="data-i18n='content.'+${c.key}+'.cta'" th:text="${t['content.'+c.key+'.cta']}">go</span>
+        <span class="shrink-0 text-xs px-3 py-1.5 rounded-full bg-ink text-mist" th:attr="data-i18n='content.'+${c.key}+'.cta'" th:text="${t['content.'+c.key+'.cta']}">go</span>
       </a>
     </div>
     <!-- 방명록 미리보기 1~2줄 -->
@@ -117,15 +111,15 @@
     <h2 class="serif text-gold text-xs tracking-[.3em] text-center" data-i18n="account.title" th:text="${t['account.title']}">gift</h2>
     <p class="text-center text-sm text-ink/70 mt-2" data-i18n="account.intro" th:text="${t['account.intro']}">intro</p>
     <div class="mt-4 space-y-2">
-      <details class="rounded-xl bg-jasmine border border-gold/60 px-4 py-3 group">
+      <details th:if="${p.account.containsKey('groom')}" class="rounded-xl bg-jasmine border border-gold/60 px-4 py-3 group">
         <summary class="cursor-pointer list-none flex justify-between items-center text-sm">
-          <span class="text-indigo" data-i18n="account.groom" th:text="${t['account.groom']}">groom</span><span class="text-gold transition group-open:rotate-45">+</span></summary>
+          <span class="text-sky" data-i18n="account.groom" th:text="${t['account.groom']}">groom</span><span class="text-gold transition group-open:rotate-45">+</span></summary>
         <div class="mt-3 flex justify-between items-center text-sm">
           <span th:text="${p.account['groom'].holder}">holder</span>
           <button type="button" data-copy-account="groom" class="px-3 py-1.5 rounded-full border border-gold text-xs" data-i18n="account.copy" th:text="${t['account.copy']}">copy</button>
         </div>
       </details>
-      <details class="rounded-xl bg-jasmine border border-gold/60 px-4 py-3 group">
+      <details th:if="${p.account.containsKey('bride')}" class="rounded-xl bg-jasmine border border-gold/60 px-4 py-3 group">
         <summary class="cursor-pointer list-none flex justify-between items-center text-sm">
           <span class="text-yeonji" data-i18n="account.bride" th:text="${t['account.bride']}">bride</span><span class="text-gold transition group-open:rotate-45">+</span></summary>
         <div class="mt-3 flex justify-between items-center text-sm">
