@@ -433,7 +433,14 @@ networks:
 
 `Dockerfile`: 멀티스테이지(gradle 빌드 → `eclipse-temurin:17-jre`, Pi 에 이미 캐시됨). `-Xmx256m`.
 
-**재배포**: `git pull && docker-compose up -d --build`. 사진만 바뀌면 scp 만.
+**실제 배포 (2026-10-12 완료)**
+- 코드: Pi `~/workspace/huiyeong/D-Day` (모노레포 clone), 실행은 `D-Day/wedding`. `.env`·`data/` 는 Pi 에만.
+- Pi 의 compose 는 v1 이 아니라 **docker-compose 2.29**. `.env` 의 BCrypt 해시는 작은따옴표로 감싸야 `$` 가 안 풀린다.
+- `/tmp` tmpfs 는 `exec` 필요(sqlite-jdbc 네이티브 .so). 최신 temurin 이미지엔 UID 1000(ubuntu) 이 이미 있어 `USER 1000:1000` 만 지정.
+- 터널 ingress 는 `thaiuniontour/cloudflared/config.yml` 맨 앞(백업 `config.yml.bak-*`), DNS 는 `route dns` 로 등록됨.
+- 사진·퀴즈 등 데이터는 DB 를 옮기지 않고 운영 어드민에서 입력.
+
+**재배포**: `cd ~/workspace/huiyeong/D-Day && git pull && cd wedding && docker-compose up -d --build`. 사진은 어드민에서.
 
 **백업**: `data/wedding.db` 파일 하나. 결혼식 후 `scp` 로 가져와 랭킹 보관.
 
