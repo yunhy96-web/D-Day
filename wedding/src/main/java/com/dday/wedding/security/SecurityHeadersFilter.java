@@ -25,8 +25,8 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
         res.setHeader("Content-Security-Policy", String.join("; ",
                 "default-src 'self'",
                 // 카카오맵 SDK 는 dapi → *.kakaocdn.net(메인 js) → *.daumcdn.net(타일) 순으로 부른다. 스킴 생략 = 페이지 스킴 따름(로컬 http·운영 https)
-                "script-src 'self' 'nonce-" + nonce + "' dapi.kakao.com *.kakaocdn.net *.daumcdn.net https://challenges.cloudflare.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/",   // 어드민 SortableJS 한 파일만
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://hangeul.pstatic.net *.daumcdn.net",   // Tailwind CDN 런타임 주입 때문
+                "script-src 'self' 'nonce-" + nonce + "' dapi.kakao.com *.kakaocdn.net *.daumcdn.net https://challenges.cloudflare.com https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/",   // 어드민 SortableJS 한 파일만
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://hangeul.pstatic.net *.daumcdn.net",   // 카카오맵 SDK 의 인라인 스타일
                 "font-src https://fonts.gstatic.com https://cdn.jsdelivr.net https://hangeul.pstatic.net",
                 "img-src 'self' data: blob: *.daumcdn.net *.kakaocdn.net https://*.kr.ncloudstorage.com",   // blob: 업로드 미리보기, ncloud: 사진 서명 URL
                 "connect-src 'self' dapi.kakao.com *.daumcdn.net *.kakaocdn.net",

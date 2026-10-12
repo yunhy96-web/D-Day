@@ -11,7 +11,8 @@
 - 사진은 `photo` 테이블 + 어드민 업로드(설계 §15-6). 원본은 비공개, 하객에겐 2560px 보기용·600px 썸네일만. 하객 업로드(방명록)는 서버에서 반드시 재인코딩.
 - 어드민(`/admin`)은 설계 §15 범위만. 어드민 화면은 한국어 하드코딩 허용.
 - 퀴즈 정답(`answer_no`)은 어떤 응답에도 넣지 않는다. 채점은 서버에서 응시 1회 단위로.
-- 프론트는 Thymeleaf 템플릿 1장 + Tailwind CDN + vanilla JS. 프론트 빌드 도구 추가 금지.
+- 프론트는 Thymeleaf + 미리 만든 Tailwind CSS(`static/tw.css`) + vanilla JS. 템플릿·JS 클래스를 바꾸면 `scripts/tailwind.sh` 실행 후 tw.css 커밋(설계 §15-11). 그 외 프론트 빌드 도구 추가 금지.
+- 정적 파일은 템플릿에서 `th:src/th:href="@{/static/..}"` 로만 참조(내용 해시 URL + 1년 캐시).
 - 배포 대상은 arm64(Pi). 빌드는 Pi 에서 `docker-compose`(v1) 로.
 - 사진 파일은 `ObjectStore` 로만 읽고 쓴다(Ncloud Storage 서명 URL, 키 없으면 로컬). 원본은 버킷에 올리지 않는다(설계 §15-10).
 - 비밀값(`KAKAO_JS_KEY`, `GUESTBOOK_MASTER_PW_HASH`, `ADMIN_PW_HASH`, `NCLOUD_*`)은 `.env` / 환경변수. 커밋 금지.

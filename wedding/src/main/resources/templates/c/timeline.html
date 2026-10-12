@@ -23,6 +23,6 @@
 
 <nav th:replace="~{fragments/layout :: bottomNav}"></nav>
 <th:block th:replace="~{fragments/layout :: scripts}"></th:block>
-<script src="/static/timeline.js" defer th:attr="nonce=${cspNonce}"></script>
+<script th:src="@{/static/timeline.js}" defer th:attr="nonce=${cspNonce}"></script>
 </body>
 </html>

@@ -66,7 +66,7 @@
 
 <nav th:replace="~{fragments/layout :: bottomNav}"></nav>
 <th:block th:replace="~{fragments/layout :: scripts}"></th:block>
-<script src="/static/upload.js" defer th:attr="nonce=${cspNonce}"></script>
-<script src="/static/guestbook.js" defer th:attr="nonce=${cspNonce}"></script>
+<script th:src="@{/static/upload.js}" defer th:attr="nonce=${cspNonce}"></script>
+<script th:src="@{/static/guestbook.js}" defer th:attr="nonce=${cspNonce}"></script>
 </body>
 </html>

@@ -8,23 +8,19 @@
   <meta property="og:title" th:content="${t['og.title']}">
   <meta property="og:description" th:content="${t['og.description']}">
   <meta property="og:url" th:content="${p.baseUrl} + '/'">
-  <meta th:if="${mainPhoto != null}" property="og:image" th:content="${p.baseUrl} + ${mainPhoto}">
+  <meta th:if="${mainPhoto != null}" property="og:image" th:content="${#strings.startsWith(mainPhoto, 'http')} ? ${mainPhoto} : ${p.baseUrl} + ${mainPhoto}">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://hangeul.pstatic.net/hangeul_static/css/maru-buri.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@300;400;600&family=Noto+Sans+Thai:wght@400;500&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com" th:attr="nonce=${cspNonce}"></script>
-  <script th:attr="nonce=${cspNonce}">
-    const v = n => `rgb(var(--${n}) / <alpha-value>)`;
-    tailwind.config = { theme: { extend: { colors: { mist:v('mist'), ink:v('ink'), sky:v('sky'), cloud:v('cloud'), jasmine:v('jasmine'), night:'#0F141B' } } } }
-  </script>
   <script th:attr="nonce=${cspNonce}">
     (function () { let t = null; try { t = localStorage.theme; } catch (e) {}
       if (!t) t = 'light';   // OS 설정과 무관하게 화이트가 기본. 토글로 고른 값만 기억
       document.documentElement.dataset.theme = t; })();
   </script>
   <meta name="color-scheme" content="light dark">
-  <link rel="stylesheet" href="/static/app.css">
+  <link rel="stylesheet" th:href="@{/static/tw.css}">
+  <link rel="stylesheet" th:href="@{/static/app.css}">
   <script id="labels" type="application/json" th:utext="${labelsJson}">{}</script>
 </head>
 <body>
@@ -78,6 +74,6 @@
   <svg th:if="${name=='map'}" class="text-sky" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6-7-11a7 7 0 0114 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
 </th:block>
 
-<th:block th:fragment="scripts"><script src="/static/app.js" defer th:attr="nonce=${cspNonce}"></script></th:block>
+<th:block th:fragment="scripts"><script th:src="@{/static/app.js}" defer th:attr="nonce=${cspNonce}"></script></th:block>
 </body>
 </html>

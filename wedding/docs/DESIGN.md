@@ -634,6 +634,11 @@ CREATE TABLE IF NOT EXISTS guestbook_photo (
 - 기존 로컬 파일은 기동 시 한 번 버킷으로 올리고 `data/.migrated-ncloud` 표식을 남긴다.
 - SDK: AWS SDK v2 `s3`(엔드포인트 `https://kr.ncloudstorage.com`, 리전 `kr`). S3 호환이라 나중에 AWS·R2 로 옮겨도 설정만 바꾼다.
 
+### 15-11. Tailwind CDN → 미리 만든 CSS (2026-10-13)
+- `cdn.tailwindcss.com` 런타임이 첫 화면을 2초 막고 있었다. `scripts/tailwind.sh`(npx tailwindcss@3.4.17)로 `static/tw.css`(약 17KB) 를 만들어 커밋. Pi 빌드엔 node 불필요.
+- 템플릿·JS 의 클래스를 바꾸면 스크립트를 다시 돌린다. `tailwind.config.js` content 에 `static/*.js` 포함(JS 가 넣는 클래스).
+- `/static/**` 은 내용 해시 URL(`@{/static/..}`) + 1년 캐시. CSP 에서 cdn.tailwindcss.com 제거.
+
 ## 14. 확인 필요 (사용자 결정)
 
 1. 서브도메인 이름: `wedding.thaiuniontour.com` 으로 가정. 다른 이름?

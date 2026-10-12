@@ -17,6 +17,18 @@ spring:
       enabled: false
   mvc:
     static-path-pattern: /static/**
+  web:
+    resources:
+      # /static 파일 URL 에 내용 해시를 붙이고(템플릿은 @{/static/..}) 1년 캐시. 파일이 바뀌면 URL 이 바뀐다
+      chain:
+        strategy:
+          content:
+            enabled: true
+            paths: /**
+      cache:
+        cachecontrol:
+          max-age: 365d
+          cache-public: true
 
 server:
   port: 8080
