@@ -2,12 +2,12 @@ package com.dday.wedding.guestbook;
 
 import com.dday.wedding.common.BadRequest;
 import com.dday.wedding.common.Images;
+import com.dday.wedding.common.ObjectStore;
 import com.dday.wedding.common.Valid;
 import com.dday.wedding.config.WeddingProps;
 import com.dday.wedding.security.ClientIp;
 import com.dday.wedding.security.RateLimiter;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,8 +18,6 @@ import org.springframework.web.client.RestClient;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 
 /** 설계 §6-1. 익명 + 4자리 비번(BCrypt) + 마스터 비번 + Turnstile(설정 시) + 쿨다운. */
@@ -31,12 +29,14 @@ public class GuestbookController {
     private final RateLimiter limiter;
     private final BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder(10);
     private final RestClient http = RestClient.create();
-    private final Path photoDir;
+    private final ObjectStore store;
 
-    public GuestbookController(JdbcTemplate jdbc, WeddingProps props, RateLimiter limiter, @Value("${app.data-dir}") String dataDir) {
-        this.jdbc = jdbc; this.props = props; this.limiter = limiter;
-        this.photoDir = Path.of(dataDir, "guestbook");
+    public GuestbookController(JdbcTemplate jdbc, WeddingProps props, RateLimiter limiter, ObjectStore store) {
+        this.jdbc = jdbc; this.props = props; this.limiter = limiter; this.store = store;
     }
+
+    public static String viewKey(String file) { return "guestbook/" + file + ".jpg"; }
+    public static String thumbKey(String file) { return "guestbook/" + file + "_t.jpg"; }
 
     public static final int MAX_PHOTOS = 3;
     private static final int MAX_UPLOAD = 4 * 1024 * 1024;
@@ -55,7 +55,7 @@ public class GuestbookController {
         rows.forEach(e -> byId.put(e.id(), e));
         jdbc.query("SELECT guestbook_id, file FROM guestbook_photo WHERE guestbook_id IN (" + String.join(",", Collections.nCopies(rows.size(), "?")) + ") ORDER BY id",
                 rs -> { String f = rs.getString("file");
-                        byId.get(rs.getLong("guestbook_id")).photos().add(new Pic("/guestbook-photos/" + f + "_t.jpg", "/guestbook-photos/" + f + ".jpg")); },
+                        byId.get(rs.getLong("guestbook_id")).photos().add(new Pic(store.url(thumbKey(f)), store.url(viewKey(f)))); },
                 byId.keySet().toArray());
         return rows;
     }
@@ -69,18 +69,18 @@ public class GuestbookController {
         removeOrphans();
         BufferedImage img = Images.decodeJpeg(Images.read(req.getInputStream(), MAX_UPLOAD), 2600);
         String token = UUID.randomUUID().toString();
-        Images.save(photoDir, token + "_t.jpg", Images.encodeJpeg(img, 600, 0.8f));
-        Images.save(photoDir, token + ".jpg", Images.encodeJpeg(img, 2048, 0.88f));
+        store.put(thumbKey(token), Images.encodeJpeg(img, 600, 0.8f));
+        store.put(viewKey(token), Images.encodeJpeg(img, 2048, 0.88f));
         jdbc.update("INSERT INTO guestbook_photo(file) VALUES (?)", token);
-        return Map.of("token", token);
+        return Map.of("token", token, "thumb", store.url(thumbKey(token)), "view", store.url(viewKey(token)));
     }
 
     /** 올리고 글은 안 쓴 사진: 하루 지나면 정리 */
     private void removeOrphans() throws IOException {
         List<String> old = jdbc.query("SELECT file FROM guestbook_photo WHERE guestbook_id IS NULL AND created_at < datetime('now','-1 day')", (rs, i) -> rs.getString(1));
         for (String f : old) {
-            Files.deleteIfExists(photoDir.resolve(f + ".jpg"));
-            Files.deleteIfExists(photoDir.resolve(f + "_t.jpg"));
+            store.delete(viewKey(f));
+            store.delete(thumbKey(f));
         }
         if (!old.isEmpty()) jdbc.update("DELETE FROM guestbook_photo WHERE guestbook_id IS NULL AND created_at < datetime('now','-1 day')");
     }

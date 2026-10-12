@@ -2,11 +2,11 @@
 # 가장 작은 회귀 체크. 사용: scripts/smoke.sh [base-url]   (기본 http://localhost:8080)
 U="${1:-http://localhost:8080}"; H='Content-Type: application/json'; SID=$(uuidgen | tr A-Z a-z); fail=0
 chk() { [ "$2" = "$3" ] && echo "ok   $1" || { echo "FAIL $1: got '$2' want '$3'"; fail=1; }; }
-code() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
+code() { curl -s -m 20 -o /dev/null -w '%{http_code}' "$@"; }
 for p in / /c/worldcup /c/guestbook /c/gallery /c/map /c/quiz /c/timeline /admin; do chk "GET $p" "$(code $U$p)" 200; done
 chk "404 unknown content" "$(code $U/c/nope)" 404
-chk "404 missing photo" "$(code $U/photos/view/none.jpg)" 404
-chk "originals not served" "$(code $U/photos/original/x.jpg)" 404
+chk "404 missing photo" "$(code $U/files/photos/view/none.jpg)" 404
+chk "originals not served" "$(code $U/files/photos/original/x.jpg)" 404
 chk "415 non-json api" "$(code -X POST $U/api/heartbeat -d x)" 415
 chk "heartbeat" "$(curl -s -X POST $U/api/heartbeat -H "$H" -d "{\"sid\":\"$SID\"}" | grep -c online)" 1
 chk "bad sid" "$(code -X POST $U/api/heartbeat -H "$H" -d '{"sid":"x"}')" 400

@@ -1,5 +1,6 @@
 package com.dday.wedding.photo;
 
+import com.dday.wedding.common.ObjectStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -11,13 +12,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PhotoService {
     private final JdbcTemplate jdbc;
+    private final ObjectStore store;
 
     public record Photo(long id, String view, String thumb, boolean worldcup) {}
 
-    private static Photo row(java.sql.ResultSet rs) throws java.sql.SQLException {
+    private Photo row(java.sql.ResultSet rs) throws java.sql.SQLException {
         String f = rs.getString("file");
-        return new Photo(rs.getLong("id"), "/photos/view/" + f + ".jpg", "/photos/thumb/" + f + ".jpg", "Y".equals(rs.getString("worldcup_yn")));
+        return new Photo(rs.getLong("id"), store.url(viewKey(f)), store.url(thumbKey(f)), "Y".equals(rs.getString("worldcup_yn")));
     }
+
+    public static String viewKey(String file) { return "photos/view/" + file + ".jpg"; }
+    public static String thumbKey(String file) { return "photos/thumb/" + file + ".jpg"; }
 
     public List<Photo> all() {
         return jdbc.query("SELECT id, file, worldcup_yn FROM photo ORDER BY sort, id", (rs, i) -> row(rs));
@@ -41,7 +46,7 @@ public class PhotoService {
 
     public String thumb(String id) {
         if (id == null || !id.matches("\\d{1,9}")) return null;
-        List<String> l = jdbc.query("SELECT file FROM photo WHERE id=?", (rs, i) -> "/photos/thumb/" + rs.getString(1) + ".jpg", Long.parseLong(id));
+        List<String> l = jdbc.query("SELECT file FROM photo WHERE id=?", (rs, i) -> store.url(thumbKey(rs.getString(1))), Long.parseLong(id));
         return l.isEmpty() ? null : l.get(0);
     }
 }

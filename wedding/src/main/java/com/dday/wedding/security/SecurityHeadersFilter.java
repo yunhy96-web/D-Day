@@ -28,7 +28,7 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
                 "script-src 'self' 'nonce-" + nonce + "' dapi.kakao.com *.kakaocdn.net *.daumcdn.net https://challenges.cloudflare.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/",   // 어드민 SortableJS 한 파일만
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://hangeul.pstatic.net *.daumcdn.net",   // Tailwind CDN 런타임 주입 때문
                 "font-src https://fonts.gstatic.com https://cdn.jsdelivr.net https://hangeul.pstatic.net",
-                "img-src 'self' data: blob: *.daumcdn.net *.kakaocdn.net",   // blob: 업로드 미리보기
+                "img-src 'self' data: blob: *.daumcdn.net *.kakaocdn.net https://*.kr.ncloudstorage.com",   // blob: 업로드 미리보기, ncloud: 사진 서명 URL
                 "connect-src 'self' dapi.kakao.com *.daumcdn.net *.kakaocdn.net",
                 "frame-src https://challenges.cloudflare.com",
                 "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'"));

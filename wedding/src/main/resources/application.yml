@@ -52,6 +52,12 @@ wedding:
   turnstile-secret: ${TURNSTILE_SECRET:}
   master-pw-hash: ${GUESTBOOK_MASTER_PW_HASH:}
   admin-id: ${ADMIN_ID:admin}
+  storage:                                  # 설계 §15-10. 키가 비면 로컬 디스크(/files/**)
+    endpoint: ${STORAGE_ENDPOINT:https://kr.ncloudstorage.com}
+    region: ${STORAGE_REGION:kr}
+    bucket: ${STORAGE_BUCKET:wedding}
+    access-key: ${NCLOUD_ACCESS_KEY:}
+    secret-key: ${NCLOUD_SECRET_KEY:}
   admin-pw-hash: ${ADMIN_PW_HASH:}          # 비어 있으면 어드민 로그인 불가
   address:
     ko: 광주광역시 광산구 임방울대로 549, CN타워 2층

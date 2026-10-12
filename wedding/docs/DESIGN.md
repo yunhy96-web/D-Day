@@ -626,6 +626,14 @@ CREATE TABLE IF NOT EXISTS guestbook_photo (
 | PUT | `/admin/api/guestbook/{id}` | `{hidden}` | 204 |
 | DELETE | `/admin/api/guestbook/photo/{photoId}` | | 204 |
 
+### 15-10. 사진 저장소: 네이버 Ncloud Storage (2026-10-13)
+- 이유: Cloudflare 무료 플랜은 국내 통신사에서 시애틀(SEA) 엣지로 붙어 사진 340KB 가 15초+. Ncloud Storage(서울) 직접 응답 0.05초.
+- 버킷 `wedding`(비공개). 새 Ncloud Storage 는 공개 ACL 이 없어 **서명 URL(7일 유효)** 로 내보낸다. 같은 키는 하루 동안 같은 URL 을 재사용(메모리 캐시)해 브라우저 캐시가 먹게 한다.
+- 키 = data 디렉토리 기준 상대경로: `photos/view/{uuid}.jpg`, `photos/thumb/{uuid}.jpg`, `timeline/{uuid}.jpg`, `guestbook/{uuid}.jpg`·`_t.jpg`. **원본(`photos/original`)은 올리지 않고 Pi 에만.**
+- 업로드 경로는 그대로 브라우저 → Pi(검증·재인코딩) → Ncloud. 키(`NCLOUD_ACCESS_KEY/SECRET_KEY`)가 비어 있으면 로컬 디스크 + `/files/**` 로 서빙(개발용).
+- 기존 로컬 파일은 기동 시 한 번 버킷으로 올리고 `data/.migrated-ncloud` 표식을 남긴다.
+- SDK: AWS SDK v2 `s3`(엔드포인트 `https://kr.ncloudstorage.com`, 리전 `kr`). S3 호환이라 나중에 AWS·R2 로 옮겨도 설정만 바꾼다.
+
 ## 14. 확인 필요 (사용자 결정)
 
 1. 서브도메인 이름: `wedding.thaiuniontour.com` 으로 가정. 다른 이름?

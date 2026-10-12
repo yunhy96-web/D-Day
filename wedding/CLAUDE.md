@@ -13,7 +13,8 @@
 - 퀴즈 정답(`answer_no`)은 어떤 응답에도 넣지 않는다. 채점은 서버에서 응시 1회 단위로.
 - 프론트는 Thymeleaf 템플릿 1장 + Tailwind CDN + vanilla JS. 프론트 빌드 도구 추가 금지.
 - 배포 대상은 arm64(Pi). 빌드는 Pi 에서 `docker-compose`(v1) 로.
-- 비밀값(`KAKAO_JS_KEY`, `GUESTBOOK_MASTER_PW_HASH`, `ADMIN_PW_HASH`)은 `.env` / 환경변수. 커밋 금지.
+- 사진 파일은 `ObjectStore` 로만 읽고 쓴다(Ncloud Storage 서명 URL, 키 없으면 로컬). 원본은 버킷에 올리지 않는다(설계 §15-10).
+- 비밀값(`KAKAO_JS_KEY`, `GUESTBOOK_MASTER_PW_HASH`, `ADMIN_PW_HASH`, `NCLOUD_*`)은 `.env` / 환경변수. 커밋 금지.
 
 - 컨텐츠는 `/c/{key}` 라우트 + `content/<key>/` 패키지 + `templates/c/<key>.html` + `content` 테이블 1행(설계 §4-3). 컨텐츠끼리 서로의 테이블·서비스 참조 금지.
 - 출력은 `th:text`·`textContent` 만. `th:utext`·`innerHTML` 금지. 모든 `/api/**` 입력은 화이트리스트 검증(설계 §13-2). 클라이언트 IP 는 `CF-Connecting-IP` 만 신뢰.

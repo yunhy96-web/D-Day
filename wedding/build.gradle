@@ -17,6 +17,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.springframework.security:spring-security-crypto'   // BCrypt only
     implementation 'org.xerial:sqlite-jdbc:3.46.1.3'
+    // 사진 저장소(Ncloud Storage, S3 호환). HTTP 클라이언트는 JDK URLConnection 하나만 (netty·apache 제외)
+    implementation platform('software.amazon.awssdk:bom:2.25.60')
+    implementation('software.amazon.awssdk:s3') {
+        exclude group: 'software.amazon.awssdk', module: 'netty-nio-client'
+        exclude group: 'software.amazon.awssdk', module: 'apache-client'
+    }
+    implementation 'software.amazon.awssdk:url-connection-client'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

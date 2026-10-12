@@ -53,7 +53,7 @@
       try {
         const blob = await Up.resize(s.file, 2048, .88);
         const r = await Up.send('/api/guestbook/photo', blob, 'image/jpeg', p => s.bar.firstChild.style.width = (p * 100) + '%');
-        if (r.ok) { s.token = r.json.token; s.im.classList.remove('opacity-60'); s.bar.remove(); } else s.failed = true;
+        if (r.ok) { s.token = r.json.token; s.urls = { thumb: r.json.thumb, view: r.json.view }; s.im.classList.remove('opacity-60'); s.bar.remove(); } else s.failed = true;
       } catch { s.failed = true; }
       if (s.failed) s.im.classList.add('grayscale');
       progressText();
@@ -81,7 +81,7 @@
       if (!r.ok) { msg.textContent = W.t('guestbook.error'); return; }
       const { id } = await r.json();
       list.prepend(row({ id, name: fd.get('name'), message: fd.get('message'), createdAt: new Date().toISOString(),
-        photos: views.map(s => ({ thumb: '/guestbook-photos/' + s.token + '_t.jpg', view: '/guestbook-photos/' + s.token + '.jpg' })) }));
+        photos: views.map(s => s.urls) }));
       $('[data-empty]').classList.add('hidden');
       form.reset(); resetShots(); msg.textContent = W.t('guestbook.success');
       if (window.turnstile) try { turnstile.reset(); } catch {}

@@ -2,6 +2,7 @@ package com.dday.wedding.admin;
 
 import com.dday.wedding.common.BadRequest;
 import com.dday.wedding.common.Images;
+import com.dday.wedding.common.ObjectStore;
 import com.dday.wedding.common.Valid;
 import com.dday.wedding.config.WeddingProps;
 import com.dday.wedding.security.RateLimiter;
@@ -11,7 +12,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -35,13 +33,11 @@ public class AdminController {
     private final RateLimiter limiter;
     private final TimelineService timeline;
     private final ObjectMapper json;
-    private final Path timelineDir;
+    private final ObjectStore store;
     private final BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder(10);
 
-    public AdminController(JdbcTemplate jdbc, WeddingProps props, RateLimiter limiter, TimelineService timeline, ObjectMapper json,
-                           @Value("${app.data-dir}") String dataDir) {
-        this.jdbc = jdbc; this.props = props; this.limiter = limiter; this.timeline = timeline; this.json = json;
-        this.timelineDir = Path.of(dataDir, "timeline");
+    public AdminController(JdbcTemplate jdbc, WeddingProps props, RateLimiter limiter, TimelineService timeline, ObjectMapper json, ObjectStore store) {
+        this.jdbc = jdbc; this.props = props; this.limiter = limiter; this.timeline = timeline; this.json = json; this.store = store;
     }
 
     public record Login(String username, String password) {}
@@ -133,7 +129,7 @@ public class AdminController {
         byte[] img = Images.read(req.getInputStream(), MAX_IMAGE);
         Images.decodeJpeg(img, 2600);
         String file = UUID.randomUUID() + ".jpg";
-        Images.save(timelineDir, file, img);
+        store.put(TimelineService.key(file), img);
         Long id = jdbc.queryForObject("INSERT INTO timeline(month, file, caption) VALUES (?,?,?) RETURNING id", Long.class, m, file, c);
         return Map.of("id", id);
     }
@@ -149,7 +145,7 @@ public class AdminController {
         String file = jdbc.query("SELECT file FROM timeline WHERE id=?", rs -> rs.next() ? rs.getString(1) : null, id);
         if (file == null) return ResponseEntity.notFound().build();
         jdbc.update("DELETE FROM timeline WHERE id=?", id);
-        Files.deleteIfExists(timelineDir.resolve(file));
+        store.delete(TimelineService.key(file));
         return ResponseEntity.noContent().build();
     }
 

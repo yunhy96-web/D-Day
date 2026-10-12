@@ -20,14 +20,15 @@ public class WebConfig implements WebMvcConfigurer {
     private final AdminInterceptor adminInterceptor;
     @Value("${app.data-dir}") private String dataDir;
 
-    /** 파일명이 전부 UUID 라 내용이 바뀌지 않음 → 기본 1년 immutable. data/photos/original 은 서빙하지 않는다(설계 §15-6) */
+    /** 사진은 보통 Ncloud 서명 URL 로 나간다(설계 §15-10). 키가 없을 때만 로컬 서빙. 파일명이 UUID 라 1년 immutable */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        serve(registry, "/photos/view/**", "photos/view");
-        serve(registry, "/photos/thumb/**", "photos/thumb");
-        serve(registry, "/timeline/**", "timeline");
-        // 하객 사진은 어드민에서 지우면 Cloudflare 캐시에서도 빨리 빠지도록 1시간
-        serve(registry, "/guestbook-photos/**", "guestbook", CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic());
+        // 로컬 모드(Ncloud 키 없음)에서만 쓰인다. data/photos/original 은 매핑하지 않음 → 원본 비공개
+        serve(registry, "/files/photos/view/**", "photos/view");
+        serve(registry, "/files/photos/thumb/**", "photos/thumb");
+        serve(registry, "/files/timeline/**", "timeline");
+        // 하객 사진은 어드민에서 지우면 빨리 빠지도록 1시간
+        serve(registry, "/files/guestbook/**", "guestbook", CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic());
     }
 
     private void serve(ResourceHandlerRegistry registry, String pattern, String dir) {

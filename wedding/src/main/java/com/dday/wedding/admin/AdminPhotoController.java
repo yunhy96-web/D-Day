@@ -2,6 +2,8 @@ package com.dday.wedding.admin;
 
 import com.dday.wedding.common.BadRequest;
 import com.dday.wedding.common.Images;
+import com.dday.wedding.common.ObjectStore;
+import com.dday.wedding.guestbook.GuestbookController;
 import com.dday.wedding.photo.PhotoService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,12 +24,12 @@ public class AdminPhotoController {
     private final JdbcTemplate jdbc;
     private final TransactionTemplate tx;
     private final PhotoService photos;
-    private final Path photoDir, guestbookDir;
+    private final ObjectStore store;
+    private final Path originalDir;   // 원본은 Pi 로컬에만(비공개)
 
-    public AdminPhotoController(JdbcTemplate jdbc, TransactionTemplate tx, PhotoService photos, @Value("${app.data-dir}") String dataDir) {
-        this.jdbc = jdbc; this.tx = tx; this.photos = photos;
-        this.photoDir = Path.of(dataDir, "photos");
-        this.guestbookDir = Path.of(dataDir, "guestbook");
+    public AdminPhotoController(JdbcTemplate jdbc, TransactionTemplate tx, PhotoService photos, ObjectStore store, @Value("${app.data-dir}") String dataDir) {
+        this.jdbc = jdbc; this.tx = tx; this.photos = photos; this.store = store;
+        this.originalDir = Path.of(dataDir, "photos", "original");
     }
 
     public record Order(List<Long> ids) {}
@@ -51,9 +53,9 @@ public class AdminPhotoController {
         String ext = Images.originalExt(o);
         if (ext == null) throw new BadRequest("original");
         String file = UUID.randomUUID().toString();
-        Images.save(photoDir.resolve("original"), file + "." + ext, o);
-        Images.save(photoDir.resolve("thumb"), file + ".jpg", t);
-        Images.save(photoDir.resolve("view"), file + ".jpg", v);
+        Images.save(originalDir, file + "." + ext, o);
+        store.put(PhotoService.thumbKey(file), t);
+        store.put(PhotoService.viewKey(file), v);
         Long id = jdbc.queryForObject("INSERT INTO photo(file, original, sort, worldcup_yn) VALUES (?, ?, (SELECT COALESCE(MAX(sort), 0) + 1 FROM photo), ?) RETURNING id",
                 Long.class, file, file + "." + ext, "N".equals(worldcup) ? "N" : "Y");
         return Map.of("id", id);
@@ -82,9 +84,9 @@ public class AdminPhotoController {
         if (rows.isEmpty()) return ResponseEntity.notFound().build();
         jdbc.update("DELETE FROM photo WHERE id=?", id);
         String[] r = rows.get(0);
-        Files.deleteIfExists(photoDir.resolve("view").resolve(r[0] + ".jpg"));
-        Files.deleteIfExists(photoDir.resolve("thumb").resolve(r[0] + ".jpg"));
-        Files.deleteIfExists(photoDir.resolve("original").resolve(r[1]));
+        store.delete(PhotoService.viewKey(r[0]));
+        store.delete(PhotoService.thumbKey(r[0]));
+        Files.deleteIfExists(originalDir.resolve(r[1]));
         return ResponseEntity.noContent().build();
     }
 
@@ -104,7 +106,7 @@ public class AdminPhotoController {
         if (hasNext) rows = rows.subList(0, size);
         for (Map<String, Object> r : rows)
             r.put("photos", jdbc.query("SELECT id, file FROM guestbook_photo WHERE guestbook_id=? ORDER BY id",
-                    (rs, i) -> Map.of("id", rs.getLong("id"), "thumb", "/guestbook-photos/" + rs.getString("file") + "_t.jpg"), r.get("id")));
+                    (rs, i) -> Map.of("id", rs.getLong("id"), "thumb", store.url(GuestbookController.thumbKey(rs.getString("file")))), r.get("id")));
         return Map.of("items", rows, "hasNext", hasNext);
     }
 
@@ -120,8 +122,8 @@ public class AdminPhotoController {
         List<String> f = jdbc.query("SELECT file FROM guestbook_photo WHERE id=?", (rs, i) -> rs.getString(1), photoId);
         if (f.isEmpty()) return ResponseEntity.notFound().build();
         jdbc.update("DELETE FROM guestbook_photo WHERE id=?", photoId);
-        Files.deleteIfExists(guestbookDir.resolve(f.get(0) + ".jpg"));
-        Files.deleteIfExists(guestbookDir.resolve(f.get(0) + "_t.jpg"));
+        store.delete(GuestbookController.viewKey(f.get(0)));
+        store.delete(GuestbookController.thumbKey(f.get(0)));
         return ResponseEntity.noContent().build();
     }
 }

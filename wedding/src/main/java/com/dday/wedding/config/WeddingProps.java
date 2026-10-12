@@ -25,6 +25,10 @@ public class WeddingProps {
     private String adminPwHash = "";      // 어드민 비번 BCrypt 해시
     private Map<String, String> address = Map.of();          // lang → 상세주소
     private Map<String, Account> account = Map.of();         // groom|bride → 계좌
+    private Storage storage = new Storage();
+
+    @Getter @Setter
+    public static class Storage { private String endpoint = ""; private String region = ""; private String bucket = ""; private String accessKey = ""; private String secretKey = ""; }
 
     @Getter @Setter
     public static class Account { private String holder; private String bank; private String number; }
