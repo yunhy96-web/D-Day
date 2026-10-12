@@ -639,6 +639,10 @@ CREATE TABLE IF NOT EXISTS guestbook_photo (
 - 템플릿·JS 의 클래스를 바꾸면 스크립트를 다시 돌린다. `tailwind.config.js` content 에 `static/*.js` 포함(JS 가 넣는 클래스).
 - `/static/**` 은 내용 해시 URL(`@{/static/..}`) + 1년 캐시. CSP 에서 cdn.tailwindcss.com 제거.
 
+### 15-12. CSS·공통 JS 인라인 (2026-10-13)
+- 첫 방문 때 `tw.css`·`app.css`·`app.js` 가 각각 Cloudflare(SEA) 왕복 1~5초. 하객 페이지는 세 파일을 HTML 에 직접 넣는다(`InlineAssets`, 기동 시 1회 로드). 압축 후 약 10KB 증가.
+- 우리 빌드 산출물이라 `th:utext` 예외. 닫는 태그가 들어 있으면 기동 실패하게 막아둠. 페이지별 스크립트(quiz.js 등)·어드민은 그대로 파일.
+
 ## 14. 확인 필요 (사용자 결정)
 
 1. 서브도메인 이름: `wedding.thaiuniontour.com` 으로 가정. 다른 이름?

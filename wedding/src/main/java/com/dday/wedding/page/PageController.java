@@ -1,6 +1,7 @@
 package com.dday.wedding.page;
 
 import com.dday.wedding.common.Valid;
+import com.dday.wedding.config.InlineAssets;
 import com.dday.wedding.config.WeddingProps;
 import com.dday.wedding.content.ContentService;
 import com.dday.wedding.guestbook.GuestbookController;
@@ -35,6 +36,7 @@ public class PageController {
     private final GuestbookController guestbook;
     private final TimelineService timeline;
     private final ObjectMapper json;
+    private final InlineAssets inline;
 
     @GetMapping("/")
     public String index(Model m, @CookieValue(value = "lang", required = false) String langCookie, HttpServletRequest req) {
@@ -78,6 +80,7 @@ public class PageController {
         PhotoService.Photo main = photos.main();
         m.addAttribute("mainPhoto", main == null ? null : main.view());   // 첫 화면 + og:image
         m.addAttribute("cspNonce", req.getAttribute("cspNonce"));
+        m.addAttribute("inline", inline);
     }
 
     private static String fromAcceptLanguage(String al) {

@@ -19,8 +19,8 @@
       document.documentElement.dataset.theme = t; })();
   </script>
   <meta name="color-scheme" content="light dark">
-  <link rel="stylesheet" th:href="@{/static/tw.css}">
-  <link rel="stylesheet" th:href="@{/static/app.css}">
+  <!-- tw.css + app.css 를 HTML 에 직접 (설계 §15-12, 첫 방문 왕복 줄이기) -->
+  <style th:utext="${inline.css}"></style>
   <script id="labels" type="application/json" th:utext="${labelsJson}">{}</script>
 </head>
 <body>
@@ -74,6 +74,7 @@
   <svg th:if="${name=='map'}" class="text-sky" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6-7-11a7 7 0 0114 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
 </th:block>
 
-<th:block th:fragment="scripts"><script th:src="@{/static/app.js}" defer th:attr="nonce=${cspNonce}"></script></th:block>
+<!-- app.js 도 HTML 에 직접. body 끝에 두므로 DOM 은 이미 있다. 페이지별 스크립트(defer)는 이 뒤에 실행 -->
+<th:block th:fragment="scripts"><script th:attr="nonce=${cspNonce}" th:utext="${inline.js}"></script></th:block>
 </body>
 </html>

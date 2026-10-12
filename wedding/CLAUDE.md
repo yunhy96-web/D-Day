@@ -18,7 +18,7 @@
 - 비밀값(`KAKAO_JS_KEY`, `GUESTBOOK_MASTER_PW_HASH`, `ADMIN_PW_HASH`, `NCLOUD_*`)은 `.env` / 환경변수. 커밋 금지.
 
 - 컨텐츠는 `/c/{key}` 라우트 + `content/<key>/` 패키지 + `templates/c/<key>.html` + `content` 테이블 1행(설계 §4-3). 컨텐츠끼리 서로의 테이블·서비스 참조 금지.
-- 출력은 `th:text`·`textContent` 만. `th:utext`·`innerHTML` 금지. 모든 `/api/**` 입력은 화이트리스트 검증(설계 §13-2). 클라이언트 IP 는 `CF-Connecting-IP` 만 신뢰.
+- 출력은 `th:text`·`textContent` 만. `th:utext`·`innerHTML` 금지(예외: 라벨 JSON·`InlineAssets` 같은 우리 산출물). 모든 `/api/**` 입력은 화이트리스트 검증(설계 §13-2). 클라이언트 IP 는 `CF-Connecting-IP` 만 신뢰.
 - Spring Security 추가 금지. 보안 헤더 필터 1개 + Origin 인터셉터 1개 + 어드민 세션 인터셉터 1개로 처리.
 
 ## 실행
