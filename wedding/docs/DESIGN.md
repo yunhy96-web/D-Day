@@ -155,14 +155,21 @@ CREATE TABLE IF NOT EXISTS content (
 **후보 컨텐츠(백로그, 구조에 그대로 꽂힘)**
 | key | 내용 | 테이블 | 마케팅 포인트 |
 |---|---|---|---|
-| `quiz` | 신랑신부 O/X 퀴즈 5문제, 점수 + 공유 | `quiz_answer` | 공유 유도 2번째 루프 |
+| `quiz` | **구현됨 → §15-2** | `quiz`, `quiz_attempt` | 공유 유도 2번째 루프 |
 | `rsvp` | 참석·식사 인원 | `rsvp` | 운영 실익. 허브 최상단 고정 후보 |
 | `song` | 축가/입장곡 투표 | `song_vote` | 참여 낮은 비용 |
-| `timeline` | 두 사람 연애 타임라인(정적) | 없음 (label 만) | 체류시간 |
+| `timeline` | **구현됨 → §15-3** | `timeline` | 체류시간 |
 
 ## 4-4. UI 디자인: 한국 × 태국
 
 두 문화의 결혼 상징 중 **"실(thread)로 두 사람을 잇는다"** 가 정확히 겹친다. 한국의 **청실홍실**(靑紅絲, 함에 넣는 파랑·빨강 실타래), 태국의 **몽콜**(มงคล, 예식에서 신랑신부 머리에 씌우는 흰 실로 이어진 두 고리). 이 하나의 모티프로 전체를 꿴다.
+
+> **2026-10-11 개정 (최종)**: 컨셉을 **"구름 같은 하늘색"** 으로 확정. 네이비·각진 모서리·금선 전부 폐기.
+> - 색: 바탕 `mist` #F4F9FE 위에 블러된 하늘빛 라디얼 그라데이션 3개(구름), 면은 흰색 `jasmine`, 포인트 `sky` #4FA3E0 하나, 연한 면 `cloud` #DCEEFB. 금·홍 사용 안 함.
+> - 형태: 카드 `rounded-2xl/3xl`, 버튼 `rounded-full`. **테두리 선 없음** — 흰 면 + 하늘빛 그림자(`shadow-cloud`, `shadow-soft`)로 구분.
+> - 버튼: 주 = `bg-sky text-white shadow-cloud`, 보조 = `bg-cloud text-sky`. 입력창은 `bg-cloud/60 rounded-xl`, 밑줄 없음.
+> - 허브 카드는 사진 배경 + 제목(아이콘·통계 없음). 구분선은 양끝이 번지는 가는 선. 다크는 깊은 밤하늘(#0F1B2A) + 같은 구름.
+> - 아래 "한국 × 태국" 원안은 기록용. 실제 남은 요소는 문구(두 가닥의 실)·이름 세리프·조각보형 갤러리 그리드뿐.
 
 ### 컨셉 한 줄
 **"두 가닥의 실, 하나의 매듭"** — 한지 위에 그려진 한국의 청홍 실이 태국의 금빛 선문양을 따라 흘러 두 이름을 잇는다.
@@ -294,6 +301,8 @@ CREATE TABLE IF NOT EXISTS label (
 
 ## 7. 사진 저장 — S3 대안
 
+> 2026-10-12: 파일 배치·업로드 방식은 §15-6 으로 대체. 저장 위치(Pi 로컬 + Cloudflare 캐시) 결정은 유지.
+
 40장 × WebP 1600px 기준 ≈ 300KB = **총 ~12MB**. 썸네일(400px) 별도 생성 시 +2MB.
 
 | 방식 | 비용 | 장단점 |
@@ -307,14 +316,14 @@ CREATE TABLE IF NOT EXISTS label (
 1. 원본 40장 → 로컬에서 `cwebp -q 82 -resize 1600 0` 로 `01.webp … 40.webp`, 썸네일 `t/01.webp`(400px). 스크립트 `scripts/convert.sh` 한 개.
 2. `scp -r photos/ seonghanim:~/workspace/huiyeong/wedding/data/photos/`
 3. Spring: `spring.web.resources.static-locations=file:/data/photos/,classpath:/static/` + `Cache-Control: max-age=31536000`. 파일명 자체가 사진 ID.
-4. **업로드 화면·어드민 없음.** 40장 한 번 올리고 끝인데 업로드 API·인증·용량 검증을 만들 이유가 없다. 사진 교체 = scp.
+4. **갤러리·월드컵 사진은 업로드 화면 없음.** 40장 한 번 올리고 끝. 사진 교체 = scp. (타임라인 사진만 어드민 업로드, §15-3)
 
 ## 8. 카카오맵
 
 - [Kakao Developers](https://developers.kakao.com) 앱 생성 → **JavaScript 키** → 플랫폼 Web 에 도메인 등록: `http://localhost:8080`, `https://wedding.thaiuniontour.com`. (도메인 미등록 시 지도 안 뜸 — 도메인 바꾸면 여기도 수정)
 - `<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}">` + 마커 1개 + 줌 컨트롤. 커스텀 오버레이로 식장명.
 - JS 키는 어차피 브라우저에 노출되는 키. 도메인 제한이 보호 수단. `application.properties` 의 `kakao.js-key` 로 주입(환경변수 `KAKAO_JS_KEY`).
-- 주소 복사: HTML 에 주소를 렌더링하지 않고 버튼 클릭 시 `GET /api/address?lang=` 로 받아 클립보드에만(§13-2). 딥링크 좌표는 위경도만 노출.
+- 주소는 HTML 에 그대로 표시하고 옆에 "복사" 텍스트 버튼(`data-copy`). 식장 주소는 공개 정보라 숨기지 않는다(2026-10-11 사용자 결정).
 - 길찾기 버튼은 **카카오맵 하나만** (사용자 결정 2026-10-10). `https://map.kakao.com/link/search/{검색어}` — 장소명 검색이라 좌표 오차와 무관, 앱 미설치 시 웹으로 열림. 네이버·티맵·구글 버튼은 제거.
 - 무료 쿼터 30만/일. 300명이면 무관.
 
@@ -359,7 +368,7 @@ CREATE INDEX IF NOT EXISTS idx_event_name ON event(name);
 
 `visit` 은 `event(name='visit')` 로 흡수 가능하지만 heartbeat 의 `total` 계산을 PK 조회 한 번으로 끝내기 위해 유지.
 
-텍스트 문구(이름·장소명·인사말·버튼)는 `label` 테이블(§6-2). 번역 불필요한 값(예식 일시·위경도·계좌번호·base-url)만 `application.yml` 의 `wedding.*` 프로퍼티. 어드민 없음.
+텍스트 문구(이름·장소명·인사말·버튼)는 `label` 테이블(§6-2). 번역 불필요한 값(예식 일시·위경도·계좌번호·base-url)만 `application.yml` 의 `wedding.*` 프로퍼티. 퀴즈·타임라인 데이터는 어드민(§15)에서 입력.
 
 ## 10. API
 
@@ -371,8 +380,6 @@ CREATE INDEX IF NOT EXISTS idx_event_name ON event(name);
 | POST | `/api/heartbeat` | `{sid}` | `{online, total}` | §6 |
 | POST | `/api/pick` | `{sid, round, winnerId, loserId}` | 204 | round 1~5, id 는 존재하는 파일명만 허용 (화이트리스트 검증) |
 | GET | `/api/ranking` | | `{participants, top:[{id, wins}]}` | 결승 후 결과 화면 |
-| GET | `/api/account?side=groom\|bride` | | `{holder, bank, number}` | 복사 버튼 전용. 레이트리밋 적용 |
-| GET | `/api/address?lang=` | | `{address}` | 복사 버튼 전용 |
 | POST | `/api/event` | `{sid, name, meta?}` | 204 | name 은 화이트리스트. 유입 추적용 |
 | GET | `/api/labels` | | `{ko:{},en:{},th:{}}` | 페이지에 임베드하므로 보통 불필요. 문구 수정 후 새로고침 없이 반영하고 싶을 때만 |
 | GET | `/api/guestbook?page=n` | | `{items:[{id,name,message,createdAt}], hasNext}` | 최신순 10개 |
@@ -434,8 +441,9 @@ networks:
 
 - Kakao Share SDK 커스텀 공유 버튼 — OG 로 충분하면 생략.
 - 어드민 통계 페이지 — `sqlite3 data/wedding.db` 로 직접 보면 됨. 요청 시 basic-auth 페이지 1장.
-- 사진 업로드 UI — scp 로 충분.
-- 컨텐츠: `quiz` · `rsvp` · `song` · `timeline` (§4-3 표).
+- 갤러리 사진 업로드 UI — scp 로 충분.
+- 컨텐츠: `rsvp` · `song` (§4-3 표). quiz·timeline 은 §15.
+- 퀴즈 문제 다국어(en·th) — 지금은 어드민 입력 1개 언어.
 - 라벨 편집 어드민 — `sqlite3` UPDATE 로 충분. 번역가(태국어 담당)가 직접 고쳐야 하면 basic-auth 표 편집 페이지 1장.
 - 전체 월드컵 결과 공개 랭킹 페이지(40장 전체 승률) — 결과 화면 TOP3 로 충분한지 보고.
 - Tailwind CLI 정적 빌드(CSP `unsafe-inline` 제거용) — §13-2.
@@ -469,7 +477,7 @@ networks:
 - **월드컵 조작**: sid 당 round 별 pick 횟수 상한(32강 16·16강 8·8강 4·4강 2·결승 1). 초과 무시. 랭킹은 `round=5` 만 쓰므로 sid 당 우승 1표.
 - **방명록**: Turnstile 토큰 서버 검증 → 쿨다운 → BCrypt(strength 10). 마스터 비번은 BCrypt 해시를 환경변수로(평문 X). 삭제 실패 5회/IP/10분 → 잠금. 욕설 필터는 안 만든다(마스터 삭제로 충분).
 - **에러 응답**: 스택트레이스 노출 금지. `server.error.include-*=never`, 전역 `@ExceptionHandler` 로 `{code}` 만.
-- **정보 노출 최소화**: 계좌번호는 서버 렌더링하지 않고 "복사" 버튼 클릭 시 `/api/account?side=groom` 로 받아 클립보드에만 넣는다(크롤러가 HTML 에서 계좌를 긁지 못함). Actuator 비활성. `/api/labels` 는 공개해도 되는 문구만 담겨야 하므로 **주소 상세·계좌 관련 키는 label 에 두지 않고** yml 에.
+- **정보 노출**: 계좌번호·주소는 HTML 에 그대로 표시한다(2026-10-11 사용자 결정 — 청첩장 관례상 노출이 자연스럽고, 크롤링 방어보다 하객 편의 우선). Actuator 비활성. 계좌·주소 값은 label 이 아니라 yml 에 둔다.
 - **로그**: IP 는 로그에 남기지 않음(해시 or 생략). 방명록 본문도 로그 금지. `event.meta` 에 PII 금지.
 
 ### 13-3. 컨테이너·Pi
@@ -482,10 +490,134 @@ networks:
 - 결혼식 후: 방명록 export → 컨테이너 내리고 ingress 제거. 방치된 공개 서비스가 제일 위험.
 
 ### 13-4. 안 하는 것 (근거)
-- 로그인/회원: 하객에게 가입 요구는 이탈 1순위. 익명 + 위 통제로 충분.
+- 로그인/회원: 하객에게 가입 요구는 이탈 1순위. 익명 + 위 통제로 충분. (어드민 로그인은 나 혼자, §15-1)
 - Spring Security 전체 도입: 인증이 없는데 필터체인 수십 개 붙일 이유 없음. 헤더 필터 1개 + 인터셉터 1개로 끝.
 - Redis 기반 분산 레이트리밋: 인스턴스 1개.
 - 욕설 필터·AI 모더레이션: 마스터 삭제 + Turnstile 로 충분. 문제 생기면 그때.
+
+## 15. 어드민 · 퀴즈 · 타임라인 (2026-10-12 추가)
+
+퀴즈 문제와 타임라인 사진을 화면에서 넣기 위해 어드민을 둔다. §7·§12·§13-4 의 "어드민 없음" 은 이 범위만큼 개정.
+
+### 15-1. 어드민 (`/admin`)
+- 사용자는 나 하나. 아이디(`ADMIN_ID`, 기본 `admin`) + 비밀번호 BCrypt 해시를 `.env` 의 `ADMIN_PW_HASH` 로. 비어 있으면 로그인 자체가 막힌다.
+- Spring Security 없이 `HttpSession` + 인터셉터 1개(`AdminInterceptor`, `/admin/api/**`). 로그인 성공 시 세션 ID 교체(고정 공격 방지). 세션 쿠키 `HttpOnly; SameSite=Strict`, 운영은 `Secure`(compose 환경변수). 2시간 만료.
+- 로그인 시도 5회/10분/IP. 변경 요청은 Origin 검사 + `application/json` 또는 `image/jpeg` 만.
+- 화면 문구는 한국어 하드코딩 허용(어드민 전용, 하객 노출 없음). `noindex`.
+- 기능: 사진(§15-6), 타임라인, 퀴즈, 방명록 관리(§15-7). 그 외(라벨 편집·통계)는 백로그.
+
+### 15-2. 퀴즈 (`/c/quiz`)
+| 난이도 key | 화면(ko) | 출제 배점 |
+|---|---|---|
+| `easy` | 덜친함 | 1~2점 |
+| `normal` | 중간친함 | 3~4점 |
+| `hard` | 매우친함 | 4~5점 (4점은 중간친함과 의도적으로 겹침) |
+
+- 문제는 4지선다(보기 2~4개). 배점 1~5. 문제마다 고유 `id`.
+- 응시: 난이도 고르면 해당 배점 풀에서 **랜덤 10문제**(부족하면 있는 만큼), **문제 순서·보기 순서 모두 서버에서 섞음**. 보기는 `{no, text}` 로 내려가고 `no` 는 원래 인덱스라 순서로는 정답을 알 수 없다.
+- **정답은 어떤 응답에도 넣지 않는다.** 대신 개발자 친구용 `hint` 필드를 응답에만 넣고 화면엔 그리지 않는다(콘솔에 인사 한 줄).
+- 채점은 서버에서 한 번에: 응시 시작 시 `quiz_attempt` 1행(출제 id 목록) → 제출은 그 응시 id 로 **1회만**. 응답은 총점·만점·문제별 O/X 만(정답 보기는 알려주지 않음). 문제별 확인 API 가 없으니 보기 하나씩 찔러보기 불가.
+- 레이트리밋: 시작·제출 각 20회/10분/IP.
+
+### 15-3. 타임라인 (`/c/timeline`)
+- 연애 시작 2025-05-04(`wedding.dating-start`) ~ 예식 월. 월 단위 눈금의 슬라이더(`<input type=range>`, step 1개월).
+- 사진 있는 달만 눈금 강조, 드래그하면 **가장 가까운 사진 있는 달로 붙는다**. 그 달 사진(여러 장이면 가로 스와이프)과 한 줄 설명 표시. 상단에 "함께한 지 N일".
+- 사진은 어드민에서 업로드. 브라우저가 긴 변 1600px JPEG 로 줄여서 올린다(HEIC 변환을 서버에서 안 하려고). 서버는 5MB 상한·JPEG 디코딩 검증 후 `data/timeline/{uuid}.jpg` 로 저장, `/timeline/**` 1년 캐시.
+
+### 15-4. 테이블
+```sql
+CREATE TABLE IF NOT EXISTS quiz (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  question   TEXT NOT NULL,
+  choices    TEXT NOT NULL,                 -- JSON 배열, 보기 2~4개
+  answer_no  INTEGER NOT NULL,              -- choices 의 0-based 인덱스. 응답에 절대 포함 안 함
+  points     INTEGER NOT NULL CHECK (points BETWEEN 1 AND 5),
+  hint       TEXT,                          -- 개발자 도구로만 보이는 힌트
+  deleted_yn TEXT NOT NULL DEFAULT 'N',
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS quiz_attempt (
+  id           TEXT PRIMARY KEY,            -- UUID. 응시 1회
+  session_id   TEXT NOT NULL,
+  level        TEXT NOT NULL,               -- easy | normal | hard
+  quiz_ids     TEXT NOT NULL,               -- 출제 id, 콤마 구분(출제 순서)
+  max_score    INTEGER NOT NULL,
+  score        INTEGER,
+  submitted_at TEXT,                        -- NULL 이면 미제출. 제출은 1회
+  created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS timeline (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  month      TEXT NOT NULL,                 -- 'YYYY-MM'
+  file       TEXT NOT NULL,                 -- data/timeline/ 안 파일명
+  caption    TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+```
+
+### 15-5. API
+| Method | Path | Req | Res |
+|---|---|---|---|
+| POST | `/api/quiz/start` | `{sid, level}` | `{attemptId, items:[{id, question, points, choices:[{no,text}], hint?}]}` |
+| POST | `/api/quiz/{attemptId}/submit` | `{answers:[{id, no}]}` | `{score, max, results:[{id, correct}]}` / 409 재제출 |
+| GET | `/admin` | | 어드민 HTML |
+| POST | `/admin/api/login` · `/logout` | `{username, password}` | 204 / 403 |
+| GET·POST | `/admin/api/quiz` | `{question, choices, answerNo, points, hint}` | 목록 / `{id}` |
+| PUT·DELETE | `/admin/api/quiz/{id}` | 위와 같음 | 204 |
+| GET | `/admin/api/timeline` | | 목록 |
+| POST | `/admin/api/timeline?month=&caption=` | body `image/jpeg` | `{id}` |
+| PUT·DELETE | `/admin/api/timeline/{id}` | `{month, caption}` | 204 |
+
+### 15-6. 사진 관리 (2026-10-12 개정, §7 대체)
+- `data/photos` 폴더 스캔 → **`photo` 테이블**. 갤러리·월드컵·메인·카톡 미리보기가 전부 이 테이블을 본다.
+- 파일 3종. 업로드할 때 **브라우저가** 만든다(EXIF 회전 반영 + Pi 메모리 보호):
+  | 종류 | 경로 | 크기 | 공개 |
+  |---|---|---|---|
+  | 원본 | `data/photos/original/{uuid}.{jpg,png,heic}` | 폰 원본 그대로 | **비공개**(서빙 경로 없음). 보관용 |
+  | 보기용 | `/photos/view/{uuid}.jpg` | 긴 변 2560px, JPEG 0.92 | 메인·갤러리 뷰어·월드컵 결과 |
+  | 썸네일 | `/photos/thumb/{uuid}.jpg` | 긴 변 600px | 목록·월드컵 카드 |
+- 업로드 1장 = 요청 1개. body 는 `보기용 | 썸네일 | 원본` 을 이어 붙인 바이트, 경계는 쿼리 `?view=길이&thumb=길이`. 원본 상한 40MB. 동시 2장, 장마다 진행률(XHR) + 전체 `n / N`, 실패분만 재시도.
+- 순서: `sort`. 어드민에서 드래그(SortableJS, 어드민 전용 CDN). **1번 = 메인**(첫 화면·og:image). 메인 아래 미리보기는 2번부터.
+- 월드컵: 사진마다 `worldcup_yn` 체크. 체크된 사진 중 랜덤 32장(모자라면 2의 거듭제곱 최대).
+- 다운로드 버튼 없음. 이미지 길게 누르기·우클릭 저장은 막는다(`-webkit-touch-callout:none`, contextmenu 차단). 스크린샷까지는 못 막음.
+- `scripts/convert.sh`·`placeholder-photos.sh` 폐기.
+
+### 15-7. 방명록 사진 첨부
+- 하객이 글 하나에 **최대 3장**. 올리자마자 공개. 문제 사진은 어드민에서 글 숨김 또는 사진 삭제.
+- 폰에서 긴 변 2048px 로 줄여 `POST /api/guestbook/photo`(image/jpeg, 4MB 상한) → 토큰. 글 작성 시 토큰 배열을 함께 보냄.
+- 서버는 **반드시 디코딩 후 다시 인코딩**(EXIF·GPS 제거, 이미지 위장 파일 차단) + 600px 썸네일 생성. `data/guestbook/{uuid}.jpg`, `{uuid}_t.jpg`.
+- 제한: IP 당 10장/10분, 전체 하루 500장. 글에 안 붙은 사진은 하루 지나면 삭제.
+
+### 15-8. 추가 테이블
+```sql
+CREATE TABLE IF NOT EXISTS photo (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  file        TEXT NOT NULL,              -- uuid. view/thumb 파일명
+  original    TEXT NOT NULL,              -- original/ 안 파일명(확장자 포함)
+  sort        INTEGER NOT NULL,           -- 1 = 메인
+  worldcup_yn TEXT NOT NULL DEFAULT 'Y',
+  created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS guestbook_photo (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  guestbook_id INTEGER,                   -- NULL = 아직 글에 안 붙음
+  file         TEXT NOT NULL,             -- uuid
+  created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+);
+```
+`pick.winner_id/loser_id` 는 `photo.id` 문자열.
+
+### 15-9. API 추가
+| Method | Path | Req | Res |
+|---|---|---|---|
+| POST | `/api/guestbook/photo` | body `image/jpeg` | `{token}` |
+| POST | `/api/guestbook` | 기존 + `photos:[token]` (≤3) | `{id}` |
+| GET·POST | `/admin/api/photos` | `?view=&thumb=&worldcup=` body octet-stream | 목록 / `{id}` |
+| PUT | `/admin/api/photos/order` | `{ids:[...]}` | 204 |
+| PUT·DELETE | `/admin/api/photos/{id}` | `{worldcup}` | 204 |
+| GET | `/admin/api/guestbook?page=` | | 숨김 포함 목록 + 사진 |
+| PUT | `/admin/api/guestbook/{id}` | `{hidden}` | 204 |
+| DELETE | `/admin/api/guestbook/photo/{photoId}` | | 204 |
 
 ## 14. 확인 필요 (사용자 결정)
 

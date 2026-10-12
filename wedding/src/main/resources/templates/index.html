@@ -1,133 +1,97 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}">
 <head th:replace="~{fragments/layout :: head}"></head>
-<body class="paper min-h-screen" th:attr="data-datetime=${p.dateTime}">
+<body class="min-h-screen" th:attr="data-datetime=${p.dateTime}">
 <div th:replace="~{fragments/layout :: langToggle}"></div>
 
 <main class="max-w-[420px] mx-auto">
 
-  <!-- 1. 인트로: 메인 사진 + 이름/날짜/D-day -->
+  <!-- 인트로 -->
   <section class="relative h-[100svh] min-h-[560px] overflow-hidden">
-    <img th:if="${!previewPhotos.isEmpty()}" th:src="${previewPhotos[0]}" alt="" class="absolute inset-0 w-full h-full object-cover">
-    <div class="absolute inset-0 bg-gradient-to-b from-mist/80 via-mist/30 to-mist"></div>
-    <div class="absolute inset-x-0 bottom-0 pb-14 text-center reveal in">
-      <!-- letter-spacing 은 마지막 글자 뒤에도 붙어 중앙이 왼쪽으로 치우침 → 각 이름에 -mr 로 상쇄 -->
-      <p class="serif font-light text-3xl flex items-baseline justify-center gap-4">
-        <span class="tracking-[.3em] -mr-[.3em]" data-i18n="intro.groom" th:text="${t['intro.groom']}">A</span>
-        <span class="text-gold">&amp;</span>
-        <span class="tracking-[.3em] -mr-[.3em]" data-i18n="intro.bride" th:text="${t['intro.bride']}">B</span>
+    <img th:if="${mainPhoto != null}" th:src="${mainPhoto}" alt="" class="absolute inset-0 w-full h-full object-cover">
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-mist"></div>
+    <div class="absolute inset-x-0 bottom-0 px-7 pb-12 text-center">
+      <p class="serif text-[32px] leading-tight">
+        <span data-i18n="intro.groom" th:text="${t['intro.groom']}">A</span>
+        <span class="text-ink/40 text-2xl mx-1">&amp;</span>
+        <span data-i18n="intro.bride" th:text="${t['intro.bride']}">B</span>
       </p>
-      <p class="serif mt-4 text-gold tabular tracking-widest text-sm" data-date-short></p>
-      <p class="mt-1 text-xs text-ink/70"><span data-date-long></span> · <span data-date-time></span></p>
-      <p class="serif mt-6 text-2xl text-gold tabular" data-dday></p>
-      <p class="mt-8 text-[11px] tracking-widest text-ink/50 animate-bounce" data-i18n="intro.scroll" th:text="${t['intro.scroll']}">scroll</p>
+      <p class="mt-5 text-[15px]"><span data-date-long></span> <span data-date-time></span></p>
+      <p class="serif mt-5 text-xl text-sky tabular" data-dday></p>
     </div>
   </section>
 
-  <!-- 2. 인사말 -->
-  <section id="greeting" class="px-6 pt-4 text-center reveal">
-    <p class="vertical serif text-gold text-sm inline-block mb-6" data-i18n="greeting.vertical" th:text="${t['greeting.vertical']}">百年佳約</p>
-    <h2 class="serif text-lg" data-i18n="greeting.title" th:text="${t['greeting.title']}">title</h2>
-    <p class="mt-5 text-[15px] leading-8 whitespace-pre-line" data-i18n="greeting.body" th:text="${t['greeting.body']}">body</p>
-    <div class="mt-8 grid grid-cols-2 gap-4 text-sm">
-      <div><p class="text-sky text-xs tracking-widest" data-i18n="greeting.groom_side" th:text="${t['greeting.groom_side']}">groom</p>
-        <p class="mt-1 text-ink/80" data-i18n="greeting.groom_parents" th:text="${t['greeting.groom_parents']}">parents</p></div>
-      <div><p class="text-yeonji text-xs tracking-widest" data-i18n="greeting.bride_side" th:text="${t['greeting.bride_side']}">bride</p>
-        <p class="mt-1 text-ink/80" data-i18n="greeting.bride_parents" th:text="${t['greeting.bride_parents']}">parents</p></div>
+  <!-- 인사말 -->
+  <section id="greeting" class="px-7 pt-20 text-center reveal">
+    <h2 class="serif text-xl" data-i18n="greeting.title" th:text="${t['greeting.title']}">title</h2>
+    <p class="mt-6 text-[15px] leading-8 whitespace-pre-line text-ink/85" data-i18n="greeting.body" th:text="${t['greeting.body']}">body</p>
+    <div class="mt-10 space-y-4 text-[14px]">
+      <p><span class="block text-[12px] text-ink/45" data-i18n="greeting.groom_side" th:text="${t['greeting.groom_side']}">groom</span><span data-i18n="greeting.groom_parents" th:text="${t['greeting.groom_parents']}">parents</span></p>
+      <p><span class="block text-[12px] text-ink/45" data-i18n="greeting.bride_side" th:text="${t['greeting.bride_side']}">bride</span><span data-i18n="greeting.bride_parents" th:text="${t['greeting.bride_parents']}">parents</span></p>
     </div>
   </section>
 
-  <div th:replace="~{fragments/layout :: divider}"></div>
-
-  <!-- 3. 일시: 달력 + 카운트다운 -->
-  <section id="date" class="px-6 text-center reveal">
-    <h2 class="serif text-gold text-xs tracking-[.3em]" data-i18n="date.title" th:text="${t['date.title']}">when</h2>
-    <p class="serif mt-3 text-lg"><span data-date-long></span></p>
-    <p class="text-sm text-ink/70" data-date-time></p>
-    <div class="mt-6 grid grid-cols-7 gap-y-2 text-sm tabular max-w-[300px] mx-auto">
-      <span class="text-yeonji text-xs">S</span><span class="text-xs text-ink/50">M</span><span class="text-xs text-ink/50">T</span><span class="text-xs text-ink/50">W</span><span class="text-xs text-ink/50">T</span><span class="text-xs text-ink/50">F</span><span class="text-sky text-xs">S</span>
+  <!-- 일시 -->
+  <section id="date" class="px-7 pt-20 text-center reveal">
+    <h2 class="serif text-xl" data-i18n="date.title" th:text="${t['date.title']}">when</h2>
+    <p class="mt-5 text-[15px]"><span data-date-long></span> <span data-date-time></span></p>
+    <!-- 요일과 날짜를 한 그리드에 (두 그리드로 나누면 정렬이 어긋남) -->
+    <div class="mt-6 grid grid-cols-7 gap-y-2 text-[13px] tabular w-[280px] mx-auto [&>span]:h-7 [&>span]:leading-7 [&>span]:w-7 [&>span]:mx-auto">
+      <span class="text-ink/40">S</span><span class="text-ink/40">M</span><span class="text-ink/40">T</span><span class="text-ink/40">W</span><span class="text-ink/40">T</span><span class="text-ink/40">F</span><span class="text-ink/40">S</span>
+      <template data-calendar></template>
     </div>
-    <div class="grid grid-cols-7 gap-y-2 text-sm tabular max-w-[300px] mx-auto [&>span]:h-8 [&>span]:leading-8 [&>span]:w-8 [&>span]:mx-auto" data-calendar></div>
-    <p class="mt-6 text-sm text-ink/70 tabular" data-countdown></p>
+    <p class="mt-6 text-[13px] text-ink/50 tabular" data-countdown></p>
   </section>
 
-  <div th:replace="~{fragments/layout :: divider}"></div>
-
-  <!-- 4. 장소 요약 -->
-  <section id="venue" class="px-6 text-center reveal">
-    <h2 class="serif text-gold text-xs tracking-[.3em]" data-i18n="venue.title" th:text="${t['venue.title']}">where</h2>
-    <p class="serif mt-3 text-lg" data-i18n="venue.name" th:text="${t['venue.name']}">venue</p>
-    <p class="text-sm" data-i18n="venue.hall" th:text="${t['venue.hall']}">hall</p>
-    <p class="mt-1 text-sm text-ink/70" data-i18n="venue.summary" th:text="${t['venue.summary']}">summary</p>
-    <div class="mt-5 flex gap-3 justify-center">
-      <a href="/c/map" data-content-link="map" class="px-5 py-2.5 rounded-full bg-ink text-mist text-sm" data-i18n="btn.directions" th:text="${t['btn.directions']}">directions</a>
-      <button type="button" data-copy-address class="px-5 py-2.5 rounded-full border border-gold text-sm" data-i18n="btn.copy_address" th:text="${t['btn.copy_address']}">copy</button>
-    </div>
+  <!-- 장소 -->
+  <section id="venue" class="px-7 pt-20 text-center reveal">
+    <h2 class="serif text-xl" data-i18n="venue.title" th:text="${t['venue.title']}">where</h2>
+    <p class="mt-5 text-[15px]"><span data-i18n="venue.name" th:text="${t['venue.name']}">venue</span> <span data-i18n="venue.hall" th:text="${t['venue.hall']}">hall</span></p>
+    <p class="mt-1 text-[14px] text-ink/70" th:text="${p.address[lang] ?: p.address['ko']}" th:attr="data-copy=${p.address[lang] ?: p.address['ko']}">address</p>
+    <p class="mt-4 text-[14px]"><a href="/c/map" data-content-link="map" class="text-sky" data-i18n="btn.directions" th:text="${t['btn.directions']}">directions</a></p>
   </section>
 
-  <div th:replace="~{fragments/layout :: divider}"></div>
-
-  <!-- 5. 갤러리 미리보기 (조각보) -->
-  <section id="gallery" class="px-4 reveal">
-    <h2 class="serif text-gold text-xs tracking-[.3em] text-center" data-i18n="gallery.title" th:text="${t['gallery.title']}">moments</h2>
-    <div th:if="${!previewPhotos.isEmpty()}" class="jogakbo mt-5 border border-gold">
+  <!-- 사진 -->
+  <section id="gallery" class="px-5 pt-20 text-center reveal">
+    <h2 class="serif text-xl" data-i18n="gallery.title" th:text="${t['gallery.title']}">moments</h2>
+    <div th:if="${!previewPhotos.isEmpty()}" class="jogakbo mt-5">
       <a th:each="u : ${previewPhotos}" href="/c/gallery" data-content-link="gallery"><img th:src="${u}" alt="" loading="lazy"></a>
     </div>
-    <p th:if="${previewPhotos.isEmpty()}" class="mt-5 text-center text-sm text-ink/50" data-i18n="gallery.empty" th:text="${t['gallery.empty']}">empty</p>
-    <a href="/c/gallery" data-content-link="gallery" class="block mt-4 text-center text-sm underline underline-offset-4 decoration-gold">
-      <span data-i18n="gallery.more" th:text="${t['gallery.more']}">more</span> · <span data-i18n="gallery.count" th:attr="data-args=${photoCount}" th:text="${#strings.replace(t['gallery.count'],'{0}',photoCount)}">n</span>
-    </a>
+    <p class="mt-4 text-[14px]"><a href="/c/gallery" data-content-link="gallery" class="text-sky"><span data-i18n="gallery.more" th:text="${t['gallery.more']}">more</span> · <span data-i18n="gallery.count" th:attr="data-args=${photoCount}" th:text="${#strings.replace(t['gallery.count'],'{0}',photoCount)}">n</span></a></p>
   </section>
 
-  <div th:replace="~{fragments/layout :: divider}"></div>
-
-  <!-- 6. 컨텐츠 허브 -->
-  <section id="hub" class="px-4 reveal">
-    <h2 class="serif text-gold text-xs tracking-[.3em] text-center" data-i18n="hub.title" th:text="${t['hub.title']}">hub</h2>
-    <p class="text-center text-sm text-ink/70 mt-2" data-i18n="hub.subtitle" th:text="${t['hub.subtitle']}">sub</p>
-    <div class="mt-5 grid gap-3">
-      <a th:each="c : ${cards}" th:href="${c.path}" th:attr="data-content-link=${c.key}"
-         class="flex items-center gap-4 p-4 rounded-2xl bg-jasmine border border-gold/60 shadow-sm active:scale-[.99] transition">
-        <span class="shrink-0"><th:block th:replace="~{fragments/layout :: icon(${c.icon})}"></th:block></span>
-        <span class="flex-1 min-w-0">
-          <span class="serif block" th:attr="data-i18n='content.'+${c.key}+'.title'" th:text="${t['content.'+c.key+'.title']}">title</span>
-          <span class="block text-xs text-ink/70 mt-0.5" th:attr="data-i18n='content.'+${c.key}+'.desc'" th:text="${t['content.'+c.key+'.desc']}">desc</span>
-          <span th:if="${c.stat != null and t.containsKey('content.'+c.key+'.stat')}" class="block text-[11px] text-marigold mt-1 tabular"
-                th:attr="data-i18n='content.'+${c.key}+'.stat',data-args=${c.stat}" th:text="${#strings.replace(t['content.'+c.key+'.stat'],'{0}',c.stat)}">stat</span>
-        </span>
-        <span class="shrink-0 text-xs px-3 py-1.5 rounded-full bg-ink text-mist" th:attr="data-i18n='content.'+${c.key}+'.cta'" th:text="${t['content.'+c.key+'.cta']}">go</span>
-      </a>
-    </div>
-    <!-- 방명록 미리보기 1~2줄 -->
-    <div th:if="${!guestbookPreview.isEmpty()}" class="mt-4 space-y-2">
-      <p th:each="g : ${guestbookPreview}" class="text-xs text-ink/70 truncate"><span class="text-ink font-medium" th:text="${g.name}">name</span> · <span th:text="${g.message}">msg</span></p>
+  <!-- 함께 즐기기: 사진 썸네일 + 제목 목록 -->
+  <section id="hub" class="px-7 pt-20 text-center reveal">
+    <h2 class="serif text-xl" data-i18n="hub.title" th:text="${t['hub.title']}">hub</h2>
+    <ul class="mt-2">
+      <li th:each="c : ${cards}" class="border-b border-ink/10 last:border-0">
+        <a th:href="${c.path}" th:attr="data-content-link=${c.key}" class="flex items-center justify-center gap-4 py-5 text-left">
+          <span class="shrink-0"><th:block th:replace="~{fragments/layout :: icon(${c.key})}"></th:block></span>
+          <span class="min-w-0 w-44">
+            <span class="serif block text-[17px]" th:attr="data-i18n='content.'+${c.key}+'.title'" th:text="${t['content.'+c.key+'.title']}">title</span>
+            <span class="block text-[13px] text-ink/55 mt-0.5 truncate" th:attr="data-i18n='content.'+${c.key}+'.desc'" th:text="${t['content.'+c.key+'.desc']}">desc</span>
+          </span>
+        </a>
+      </li>
+    </ul>
+    <div th:if="${!guestbookPreview.isEmpty()}" class="mt-3 space-y-1.5">
+      <p th:each="g : ${guestbookPreview}" class="text-[13px] text-ink/60 truncate"><span class="text-ink/85" th:text="${g.name}">name</span> · <span th:text="${g.message}">msg</span></p>
     </div>
   </section>
 
-  <div th:replace="~{fragments/layout :: divider}"></div>
-
-  <!-- 7. 마음 전하실 곳 -->
-  <section id="account" class="px-6 reveal">
-    <h2 class="serif text-gold text-xs tracking-[.3em] text-center" data-i18n="account.title" th:text="${t['account.title']}">gift</h2>
-    <p class="text-center text-sm text-ink/70 mt-2" data-i18n="account.intro" th:text="${t['account.intro']}">intro</p>
-    <div class="mt-4 space-y-2">
-      <details th:if="${p.account.containsKey('groom')}" class="rounded-xl bg-jasmine border border-gold/60 px-4 py-3 group">
-        <summary class="cursor-pointer list-none flex justify-between items-center text-sm">
-          <span class="text-sky" data-i18n="account.groom" th:text="${t['account.groom']}">groom</span><span class="text-gold transition group-open:rotate-45">+</span></summary>
-        <div class="mt-3 flex justify-between items-center text-sm">
-          <span th:text="${p.account['groom'].holder}">holder</span>
-          <button type="button" data-copy-account="groom" class="px-3 py-1.5 rounded-full border border-gold text-xs" data-i18n="account.copy" th:text="${t['account.copy']}">copy</button>
-        </div>
-      </details>
-      <details th:if="${p.account.containsKey('bride')}" class="rounded-xl bg-jasmine border border-gold/60 px-4 py-3 group">
-        <summary class="cursor-pointer list-none flex justify-between items-center text-sm">
-          <span class="text-yeonji" data-i18n="account.bride" th:text="${t['account.bride']}">bride</span><span class="text-gold transition group-open:rotate-45">+</span></summary>
-        <div class="mt-3 flex justify-between items-center text-sm">
-          <span th:text="${p.account['bride'].holder}">holder</span>
-          <button type="button" data-copy-account="bride" class="px-3 py-1.5 rounded-full border border-gold text-xs" data-i18n="account.copy" th:text="${t['account.copy']}">copy</button>
-        </div>
-      </details>
-    </div>
+  <!-- 마음 전하실 곳 -->
+  <section id="account" class="px-7 pt-20 text-center reveal">
+    <h2 class="serif text-xl" data-i18n="account.title" th:text="${t['account.title']}">gift</h2>
+    <p class="mt-4 text-[14px] text-ink/70" data-i18n="account.intro" th:text="${t['account.intro']}">intro</p>
+    <dl class="mt-6 space-y-5 text-[14px]">
+      <div th:each="a : ${p.account}">
+        <dt class="text-ink/45" th:attr="data-i18n='account.'+${a.key}" th:text="${t['account.'+a.key]}">side</dt>
+        <dd class="mt-1 flex items-center justify-center gap-3">
+          <span class="tabular"><span th:text="${a.value.bank}">bank</span> <span th:text="${a.value.number}">number</span> <span class="text-ink/70" th:text="${a.value.holder}">holder</span></span>
+          <button type="button" class="text-sky text-[13px]" th:attr="data-copy=${a.value.bank + ' ' + a.value.number + ' ' + a.value.holder},data-track='account.copy'" data-i18n="btn.copy" th:text="${t['btn.copy']}">copy</button>
+        </dd>
+      </div>
+    </dl>
   </section>
 
   <div th:replace="~{fragments/layout :: footer}"></div>

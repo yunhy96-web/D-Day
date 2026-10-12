@@ -20,11 +20,11 @@
   }
   function render() {
     const [a, b] = [pool[idx], pool[idx + 1]];
-    $('[data-side="0"] img').src = byId[a].url; $('[data-side="1"] img').src = byId[b].url;
+    $('[data-side="0"] img').src = byId[a].thumb; $('[data-side="1"] img').src = byId[b].thumb;
     $('[data-progress]').textContent = W.t('worldcup.progress', roundLabel(pool.length), idx / 2 + 1, pool.length / 2);
     $('[data-bar]').style.width = (done / total * 100) + '%';
     // 다음 매치 프리로드
-    [pool[idx + 2], pool[idx + 3]].filter(Boolean).forEach(id => { new Image().src = byId[id].url; });
+    [pool[idx + 2], pool[idx + 3]].filter(Boolean).forEach(id => { new Image().src = byId[id].thumb; });
   }
   function pick(side) {
     const w = pool[idx + side], l = pool[idx + 1 - side];
@@ -48,9 +48,9 @@
       document.querySelectorAll('[data-participants]').forEach(el => { el.dataset.i18n = 'worldcup.participants'; el.dataset.args = r.participants; el.textContent = W.t('worldcup.participants', r.participants); });
       const ol = $('[data-ranking]'); ol.textContent = '';
       r.top.forEach((p, i) => {
-        const li = document.createElement('li'); li.className = 'rounded-xl overflow-hidden border border-gold bg-jasmine';
+        const li = document.createElement('li'); li.className = 'overflow-hidden rounded-lg bg-jasmine';
         const img = document.createElement('img'); img.src = p.url; img.alt = ''; img.className = 'w-full aspect-[3/4] object-cover';
-        const cap = document.createElement('p'); cap.className = 'text-[11px] py-1 tabular ' + (i === 0 ? 'text-marigold' : 'text-ink/60');
+        const cap = document.createElement('p'); cap.className = 'text-[12px] py-1 tabular ' + (i === 0 ? 'text-sky' : 'text-ink/50');
         const rank = document.createElement('span'); rank.textContent = (i + 1) + ' · ';
         const wins = document.createElement('span'); wins.dataset.i18n = 'worldcup.wins'; wins.dataset.args = p.wins; wins.textContent = W.t('worldcup.wins', p.wins);
         cap.append(rank, wins); li.append(img, cap); ol.append(li);

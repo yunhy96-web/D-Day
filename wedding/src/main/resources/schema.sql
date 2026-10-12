@@ -47,3 +47,54 @@ CREATE TABLE IF NOT EXISTS event (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_event_name ON event(name);
+
+-- 설계 §15-4. 정답(answer_no)은 응답에 절대 포함하지 않는다
+CREATE TABLE IF NOT EXISTS quiz (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  question   TEXT NOT NULL,
+  choices    TEXT NOT NULL,
+  answer_no  INTEGER NOT NULL,
+  points     INTEGER NOT NULL CHECK (points BETWEEN 1 AND 5),
+  hint       TEXT,
+  deleted_yn TEXT NOT NULL DEFAULT 'N',
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS quiz_attempt (
+  id           TEXT PRIMARY KEY,
+  session_id   TEXT NOT NULL,
+  level        TEXT NOT NULL,
+  quiz_ids     TEXT NOT NULL,
+  max_score    INTEGER NOT NULL,
+  score        INTEGER,
+  submitted_at TEXT,
+  created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS timeline (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  month      TEXT NOT NULL,
+  file       TEXT NOT NULL,
+  caption    TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_timeline_month ON timeline(month);
+
+-- 설계 §15-6. 1번(sort 최소) = 메인. 원본은 비공개
+CREATE TABLE IF NOT EXISTS photo (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  file        TEXT NOT NULL,
+  original    TEXT NOT NULL,
+  sort        INTEGER NOT NULL,
+  worldcup_yn TEXT NOT NULL DEFAULT 'Y',
+  created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- 설계 §15-7. guestbook_id NULL = 아직 글에 안 붙은 업로드
+CREATE TABLE IF NOT EXISTS guestbook_photo (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  guestbook_id INTEGER,
+  file         TEXT NOT NULL,
+  created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_gbp_gb ON guestbook_photo(guestbook_id);

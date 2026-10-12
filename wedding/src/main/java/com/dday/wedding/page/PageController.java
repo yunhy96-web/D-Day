@@ -6,6 +6,7 @@ import com.dday.wedding.content.ContentService;
 import com.dday.wedding.guestbook.GuestbookController;
 import com.dday.wedding.label.LabelService;
 import com.dday.wedding.photo.PhotoService;
+import com.dday.wedding.timeline.TimelineService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,20 +27,22 @@ import java.util.Set;
 @Controller
 @RequiredArgsConstructor
 public class PageController {
-    private static final Set<String> VIEWS = Set.of("worldcup", "guestbook", "gallery", "map");
+    private static final Set<String> VIEWS = Set.of("worldcup", "guestbook", "gallery", "map", "quiz", "timeline");
     private final WeddingProps props;
     private final LabelService labels;
     private final PhotoService photos;
     private final ContentService contents;
     private final GuestbookController guestbook;
+    private final TimelineService timeline;
     private final ObjectMapper json;
 
     @GetMapping("/")
     public String index(Model m, @CookieValue(value = "lang", required = false) String langCookie, HttpServletRequest req) {
         common(m, langCookie, req);
-        List<String> ids = photos.ids();
-        m.addAttribute("previewPhotos", ids.subList(0, Math.min(6, ids.size())).stream().map(photos::url).toList());
-        m.addAttribute("photoCount", ids.size());
+        List<PhotoService.Photo> all = photos.all();
+        // 1번은 첫 화면(메인)이라 미리보기는 2번부터 6장
+        m.addAttribute("previewPhotos", all.stream().skip(1).limit(6).map(PhotoService.Photo::thumb).toList());
+        m.addAttribute("photoCount", all.size());
         m.addAttribute("cards", contents.cards());
         m.addAttribute("guestbookPreview", guestbook.page(0).stream().limit(2).toList());
         return "index";
@@ -48,17 +51,19 @@ public class PageController {
     @GetMapping("/c/{key}")
     public String content(@PathVariable String key, Model m, @CookieValue(value = "lang", required = false) String langCookie,
                           HttpServletRequest req) throws JsonProcessingException {
-        if (!VIEWS.contains(key) || !contents.enabled(key)) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        if (!VIEWS.contains(key) || !contents.exists(key)) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         common(m, langCookie, req);
         switch (key) {
-            case "gallery" -> m.addAttribute("photos", photos.ids().stream().map(photos::url).toList());
-            case "worldcup" -> m.addAttribute("photosJson", json.writeValueAsString(
-                    photos.ids().stream().map(id -> Map.of("id", id, "url", photos.url(id))).toList()));
+            case "gallery" -> m.addAttribute("photos", photos.all());
+            case "worldcup" -> m.addAttribute("photosJson", json.writeValueAsString(photos.worldcup().stream()
+                    .map(ph -> Map.of("id", String.valueOf(ph.id()), "url", ph.view(), "thumb", ph.thumb())).toList()));
             case "guestbook" -> {
                 List<GuestbookController.Entry> rows = guestbook.page(0);
                 m.addAttribute("entries", rows.size() > GuestbookController.PAGE ? rows.subList(0, GuestbookController.PAGE) : rows);
                 m.addAttribute("hasNext", rows.size() > GuestbookController.PAGE);
             }
+            // 캡션은 어드민 입력이지만 <script> 안에 임베드되므로 '<' 를 이스케이프
+            case "timeline" -> m.addAttribute("timelineJson", json.writeValueAsString(timeline.items()).replace("<", "\\u003c"));
             default -> {}
         }
         return "c/" + key;
@@ -70,6 +75,8 @@ public class PageController {
         m.addAttribute("t", labels.forLang(lang));
         try { m.addAttribute("labelsJson", json.writeValueAsString(labels.all())); } catch (JsonProcessingException e) { m.addAttribute("labelsJson", "{}"); }
         m.addAttribute("p", props);
+        PhotoService.Photo main = photos.main();
+        m.addAttribute("mainPhoto", main == null ? null : main.view());   // 첫 화면 + og:image
         m.addAttribute("cspNonce", req.getAttribute("cspNonce"));
     }
 

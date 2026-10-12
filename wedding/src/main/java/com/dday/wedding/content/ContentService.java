@@ -19,8 +19,9 @@ public class ContentService {
                 (rs, i) -> new Card(rs.getString("key"), rs.getString("path"), rs.getString("icon"), stat(rs.getString("stat_sql"))));
     }
 
-    public boolean enabled(String key) {
-        return jdbc.queryForObject("SELECT COUNT(*) FROM content WHERE key=? AND enabled_yn='Y'", Integer.class, key) > 0;
+    /** 페이지 접근 가능 여부. enabled_yn 은 허브 카드 노출만 제어한다 */
+    public boolean exists(String key) {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM content WHERE key=?", Integer.class, key) > 0;
     }
 
     /** ponytail: SQL-in-DB. 외부 입력 없음, SELECT 만 허용. 불편해지면 ContentStat 인터페이스로 승격. */

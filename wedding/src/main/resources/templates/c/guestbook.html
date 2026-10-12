@@ -1,44 +1,64 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}">
 <head th:replace="~{fragments/layout :: head}"></head>
-<body class="paper min-h-screen" th:attr="data-datetime=${p.dateTime},data-turnstile=${p.turnstileSiteKey}">
+<body class="min-h-screen" th:attr="data-datetime=${p.dateTime},data-turnstile=${p.turnstileSiteKey}">
 <header th:replace="~{fragments/layout :: topbar('content.guestbook.title')}"></header>
 <script th:if="${!#strings.isEmpty(p.turnstileSiteKey)}" src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer th:attr="nonce=${cspNonce}"></script>
 
-<main class="max-w-[420px] mx-auto px-4 pt-6">
-  <p class="text-center text-sm leading-7 text-ink/80 whitespace-pre-line" data-i18n="guestbook.intro" th:text="${t['guestbook.intro']}">intro</p>
+<main class="max-w-[420px] mx-auto px-7 pt-6">
+  <p class="pt-6 text-[15px] leading-8 whitespace-pre-line text-center" data-i18n="guestbook.intro" th:text="${t['guestbook.intro']}">intro</p>
 
-  <form data-form class="mt-6 p-4 rounded-2xl bg-jasmine border border-gold/60 space-y-3">
-    <input name="name" maxlength="20" required class="w-full bg-transparent border-b border-gold/50 py-2 text-sm outline-none focus:border-gold" data-i18n-ph="guestbook.name" th:placeholder="${t['guestbook.name']}">
-    <textarea name="message" maxlength="300" rows="3" required class="w-full bg-transparent border-b border-gold/50 py-2 text-sm outline-none focus:border-gold resize-none" data-i18n-ph="guestbook.message" th:placeholder="${t['guestbook.message']}"></textarea>
-    <input name="password" inputmode="numeric" pattern="\d{4}" maxlength="4" required class="w-full bg-transparent border-b border-gold/50 py-2 text-sm outline-none focus:border-gold tabular" data-i18n-ph="guestbook.password" th:placeholder="${t['guestbook.password']}">
-    <p class="text-[11px] text-ink/50" data-i18n="guestbook.password_hint" th:text="${t['guestbook.password_hint']}">hint</p>
-    <div th:if="${!#strings.isEmpty(p.turnstileSiteKey)}" class="cf-turnstile" th:attr="data-sitekey=${p.turnstileSiteKey}" data-size="flexible"></div>
-    <button type="submit" class="w-full py-3 rounded-full bg-ink text-mist text-sm disabled:opacity-50" data-i18n="guestbook.submit" th:text="${t['guestbook.submit']}">post</button>
-    <p data-msg class="text-center text-xs min-h-[1rem]"></p>
+  <form data-form class="mt-8">
+    <input name="name" maxlength="20" required class="field" data-i18n-ph="guestbook.name" th:placeholder="${t['guestbook.name']}">
+    <textarea name="message" maxlength="300" rows="3" required class="field resize-none" data-i18n-ph="guestbook.message" th:placeholder="${t['guestbook.message']}"></textarea>
+    <input name="password" inputmode="numeric" pattern="\d{4}" maxlength="4" required class="field tabular" data-i18n-ph="guestbook.password" th:placeholder="${t['guestbook.password']}">
+    <p class="mt-2 text-[12px] text-ink/45 text-center" data-i18n="guestbook.password_hint" th:text="${t['guestbook.password_hint']}">hint</p>
+    <!-- 사진 첨부: 고르자마자 폰에서 줄여 올리고, 글 남길 때 토큰만 보낸다 (설계 §15-7) -->
+    <div class="mt-6 text-center">
+      <label class="text-[14px] text-sky cursor-pointer">+ <span data-i18n="guestbook.photo_add" th:text="${t['guestbook.photo_add']}">add</span>
+        <input type="file" accept="image/*" multiple data-photo-input class="hidden"></label>
+      <ul data-photo-list class="mt-3 flex justify-center gap-2"></ul>
+      <p data-photo-msg class="mt-2 text-[12px] text-ink/50 min-h-[1rem] tabular"></p>
+    </div>
+    <div th:if="${!#strings.isEmpty(p.turnstileSiteKey)}" class="cf-turnstile mt-3" th:attr="data-sitekey=${p.turnstileSiteKey}" data-size="flexible"></div>
+    <div class="mt-6 text-center">
+      <button type="submit" class="px-6 py-2.5 rounded-full bg-sky text-white text-[14px] disabled:opacity-50" data-i18n="guestbook.submit" th:text="${t['guestbook.submit']}">post</button>
+      <p data-msg class="mt-3 text-[13px] text-ink/60 min-h-[1rem]"></p>
+    </div>
   </form>
 
-  <ul data-list class="mt-8 space-y-3">
-    <li th:each="g : ${entries}" th:attr="data-id=${g.id}" class="memo p-4 rounded-lg bg-jasmine border border-gold/40 shadow-sm">
-      <div class="flex justify-between items-baseline text-xs">
-        <span class="font-medium" th:text="${g.name}">name</span>
-        <span class="text-ink/40 tabular" th:text="${#strings.substring(g.createdAt,0,10)}">date</span>
+  <ul data-list class="mt-12">
+    <li th:each="g : ${entries}" th:attr="data-id=${g.id}" class="py-5 border-t border-ink/10 text-center">
+      <div class="flex justify-center gap-2 items-baseline text-[13px]">
+        <span class="text-ink/85" th:text="${g.name}">name</span>
+        <span class="text-ink/35 tabular" th:text="${#strings.substring(g.createdAt,0,10)}">date</span>
       </div>
-      <p class="mt-2 text-sm leading-6 whitespace-pre-line break-words" th:text="${g.message}">msg</p>
-      <button type="button" data-del class="mt-2 text-[11px] text-ink/40 underline" data-i18n="guestbook.delete" th:text="${t['guestbook.delete']}">delete</button>
+      <p class="mt-2 text-[15px] leading-7 whitespace-pre-line break-words" th:text="${g.message}">msg</p>
+      <div th:if="${!g.photos.isEmpty()}" class="mt-3 flex justify-center gap-1.5">
+        <button type="button" th:each="ph : ${g.photos}" th:attr="data-view=${ph.view}" class="w-24 h-24 rounded-lg overflow-hidden bg-jasmine">
+          <img th:src="${ph.thumb}" alt="" loading="lazy" class="w-full h-full object-cover"></button>
+      </div>
+      <button type="button" data-del class="mt-2 text-[12px] text-ink/35" data-i18n="guestbook.delete" th:text="${t['guestbook.delete']}">delete</button>
     </li>
   </ul>
-  <p data-empty th:classappend="${entries.isEmpty()} ? '' : 'hidden'" class="mt-8 text-center text-sm text-ink/50" data-i18n="guestbook.empty" th:text="${t['guestbook.empty']}">empty</p>
-  <button type="button" data-more th:classappend="${hasNext} ? '' : 'hidden'" class="block mx-auto mt-6 px-6 py-2.5 rounded-full border border-gold text-sm" data-i18n="guestbook.more" th:text="${t['guestbook.more']}">more</button>
+  <p data-empty th:classappend="${entries.isEmpty()} ? '' : 'hidden'" class="mt-10 text-[14px] text-ink/45 text-center" data-i18n="guestbook.empty" th:text="${t['guestbook.empty']}">empty</p>
+  <button type="button" data-more th:classappend="${hasNext} ? '' : 'hidden'" class="block mx-auto mt-4 text-[14px] text-sky" data-i18n="guestbook.more" th:text="${t['guestbook.more']}">more</button>
 
-  <dialog data-del-dialog class="rounded-2xl p-5 w-[300px] bg-jasmine border border-gold backdrop:bg-ink/40">
+  <dialog data-photo-viewer class="bg-night p-0 w-screen h-[100svh] max-w-none max-h-none outline-none backdrop:bg-night">
+    <button type="button" data-close class="absolute top-3 right-4 z-10 p-2 text-white/80" aria-label="close">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+    </button>
+    <div class="w-full h-full flex items-center justify-center px-3 py-16"><img alt="" class="max-w-full max-h-full object-contain"></div>
+  </dialog>
+
+  <dialog data-del-dialog class="rounded-2xl p-6 w-[300px] bg-jasmine backdrop:bg-night/40 text-center">
     <form method="dialog">
-      <p class="text-sm" data-i18n="guestbook.delete_prompt" th:text="${t['guestbook.delete_prompt']}">pw?</p>
-      <input name="pw" inputmode="numeric" maxlength="4" class="mt-3 w-full bg-transparent border-b border-gold py-2 text-sm outline-none tabular" autocomplete="off">
-      <p data-del-msg class="text-xs text-yeonji mt-2 min-h-[1rem]"></p>
-      <div class="mt-4 flex gap-2 justify-end">
-        <button value="cancel" class="px-4 py-2 text-sm rounded-full border border-gold" data-i18n="nav.back" th:text="${t['nav.back']}">cancel</button>
-        <button value="ok" class="px-4 py-2 text-sm rounded-full bg-ink text-mist" data-i18n="guestbook.delete" th:text="${t['guestbook.delete']}">ok</button>
+      <p class="text-[14px]" data-i18n="guestbook.delete_prompt" th:text="${t['guestbook.delete_prompt']}">pw?</p>
+      <input name="pw" inputmode="numeric" maxlength="4" class="field tabular" autocomplete="off">
+      <p data-del-msg class="text-[12px] text-ink/60 mt-2 min-h-[1rem]"></p>
+      <div class="mt-4 flex gap-6 justify-center text-[14px]">
+        <button value="cancel" class="text-ink/50" data-i18n="nav.back" th:text="${t['nav.back']}">cancel</button>
+        <button value="ok" class="text-sky" data-i18n="guestbook.delete" th:text="${t['guestbook.delete']}">ok</button>
       </div>
     </form>
   </dialog>
@@ -46,6 +66,7 @@
 
 <nav th:replace="~{fragments/layout :: bottomNav}"></nav>
 <th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script src="/static/upload.js" defer th:attr="nonce=${cspNonce}"></script>
 <script src="/static/guestbook.js" defer th:attr="nonce=${cspNonce}"></script>
 </body>
 </html>

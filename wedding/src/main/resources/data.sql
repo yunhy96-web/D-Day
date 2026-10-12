@@ -24,17 +24,17 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.copy', 'th', 'คั�
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.copied', 'ko', '복사했어요');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.copied', 'en', 'Copied');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.copied', 'th', 'คัดลอกแล้ว');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.share', 'ko', '카카오톡으로 공유');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.share', 'ko', '청첩장 공유');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.share', 'en', 'Share');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.share', 'th', 'แชร์');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('share.copied', 'ko', '링크를 복사했어요. 카톡에 붙여넣어 주세요');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('share.copied', 'en', 'Link copied. Paste it anywhere');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('share.copied', 'th', 'คัดลอกลิงก์แล้ว นำไปวางได้เลย');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('footer.online', 'ko', '지금 {0}명이 함께 보고 있어요');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('footer.online', 'en', '{0} people are here right now');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('footer.online', 'ko', '지금 {0}명이 보고 있습니다');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('footer.online', 'en', '{0} viewing now');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('footer.online', 'th', 'ตอนนี้มี {0} คนกำลังดูอยู่');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('footer.total', 'ko', '지금까지 {0}명 방문');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('footer.total', 'en', '{0} visits so far');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('footer.total', 'ko', '지금까지 {0}명');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('footer.total', 'en', '{0} visits');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('footer.total', 'th', 'เข้าชมแล้ว {0} ครั้ง');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('intro.groom', 'ko', '윤희영');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('intro.groom', 'en', 'Huiyeong Yun');
@@ -69,9 +69,6 @@ We would be honored to have you with us.');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.body', 'th', 'คนสองคนจากสองแผ่นดิน
 จะผูกด้ายเป็นปมเดียวกันในวันนี้
 หากท่านมาร่วมยินดี จะเป็นเกียรติอย่างยิ่ง');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.vertical', 'ko', '백년가약');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.vertical', 'en', 'Forever');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.vertical', 'th', 'รักนิรันดร์');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.groom_side', 'ko', '신랑측');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.groom_side', 'en', 'Groom');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.groom_side', 'th', 'ฝ่ายเจ้าบ่าว');
@@ -84,17 +81,17 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.groom_parents', '
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.bride_parents', 'ko', '어머니 ○○○ 의 딸');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.bride_parents', 'en', 'Daughter of ○○○');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.bride_parents', 'th', 'บุตรสาวของ ○○○');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('date.title', 'ko', '예식 안내');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('date.title', 'ko', '일시');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('date.title', 'en', 'When');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('date.title', 'th', 'วันและเวลา');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('date.countdown', 'ko', '{0}일 {1}시간 {2}분 {3}초 남았어요');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('date.countdown', 'ko', '{0}일 {1}시간 {2}분 {3}초 남았습니다');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('date.countdown', 'en', '{0}d {1}h {2}m {3}s to go');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('date.countdown', 'th', 'อีก {0} วัน {1} ชม. {2} นาที {3} วินาที');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('date.passed', 'ko', '감사했습니다');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('date.passed', 'en', 'Thank you for celebrating with us');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('date.passed', 'th', 'ขอบคุณที่มาร่วมยินดี');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.title', 'ko', '오시는 길');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.title', 'en', 'Where');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.title', 'ko', '장소');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.title', 'en', 'Venue');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.title', 'th', 'สถานที่');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.name', 'ko', '드메르 웨딩홀');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.name', 'en', 'De Mer Wedding Hall');
@@ -102,45 +99,54 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.name', 'th', 'เด
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.search', 'ko', '드메르웨딩홀 광주 광산구');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.search', 'en', '드메르웨딩홀 광주 광산구');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.search', 'th', '드메르웨딩홀 광주 광산구');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'ko', 'CN타워 2층 베일리홀');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'en', 'Bailey Hall, 2F, CN Tower');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'th', 'เบลีย์ฮอลล์ ชั้น 2 อาคาร CN Tower');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'ko', '2층 베일리홀');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'en', 'Bailey Hall, 2F');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'th', 'เบลีย์ฮอลล์ ชั้น 2');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.summary', 'ko', '광주 광산구 · 임방울대로 (첨단·수완지구 사이)');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.summary', 'en', 'Gwangsan-gu, Gwangju · Imbangul-daero');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.summary', 'th', 'เขตควังซาน เมืองควังจู · ถนนอิมบังอุล');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.directions', 'ko', '오시는 길 자세히');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.directions', 'ko', '오시는 길 보기');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.directions', 'en', 'Directions');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.directions', 'th', 'ดูเส้นทาง');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.copy_address', 'ko', '주소 복사');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.copy_address', 'en', 'Copy address');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.copy_address', 'th', 'คัดลอกที่อยู่');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.kakao', 'ko', '카카오맵으로 길찾기');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.kakao', 'en', 'Directions in KakaoMap');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.kakao', 'th', 'นำทางด้วย KakaoMap');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.kakao', 'ko', '카카오맵에서 열기');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.kakao', 'en', 'Open in KakaoMap');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.kakao', 'th', 'เปิดใน KakaoMap');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_title', 'ko', '대중교통');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_title', 'en', 'Public transit');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_title', 'th', 'ขนส่งสาธารณะ');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_body', 'ko', 'KTX 광주송정역에서 택시 약 25분 · 광주공항에서 약 20분
-시내버스 노선은 확인 후 안내드릴게요');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_body', 'en', 'About 25 min by taxi from Gwangju-Songjeong KTX Station · 20 min from Gwangju Airport
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_body', 'ko', 'KTX 광주송정역에서 택시 25분
+광주공항에서 택시 20분
+시내버스 노선은 확인 중');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_body', 'en', '25 min by taxi from Gwangju-Songjeong KTX Station
+20 min by taxi from Gwangju Airport
 Bus routes to be confirmed');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_body', 'th', 'แท็กซี่ประมาณ 25 นาทีจากสถานีรถไฟ KTX ควังจู-ซงจอง · 20 นาทีจากสนามบินควังจู
-เส้นทางรถเมล์จะแจ้งให้ทราบอีกครั้ง');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_body', 'th', 'แท็กซี่ 25 นาทีจากสถานี KTX ควังจู-ซงจอง
+แท็กซี่ 20 นาทีจากสนามบินควังจู
+เส้นทางรถเมล์จะแจ้งภายหลัง');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_title', 'ko', '주차');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_title', 'en', 'Parking');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_title', 'th', 'ที่จอดรถ');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_body', 'ko', '웨딩홀 주차타워 및 옆 부지 주차장 (약 2,000대). 피크 시간엔 조금 일찍 오시면 가까이 댈 수 있어요');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_body', 'en', 'Parking tower and adjacent lot (about 2,000 cars). Arrive a little early at peak hours for a closer spot');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_body', 'th', 'อาคารจอดรถของโรงแรมและลานจอดข้างๆ (ประมาณ 2,000 คัน) ช่วงเวลาเร่งด่วนแนะนำให้มาก่อนเวลาเล็กน้อย');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_title', 'ko', '해외에서 오시는 분께');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_title', 'en', 'Coming from abroad?');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_title', 'th', 'สำหรับแขกจากต่างประเทศ');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_body', 'ko', '인천공항에서 KTX 로 광주송정역까지 약 2시간, 역에서 택시 25분이에요. 택시는 카카오T 앱을 추천해요. 구글맵은 한국에서 길찾기가 제한되니 카카오맵 앱을 설치해 주세요.');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_body', 'en', 'From Incheon Airport take the KTX to Gwangju-Songjeong Station (about 2 h), then a 25 min taxi. Use the Kakao T app for taxis. Google Maps has limited navigation in Korea, so please install the KakaoMap app.');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_body', 'th', 'จากสนามบินอินชอน นั่งรถไฟ KTX ไปสถานีควังจู-ซงจอง ประมาณ 2 ชั่วโมง แล้วต่อแท็กซี่อีก 25 นาที แนะนำแอป Kakao T สำหรับแท็กซี่ Google Maps นำทางในเกาหลีได้จำกัด กรุณาติดตั้งแอป KakaoMap');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('gallery.title', 'ko', '우리의 순간');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('gallery.title', 'en', 'Moments');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('gallery.title', 'th', 'ช่วงเวลาของเรา');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_body', 'ko', '주차타워와 옆 부지, 약 2,000대
+예식 30분 전 도착을 권합니다');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_body', 'en', 'Parking tower and adjacent lot, about 2,000 cars
+Arriving 30 min early is recommended');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_body', 'th', 'อาคารจอดรถและลานจอดข้างเคียง ประมาณ 2,000 คัน
+แนะนำให้มาถึงก่อนเวลา 30 นาที');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_title', 'ko', '해외에서');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_title', 'en', 'From abroad');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_title', 'th', 'จากต่างประเทศ');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_body', 'ko', '인천공항 → KTX 광주송정역 약 2시간 → 택시 25분
+택시는 카카오T, 지도는 카카오맵 앱을 권합니다');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_body', 'en', 'Incheon Airport → KTX to Gwangju-Songjeong, about 2 h → taxi 25 min
+Kakao T for taxis, KakaoMap for directions (Google Maps is limited in Korea)');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_body', 'th', 'สนามบินอินชอน → KTX ไปควังจู-ซงจอง ประมาณ 2 ชม. → แท็กซี่ 25 นาที
+แท็กซี่ใช้ Kakao T แผนที่ใช้ KakaoMap (Google Maps ใช้ในเกาหลีได้จำกัด)');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('gallery.title', 'ko', '사진');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('gallery.title', 'en', 'Photos');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('gallery.title', 'th', 'รูปภาพ');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('gallery.more', 'ko', '사진 전체 보기');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('gallery.more', 'en', 'See all photos');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('gallery.more', 'th', 'ดูรูปทั้งหมด');
@@ -151,60 +157,36 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('gallery.empty', 'ko', '사
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('gallery.empty', 'en', 'Photos coming soon');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('gallery.empty', 'th', 'กำลังเตรียมรูปภาพ');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('hub.title', 'ko', '함께 즐겨요');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('hub.title', 'en', 'Join the fun');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('hub.title', 'th', 'ร่วมสนุกด้วยกัน');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('hub.subtitle', 'ko', '잠깐 머무는 동안 두 사람과 놀아주세요');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('hub.subtitle', 'en', 'Stay a while and play with us');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('hub.subtitle', 'th', 'แวะเล่นกับเราสักครู่');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('hub.title', 'en', 'Join in');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('hub.title', 'th', 'ร่วมสนุก');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.worldcup.title', 'ko', '사진 월드컵');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.worldcup.title', 'en', 'Photo World Cup');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.worldcup.title', 'th', 'โฟโต้เวิลด์คัพ');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.worldcup.desc', 'ko', '우리 최고의 순간은? 32강부터 골라주세요');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.worldcup.desc', 'en', 'Pick our best moment, from 32 to 1');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.worldcup.desc', 'th', 'เลือกช่วงเวลาที่ดีที่สุดของเรา จาก 32 เหลือ 1');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.worldcup.cta', 'ko', '시작하기');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.worldcup.cta', 'en', 'Start');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.worldcup.cta', 'th', 'เริ่มเลย');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.worldcup.stat', 'ko', '{0}명 참여 · 약 2분');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.worldcup.stat', 'en', '{0} played · ~2 min');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.worldcup.stat', 'th', '{0} คนร่วมเล่น · ประมาณ 2 นาที');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.worldcup.desc', 'ko', '사진 32장 중 한 장 고르기');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.worldcup.desc', 'en', 'Pick one of 32 photos');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.worldcup.desc', 'th', 'เลือก 1 จาก 32 รูป');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.guestbook.title', 'ko', '방명록');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.guestbook.title', 'en', 'Guestbook');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.guestbook.title', 'th', 'สมุดเยี่ยม');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.guestbook.desc', 'ko', '축하의 말을 남겨주세요');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.guestbook.desc', 'en', 'Leave us a message');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.guestbook.desc', 'ko', '한마디 남기기');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.guestbook.desc', 'en', 'Leave a message');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.guestbook.desc', 'th', 'ฝากคำอวยพรถึงเรา');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.guestbook.cta', 'ko', '글 남기기');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.guestbook.cta', 'en', 'Write');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.guestbook.cta', 'th', 'เขียนข้อความ');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.guestbook.stat', 'ko', '{0}개의 축하');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.guestbook.stat', 'en', '{0} messages');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.guestbook.stat', 'th', '{0} ข้อความ');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.gallery.title', 'ko', '갤러리');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.gallery.title', 'en', 'Gallery');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.gallery.title', 'th', 'แกลเลอรี');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.gallery.desc', 'ko', '우리의 사진을 한 장씩');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.gallery.desc', 'en', 'Flip through all our photos');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.gallery.desc', 'th', 'ชมรูปของเราทีละภาพ');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.gallery.cta', 'ko', '보기');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.gallery.cta', 'en', 'View');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.gallery.cta', 'th', 'ดู');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.gallery.stat', 'ko', '{0}장');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.gallery.stat', 'en', '{0} photos');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.gallery.stat', 'th', '{0} รูป');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.gallery.desc', 'ko', '사진 전체');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.gallery.desc', 'en', 'All photos');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.gallery.desc', 'th', 'รูปทั้งหมด');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.map.title', 'ko', '오시는 길');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.map.title', 'en', 'Directions');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.map.title', 'th', 'เส้นทาง');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.map.desc', 'ko', '지도 · 대중교통 · 주차');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.map.desc', 'ko', '지도, 교통, 주차');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.map.desc', 'en', 'Map · Transit · Parking');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.map.desc', 'th', 'แผนที่ · การเดินทาง · ที่จอดรถ');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.map.cta', 'ko', '길찾기');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.map.cta', 'en', 'Navigate');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.map.cta', 'th', 'นำทาง');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.intro', 'ko', '두 장 중 더 마음에 드는 사진을 골라주세요.
-32강부터 결승까지, 약 2분이면 끝나요.');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.intro', 'en', 'Pick the photo you like more.
-From round of 32 to the final, about 2 minutes.');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.intro', 'ko', '두 장 중 더 좋은 사진을 고르세요.
+32강부터 결승까지, 2분이면 끝납니다.');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.intro', 'en', 'Pick the better photo of the two.
+Round of 32 to the final, about two minutes.');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.intro', 'th', 'เลือกรูปที่ชอบมากกว่าจากสองรูป
 ตั้งแต่รอบ 32 จนถึงชิงชนะเลิศ ใช้เวลาประมาณ 2 นาที');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.start', 'ko', '시작');
@@ -216,39 +198,36 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.round', 'th', '�
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.final', 'ko', '결승');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.final', 'en', 'Final');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.final', 'th', 'ชิงชนะเลิศ');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.semi', 'ko', '4강');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.semi', 'en', 'Semifinal');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.semi', 'th', 'รอบรองชนะเลิศ');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.progress', 'ko', '{0} · {1} / {2}');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.progress', 'en', '{0} · {1} / {2}');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.progress', 'th', '{0} · {1} / {2}');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.choose', 'ko', '더 마음에 드는 사진은?');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.choose', 'ko', '어느 쪽이 더 좋으세요?');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.choose', 'en', 'Which one do you like more?');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.choose', 'th', 'ชอบรูปไหนมากกว่า?');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.result_title', 'ko', '당신이 고른 우리의 1위');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.result_title', 'en', 'Your pick for our #1');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.result_title', 'th', 'รูปอันดับ 1 ที่คุณเลือก');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.ranking_title', 'ko', '모두의 TOP 3');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.ranking_title', 'en', 'Everyone''s top 3');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.ranking_title', 'th', '3 อันดับยอดนิยมจากทุกคน');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.participants', 'ko', '{0}명이 골랐어요');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.participants', 'en', '{0} people have picked');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.participants', 'th', '{0} คนเลือกแล้ว');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.result_title', 'ko', '당신이 고른 한 장');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.result_title', 'en', 'Your pick');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.result_title', 'th', 'รูปที่คุณเลือก');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.ranking_title', 'ko', '가장 많이 뽑힌 사진');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.ranking_title', 'en', 'Most picked');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.ranking_title', 'th', 'รูปที่ถูกเลือกมากที่สุด');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.participants', 'ko', '{0}명 참여');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.participants', 'en', '{0} played');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.participants', 'th', '{0} คนร่วมเล่น');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.wins', 'ko', '{0}표');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.wins', 'en', '{0} votes');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.wins', 'th', '{0} โหวต');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.retry', 'ko', '다시 하기');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.retry', 'en', 'Play again');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.retry', 'th', 'เล่นอีกครั้ง');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.share', 'ko', '내 1위 사진 자랑하기');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.share', 'en', 'Share my #1');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.share', 'th', 'แชร์รูปอันดับ 1 ของฉัน');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.share', 'ko', '결과 공유');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.share', 'en', 'Share');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.share', 'th', 'แชร์');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.not_enough', 'ko', '사진이 아직 준비 중이에요. 조금만 기다려 주세요!');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.not_enough', 'en', 'Photos are still being prepared. Check back soon!');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('worldcup.not_enough', 'th', 'รูปยังอยู่ระหว่างเตรียม กลับมาใหม่เร็วๆ นี้นะ!');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.intro', 'ko', '두 사람에게 전하고 싶은 말을 남겨주세요.
-어떤 언어든 좋아요.');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.intro', 'en', 'Leave a few words for the two of us.
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.intro', 'ko', '두 사람에게 한마디 남겨주세요.
+어떤 언어든 좋습니다.');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.intro', 'en', 'Leave a few words for us.
 Any language is welcome.');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.intro', 'th', 'ฝากข้อความถึงเราทั้งสอง
 จะเขียนภาษาอะไรก็ได้');
@@ -261,7 +240,7 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.message', 'th', 
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.password', 'ko', '비밀번호 (숫자 4자리)');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.password', 'en', 'Password (4 digits)');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.password', 'th', 'รหัสผ่าน (ตัวเลข 4 หลัก)');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.password_hint', 'ko', '내 글을 지울 때 필요해요');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.password_hint', 'ko', '글을 지울 때 씁니다');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.password_hint', 'en', 'Needed only to delete your message');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.password_hint', 'th', 'ใช้เมื่อต้องการลบข้อความของคุณ');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.submit', 'ko', '남기기');
@@ -270,9 +249,9 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.submit', 'th', '
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.more', 'ko', '더 보기');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.more', 'en', 'Load more');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.more', 'th', 'ดูเพิ่มเติม');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.empty', 'ko', '첫 번째 축하를 남겨주세요');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.empty', 'en', 'Be the first to leave a message');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.empty', 'th', 'เป็นคนแรกที่ฝากคำอวยพร');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.empty', 'ko', '아직 글이 없습니다');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.empty', 'en', 'No messages yet');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.empty', 'th', 'ยังไม่มีข้อความ');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.delete', 'ko', '삭제');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.delete', 'en', 'Delete');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.delete', 'th', 'ลบ');
@@ -282,8 +261,8 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.delete_prompt', 
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.wrong_pw', 'ko', '비밀번호가 맞지 않아요');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.wrong_pw', 'en', 'Wrong password');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.wrong_pw', 'th', 'รหัสผ่านไม่ถูกต้อง');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.success', 'ko', '고마워요! 남겨주신 마음 잘 받았어요');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.success', 'en', 'Thank you! Your message is posted');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.success', 'ko', '고맙습니다. 잘 받았어요.');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.success', 'en', 'Thank you. Posted.');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.success', 'th', 'ขอบคุณ! ได้รับข้อความของคุณแล้ว');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.error', 'ko', '잠시 후 다시 시도해 주세요');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.error', 'en', 'Please try again in a moment');
@@ -291,10 +270,25 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.error', 'th', '�
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.rate', 'ko', '조금 천천히 남겨주세요 (30초)');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.rate', 'en', 'Please wait 30 seconds between posts');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.rate', 'th', 'กรุณารอ 30 วินาทีก่อนโพสต์อีกครั้ง');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.photo_add', 'ko', '사진 첨부 (최대 3장)');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.photo_add', 'en', 'Add photos (up to 3)');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.photo_add', 'th', 'แนบรูป (สูงสุด 3 รูป)');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.photo_progress', 'ko', '사진 {0} / {1} 올리는 중');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.photo_progress', 'en', 'Uploading photo {0} / {1}');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.photo_progress', 'th', 'กำลังอัปโหลดรูป {0} / {1}');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.photo_failed', 'ko', '사진을 올리지 못했습니다. 다시 골라 주세요');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.photo_failed', 'en', 'Photo upload failed. Please try again');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.photo_failed', 'th', 'อัปโหลดรูปไม่สำเร็จ กรุณาลองใหม่');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.photo_wait', 'ko', '사진을 올리는 중입니다');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.photo_wait', 'en', 'Photos are still uploading');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.photo_wait', 'th', 'กำลังอัปโหลดรูป');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.photo_remove', 'ko', '사진 빼기');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.photo_remove', 'en', 'Remove photo');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('guestbook.photo_remove', 'th', 'ลบรูป');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('account.title', 'ko', '마음 전하실 곳');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('account.title', 'en', 'Gift');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('account.title', 'th', 'ร่วมแสดงความยินดี');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('account.intro', 'ko', '참석이 어려우신 분들을 위해 계좌번호를 남깁니다.');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('account.intro', 'ko', '참석이 어려우신 분들을 위해 계좌를 남깁니다.');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('account.intro', 'en', 'For those who cannot attend, here is where to send a gift.');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('account.intro', 'th', 'สำหรับท่านที่ไม่สะดวกมาร่วมงาน สามารถส่งของขวัญได้ที่นี่');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('account.groom', 'ko', '신랑측 계좌');
@@ -316,8 +310,81 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('common.error', 'ko', '문�
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('common.error', 'en', 'Something went wrong. Please try again');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('common.error', 'th', 'เกิดข้อผิดพลาด กรุณาลองใหม่');
 
--- 컨텐츠 허브 (설계 §4-3)
-INSERT OR IGNORE INTO content(key, path, sort, enabled_yn, icon, stat_sql) VALUES ('worldcup', '/c/worldcup', 1, 'Y', 'lotus', 'SELECT COUNT(DISTINCT session_id) FROM pick WHERE round=5');
-INSERT OR IGNORE INTO content(key, path, sort, enabled_yn, icon, stat_sql) VALUES ('guestbook', '/c/guestbook', 2, 'Y', 'peony', 'SELECT COUNT(*) FROM guestbook WHERE deleted_yn=''N''');
-INSERT OR IGNORE INTO content(key, path, sort, enabled_yn, icon, stat_sql) VALUES ('gallery', '/c/gallery', 3, 'Y', 'frame', NULL);
-INSERT OR IGNORE INTO content(key, path, sort, enabled_yn, icon, stat_sql) VALUES ('map', '/c/map', 4, 'Y', 'pin', NULL);
+-- 퀴즈 · 타임라인 (설계 §15)
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.quiz.title', 'ko', '신랑신부 퀴즈');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.quiz.title', 'en', 'Couple quiz');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.quiz.title', 'th', 'ควิซบ่าวสาว');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.quiz.desc', 'ko', '얼마나 친한지 알아보기');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.quiz.desc', 'en', 'How well do you know us?');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.quiz.desc', 'th', 'คุณรู้จักเราดีแค่ไหน');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.timeline.title', 'ko', '우리의 시간');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.timeline.title', 'en', 'Our timeline');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.timeline.title', 'th', 'เส้นทางของเรา');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.timeline.desc', 'ko', '만난 날부터 오늘까지');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.timeline.desc', 'en', 'From the day we met');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.timeline.desc', 'th', 'ตั้งแต่วันที่เราพบกัน');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.intro', 'ko', '두 사람을 얼마나 아시나요?
+친한 만큼 골라주세요.');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.intro', 'en', 'How well do you know us?
+Pick your level.');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.intro', 'th', 'คุณรู้จักเราดีแค่ไหน?
+เลือกระดับความสนิทของคุณ');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.easy', 'ko', '덜친함');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.easy', 'en', 'A little close');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.easy', 'th', 'สนิทนิดหน่อย');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.normal', 'ko', '중간친함');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.normal', 'en', 'Pretty close');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.normal', 'th', 'สนิทพอประมาณ');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.hard', 'ko', '매우친함');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.hard', 'en', 'Very close');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.hard', 'th', 'สนิทมาก');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.easy_desc', 'ko', '1~2점 문제');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.easy_desc', 'en', '1–2 point questions');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.easy_desc', 'th', 'ข้อละ 1–2 คะแนน');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.normal_desc', 'ko', '3~4점 문제');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.normal_desc', 'en', '3–4 point questions');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.normal_desc', 'th', 'ข้อละ 3–4 คะแนน');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.hard_desc', 'ko', '4~5점 문제');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.hard_desc', 'en', '4–5 point questions');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.level.hard_desc', 'th', 'ข้อละ 4–5 คะแนน');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.progress', 'ko', '{0} / {1} · {2}점');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.progress', 'en', '{0} / {1} · {2} pt');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.progress', 'th', '{0} / {1} · {2} คะแนน');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.result_title', 'ko', '당신의 점수');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.result_title', 'en', 'Your score');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.result_title', 'th', 'คะแนนของคุณ');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.score', 'ko', '{0} / {1}점');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.score', 'en', '{0} / {1} pts');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.score', 'th', '{0} / {1} คะแนน');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.comment.high', 'ko', '역시, 가까운 사이입니다');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.comment.high', 'en', 'You really know us');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.comment.high', 'th', 'รู้จักเราดีจริงๆ');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.comment.mid', 'ko', '꽤 아시는 편입니다');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.comment.mid', 'en', 'Not bad at all');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.comment.mid', 'th', 'รู้จักเราพอสมควร');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.comment.low', 'ko', '식장에서 더 친해져요');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.comment.low', 'en', 'Let''s get closer at the wedding');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.comment.low', 'th', 'มาสนิทกันมากขึ้นในงานนะ');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.retry', 'ko', '다른 난이도로');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.retry', 'en', 'Try another level');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.retry', 'th', 'ลองระดับอื่น');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.empty', 'ko', '문제를 준비하고 있습니다');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.empty', 'en', 'Questions coming soon');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.empty', 'th', 'กำลังเตรียมคำถาม');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.days', 'ko', '함께한 지 {0}일');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.days', 'en', '{0} days together');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.days', 'th', 'อยู่ด้วยกันมา {0} วัน');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.drag', 'ko', '눈금을 밀어 보세요');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.drag', 'en', 'Slide through our months');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.drag', 'th', 'เลื่อนดูแต่ละเดือน');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.empty', 'ko', '사진을 준비하고 있습니다');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.empty', 'en', 'Photos coming soon');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.empty', 'th', 'กำลังเตรียมรูปภาพ');
+
+-- 컨텐츠 허브 (설계 §4-3). enabled_yn 은 허브 노출 여부. 갤러리·오시는 길은 본문 섹션에서 진입하므로 허브엔 숨김
+INSERT OR IGNORE INTO content(key, path, sort, enabled_yn, icon, stat_sql) VALUES ('worldcup', '/c/worldcup', 1, 'Y', 'worldcup', 'SELECT COUNT(DISTINCT session_id) FROM pick WHERE round=5');
+INSERT OR IGNORE INTO content(key, path, sort, enabled_yn, icon, stat_sql) VALUES ('quiz', '/c/quiz', 2, 'Y', 'quiz', 'SELECT COUNT(*) FROM quiz_attempt WHERE submitted_at IS NOT NULL');
+INSERT OR IGNORE INTO content(key, path, sort, enabled_yn, icon, stat_sql) VALUES ('timeline', '/c/timeline', 3, 'Y', 'timeline', NULL);
+INSERT OR IGNORE INTO content(key, path, sort, enabled_yn, icon, stat_sql) VALUES ('guestbook', '/c/guestbook', 4, 'Y', 'guestbook', 'SELECT COUNT(*) FROM guestbook WHERE deleted_yn=''N''');
+INSERT OR IGNORE INTO content(key, path, sort, enabled_yn, icon, stat_sql) VALUES ('gallery', '/c/gallery', 5, 'N', 'gallery', NULL);
+INSERT OR IGNORE INTO content(key, path, sort, enabled_yn, icon, stat_sql) VALUES ('map', '/c/map', 6, 'N', 'map', NULL);

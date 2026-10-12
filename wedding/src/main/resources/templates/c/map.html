@@ -1,28 +1,31 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}">
 <head th:replace="~{fragments/layout :: head}"></head>
-<body class="paper min-h-screen" th:attr="data-datetime=${p.dateTime},data-lat=${p.lat},data-lng=${p.lng}">
+<body class="min-h-screen" th:attr="data-datetime=${p.dateTime},data-lat=${p.lat},data-lng=${p.lng}">
 <header th:replace="~{fragments/layout :: topbar('content.map.title')}"></header>
 
-<main class="max-w-[420px] mx-auto px-4 pt-6">
-  <p class="serif text-lg text-center" data-i18n="venue.name" th:text="${t['venue.name']}">venue</p>
-  <p class="text-sm text-center" data-i18n="venue.hall" th:text="${t['venue.hall']}">hall</p>
-  <p class="text-sm text-center text-ink/70 mt-1"><span data-date-long></span> · <span data-date-time></span></p>
-
-  <div data-map class="mt-5 w-full h-64 rounded-2xl border border-gold bg-jasmine flex items-center justify-center text-xs text-ink/40">
+<main class="max-w-[420px] mx-auto px-5 pt-4">
+  <div data-map class="w-full h-64 rounded-xl overflow-hidden bg-jasmine flex items-center justify-center text-xs text-ink/40">
     <span th:if="${#strings.isEmpty(p.kakaoJsKey)}">KAKAO_JS_KEY 미설정</span>
   </div>
   <script th:if="${!#strings.isEmpty(p.kakaoJsKey)}" th:src="'https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=' + ${p.kakaoJsKey}" th:attr="nonce=${cspNonce}"></script>
 
-  <a data-nav="kakao" th:href="'https://map.kakao.com/link/search/' + ${t['venue.search']}" target="_blank" rel="noopener" class="mt-4 block py-3 text-center rounded-full border border-gold text-sm" data-i18n="map.kakao" th:text="${t['map.kakao']}">kakao</a>
-  <button type="button" data-copy-address class="mt-2 w-full py-3 rounded-full bg-ink text-mist text-sm" data-i18n="btn.copy_address" th:text="${t['btn.copy_address']}">copy</button>
+  <div class="px-2 pt-6 text-center">
+    <p class="serif text-[19px]"><span data-i18n="venue.name" th:text="${t['venue.name']}">venue</span></p>
+    <p class="mt-1 text-[14px]" data-i18n="venue.hall" th:text="${t['venue.hall']}">hall</p>
+    <p class="mt-1 text-[14px] text-ink/70" th:text="${p.address[lang] ?: p.address['ko']}">address</p>
+    <p class="mt-1 text-[14px] text-ink/70"><span data-date-long></span> <span data-date-time></span></p>
+    <p class="mt-4 text-[14px] space-x-4">
+      <a data-nav="kakao" th:href="'https://map.kakao.com/link/search/' + ${t['venue.search']}" target="_blank" rel="noopener" class="text-sky" data-i18n="map.kakao" th:text="${t['map.kakao']}">kakao</a>
+      <button type="button" class="text-sky" th:attr="data-copy=${p.address[lang] ?: p.address['ko']}" data-i18n="btn.copy_address" th:text="${t['btn.copy_address']}">copy</button>
+    </p>
 
-  <div th:replace="~{fragments/layout :: divider}"></div>
-  <dl class="space-y-5 text-sm">
-    <div><dt class="serif text-gold text-xs tracking-[.3em]" data-i18n="map.transit_title" th:text="${t['map.transit_title']}">transit</dt><dd class="mt-1 leading-6" data-i18n="map.transit_body" th:text="${t['map.transit_body']}">…</dd></div>
-    <div><dt class="serif text-gold text-xs tracking-[.3em]" data-i18n="map.parking_title" th:text="${t['map.parking_title']}">parking</dt><dd class="mt-1 leading-6" data-i18n="map.parking_body" th:text="${t['map.parking_body']}">…</dd></div>
-    <div class="p-4 rounded-2xl bg-jasmine border border-gold/60"><dt class="serif text-yeonji text-xs tracking-[.3em]" data-i18n="map.tip_title" th:text="${t['map.tip_title']}">tip</dt><dd class="mt-1 leading-6" data-i18n="map.tip_body" th:text="${t['map.tip_body']}">…</dd></div>
-  </dl>
+    <dl class="mt-12 space-y-8 text-[14px] leading-7">
+      <div><dt class="text-[12px] text-ink/45 mb-1" data-i18n="map.transit_title" th:text="${t['map.transit_title']}">transit</dt><dd class="whitespace-pre-line" data-i18n="map.transit_body" th:text="${t['map.transit_body']}">…</dd></div>
+      <div><dt class="text-[12px] text-ink/45 mb-1" data-i18n="map.parking_title" th:text="${t['map.parking_title']}">parking</dt><dd class="whitespace-pre-line" data-i18n="map.parking_body" th:text="${t['map.parking_body']}">…</dd></div>
+      <div><dt class="text-[12px] text-ink/45 mb-1" data-i18n="map.tip_title" th:text="${t['map.tip_title']}">abroad</dt><dd class="whitespace-pre-line" data-i18n="map.tip_body" th:text="${t['map.tip_body']}">…</dd></div>
+    </dl>
+  </div>
 </main>
 
 <nav th:replace="~{fragments/layout :: bottomNav}"></nav>
@@ -35,7 +38,6 @@
       const pos = new kakao.maps.LatLng(lat, lng);
       const map = new kakao.maps.Map(el, { center: pos, level: 3 });
       new kakao.maps.Marker({ map, position: pos });
-      map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
     });
     document.querySelectorAll('[data-nav]').forEach(a => a.addEventListener('click', () => W.track('map.navigate', a.dataset.nav)));
   })();

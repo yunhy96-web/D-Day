@@ -20,6 +20,13 @@ spring:
 
 server:
   port: 8080
+  servlet:
+    session:
+      timeout: 2h
+      cookie:
+        http-only: true
+        same-site: strict
+        secure: ${COOKIE_SECURE:false}   # 운영(https) 은 compose 에서 true
   max-http-request-header-size: 8KB
   tomcat:
     max-http-form-post-size: 16KB
@@ -37,15 +44,18 @@ management:
 wedding:
   base-url: ${WEDDING_BASE_URL:}
   date-time: 2027-03-27T14:30:00+09:00
+  dating-start: 2025-05-04                  # 타임라인 시작(설계 §15-3)
   lat: 35.20805                             # 카카오 로컬 API 검색 결과 (드메르웨딩홀, 임방울대로 549)
   lng: 126.82179
   kakao-js-key: ${KAKAO_JS_KEY:}
   turnstile-site-key: ${TURNSTILE_SITE_KEY:}
   turnstile-secret: ${TURNSTILE_SECRET:}
   master-pw-hash: ${GUESTBOOK_MASTER_PW_HASH:}
+  admin-id: ${ADMIN_ID:admin}
+  admin-pw-hash: ${ADMIN_PW_HASH:}          # 비어 있으면 어드민 로그인 불가
   address:
-    ko: 광주광역시 광산구 임방울대로 549 (도천동 147-29) CN타워 2층 베일리홀 (드메르 웨딩홀)
-    en: Bailey Hall 2F, De Mer Wedding Hall, CN Tower, 549 Imbangul-daero, Gwangsan-gu, Gwangju, Korea
-    th: เบลีย์ฮอลล์ ชั้น 2 เดอ แมร์ เวดดิ้งฮอลล์ CN Tower 549 ถนนอิมบังอุล เขตควังซาน เมืองควังจู ประเทศเกาหลี
+    ko: 광주광역시 광산구 임방울대로 549, CN타워 2층
+    en: CN Tower 2F, 549 Imbangul-daero, Gwangsan-gu, Gwangju, Korea
+    th: CN Tower ชั้น 2, 549 ถนนอิมบังอุล เขตควังซาน เมืองควังจู ประเทศเกาหลี
   account:                                  # 신부측은 해외계좌라 생략. 키를 추가하면 화면에 자동 노출
     groom: { holder: 윤희영, bank: 신한은행, number: 110-423-730255 }

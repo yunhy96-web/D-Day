@@ -80,13 +80,8 @@
     await copy(url); alert(t('share.copied'));
   }
   document.querySelectorAll('[data-share]').forEach(b => b.addEventListener('click', () => share()));
-  document.querySelectorAll('[data-copy-account]').forEach(b => b.addEventListener('click', async () => {
-    const r = await fetch('/api/account?side=' + b.dataset.copyAccount); if (!r.ok) return;
-    const a = await r.json(); copy(a.bank + ' ' + a.number + ' ' + a.holder, b); track('account.copy', b.dataset.copyAccount);
-  }));
-  document.querySelectorAll('[data-copy-address]').forEach(b => b.addEventListener('click', async () => {
-    const r = await fetch('/api/address?lang=' + lang); if (!r.ok) return;
-    copy((await r.json()).address, b);
+  document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', () => {
+    copy(b.dataset.copy, b.tagName === 'BUTTON' ? b : null); if (b.dataset.track) track(b.dataset.track);
   }));
 
   // 날짜 · D-day · 카운트다운
@@ -115,13 +110,14 @@
 
   // 달력
   (function calendar() {
-    const el = document.querySelector('[data-calendar]'); if (!el || !when) return;
+    const tpl = document.querySelector('template[data-calendar]'); if (!tpl || !when) return;
+    const el = tpl.parentElement;   // 요일 7칸이 들어있는 같은 그리드에 날짜를 이어 붙임
     const y = when.getFullYear(), mo = when.getMonth();
     const first = new Date(y, mo, 1).getDay(), days = new Date(y, mo + 1, 0).getDate();
     let html = '';
     for (let i = 0; i < first; i++) html += '<span></span>';
-    for (let d = 1; d <= days; d++) html += `<span class="${d === when.getDate() ? 'rounded-full bg-yeonji text-white font-semibold' : ''}">${d}</span>`;
-    el.innerHTML = html;   // 숫자만 생성. 외부 입력 없음
+    for (let d = 1; d <= days; d++) html += `<span class="${d === when.getDate() ? 'rounded-full bg-sky text-white font-semibold' : ''}">${d}</span>`;
+    tpl.insertAdjacentHTML('beforebegin', html);   // 숫자만 생성. 외부 입력 없음
   })();
 
   // 스크롤 reveal
@@ -130,6 +126,9 @@
 
   // 컨텐츠 진입 추적
   document.querySelectorAll('[data-content-link]').forEach(a => a.addEventListener('click', () => track('content.open', a.dataset.contentLink)));
+
+  // 사진 우클릭(길게 누르기) 저장 막기
+  document.addEventListener('contextmenu', e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
 
   window.W = { t, get lang() { return lang; }, sid, api, track, copy, share };
 })();

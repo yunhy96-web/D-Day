@@ -1,44 +1,47 @@
 package com.dday.wedding.photo;
 
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 
-/** data/photos 디렉토리 = 사진 목록. 파일명 stem 이 사진 ID. 업로드 API 없음(설계 §7). */
+/** 설계 §15-6. photo 테이블 = 사진 목록. sort 1번 = 메인. 원본은 서빙하지 않는다. */
 @Service
+@RequiredArgsConstructor
 public class PhotoService {
-    private final Path dir;
-    private volatile List<String> ids = List.of();   // 정렬된 stem
-    private volatile Map<String, String> urlById = Map.of();
-    private volatile long scannedAt;
+    private final JdbcTemplate jdbc;
 
-    public PhotoService(@Value("${app.data-dir}") String dataDir) { this.dir = Path.of(dataDir, "photos"); }
+    public record Photo(long id, String view, String thumb, boolean worldcup) {}
 
-    /** 60초 캐시. scp 로 사진 바꿔도 재시작 없이 반영. */
-    private void scan() {
-        if (System.currentTimeMillis() - scannedAt < 60_000) return;
-        try (Stream<Path> s = Files.list(dir)) {
-            List<String> files = s.map(p -> p.getFileName().toString())
-                    .filter(n -> n.matches("(?i)[\\w-]+\\.(webp|jpe?g|png|svg)"))
-                    .filter(n -> !n.toLowerCase().startsWith("og."))      // og.jpg 는 카톡 미리보기 전용
-                    .sorted().toList();
-            urlById = files.stream().collect(java.util.stream.Collectors.toUnmodifiableMap(
-                    n -> n.substring(0, n.lastIndexOf('.')), n -> "/photos/" + n, (a, b) -> a));
-            ids = files.stream().map(n -> n.substring(0, n.lastIndexOf('.'))).distinct().toList();
-        } catch (IOException e) {
-            ids = List.of(); urlById = Map.of();
-        }
-        scannedAt = System.currentTimeMillis();
+    private static Photo row(java.sql.ResultSet rs) throws java.sql.SQLException {
+        String f = rs.getString("file");
+        return new Photo(rs.getLong("id"), "/photos/view/" + f + ".jpg", "/photos/thumb/" + f + ".jpg", "Y".equals(rs.getString("worldcup_yn")));
     }
 
-    public List<String> ids() { scan(); return ids; }
-    public Map<String, String> urls() { scan(); return urlById; }
-    public boolean exists(String id) { scan(); return urlById.containsKey(id); }
-    public String url(String id) { scan(); return urlById.get(id); }
+    public List<Photo> all() {
+        return jdbc.query("SELECT id, file, worldcup_yn FROM photo ORDER BY sort, id", (rs, i) -> row(rs));
+    }
+
+    public List<Photo> worldcup() {
+        return all().stream().filter(Photo::worldcup).toList();
+    }
+
+    /** 메인(첫 화면·og:image). 사진이 없으면 null */
+    public Photo main() {
+        List<Photo> l = jdbc.query("SELECT id, file, worldcup_yn FROM photo ORDER BY sort, id LIMIT 1", (rs, i) -> row(rs));
+        return l.isEmpty() ? null : l.get(0);
+    }
+
+    /** 월드컵 pick 의 id 검증 */
+    public boolean inWorldcup(String id) {
+        if (id == null || !id.matches("\\d{1,9}")) return false;
+        return jdbc.queryForObject("SELECT COUNT(*) FROM photo WHERE id=? AND worldcup_yn='Y'", Integer.class, Long.parseLong(id)) > 0;
+    }
+
+    public String thumb(String id) {
+        if (id == null || !id.matches("\\d{1,9}")) return null;
+        List<String> l = jdbc.query("SELECT file FROM photo WHERE id=?", (rs, i) -> "/photos/thumb/" + rs.getString(1) + ".jpg", Long.parseLong(id));
+        return l.isEmpty() ? null : l.get(0);
+    }
 }
