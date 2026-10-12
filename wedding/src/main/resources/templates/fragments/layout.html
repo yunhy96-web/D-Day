@@ -20,7 +20,7 @@
   </script>
   <script th:attr="nonce=${cspNonce}">
     (function () { let t = null; try { t = localStorage.theme; } catch (e) {}
-      if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      if (!t) t = 'light';   // OS 설정과 무관하게 화이트가 기본. 토글로 고른 값만 기억
       document.documentElement.dataset.theme = t; })();
   </script>
   <meta name="color-scheme" content="light dark">
