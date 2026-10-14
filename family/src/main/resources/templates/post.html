@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-font=${font},data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${d.post.title != null ? d.post.title : (d.post.diary() ? L['post.diary'] : L['post.moment'])})}"></head>
+<body class="pb-tab" th:with="p=${d.post}">
+<header th:replace="~{fragments/layout :: top(${p.diary() ? L['post.diary'] : L['post.moment']}, '/')}"></header>
+<main class="wrap mt-4" th:attr="data-post=${p.id}">
+  <div class="flex items-center gap-3">
+    <span class="avatar solid w-11 h-11 text-lg" th:classappend="'c-' + ${p.authorColor}" th:text="${#strings.substring(p.authorName, 0, 1)}">아</span>
+    <div class="flex-1 min-w-0">
+      <p class="font-semibold leading-tight" th:text="${p.authorName}">아빠</p>
+      <p class="text-sm text-muted mt-0.5">
+        <span th:text="${f.date(p.postDate)}">10월 14일</span>
+        <span th:if="${p.isPrivate()}" class="ml-1 inline-flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg><span th:text="${L['post.private']}">나만 보기</span></span>
+      </p>
+    </div>
+    <a th:if="${mine}" th:href="@{/p/{id}/edit(id=${p.id})}" class="btn-soft px-4" th:text="${L['common.edit']}">수정</a>
+  </div>
+
+  <h2 th:if="${p.title != null}" class="mt-5 text-2xl font-bold leading-snug" th:text="${p.title}">제목</h2>
+  <p th:if="${!#strings.isEmpty(p.body)}" class="mt-4 text-[1.05rem] whitespace-pre-line break-words" th:text="${p.body}">본문</p>
+
+  <div th:if="${!p.media.isEmpty()}" class="mt-5 -mx-4 space-y-1">
+    <figure th:each="m : ${p.media}" class="relative bg-soft">
+      <img th:src="${m.view}" alt="" loading="lazy" class="w-full h-auto" th:attr="width=${m.width},height=${m.height}">
+      <a th:if="${canOriginal}" th:href="@{/api/media/{id}/original(id=${m.id})}" class="absolute right-3 bottom-3 px-3 py-1.5 rounded-full bg-black/55 text-white text-sm" th:text="${L['post.original']}">원본</a>
+    </figure>
+  </div>
+
+  <div class="mt-5 flex items-center gap-3">
+    <button type="button" data-like class="btn-line px-4" th:classappend="${p.liked} ? 'text-red-500 border-red-300'" th:attr="aria-pressed=${p.liked}">
+      <svg class="w-6 h-6" th:attr="fill=${p.liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linejoin="round" d="M12 20s-7-4.4-9-8.8C1.7 8 3.7 5 6.9 5c1.9 0 3.4 1 4.1 2.4h2C13.7 6 15.2 5 17.1 5c3.2 0 5.2 3 3.9 6.2C19 15.6 12 20 12 20z"/></svg>
+      <span data-like-count th:text="${p.likeCount}">0</span>
+    </button>
+    <p data-likers class="text-sm text-muted flex-1 min-w-0 truncate" th:text="${#strings.listJoin(d.likers, ', ')}"></p>
+  </div>
+
+  <section class="mt-8 border-t border-line pt-6">
+    <h3 class="font-bold" th:text="${L['post.comments']} + ' ' + ${d.comments.size()}">댓글</h3>
+    <ul class="mt-4 space-y-5">
+      <li th:each="c : ${d.comments}" class="flex gap-3">
+        <span class="avatar solid w-9 h-9 text-sm" th:classappend="'c-' + ${c.color}" th:text="${#strings.substring(c.name, 0, 1)}">아</span>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm"><span class="font-semibold" th:text="${c.name}">이름</span> <span class="text-muted ml-1" th:text="${f.dateTime(c.createdAt)}">시각</span></p>
+          <p class="mt-0.5 whitespace-pre-line break-words" th:text="${c.body}">댓글</p>
+        </div>
+        <button th:if="${c.memberId == me.memberId or me.has('comment.delete.any')}" type="button" th:attr="data-del-comment=${c.id}"
+                class="shrink-0 self-start text-sm text-muted px-2 min-h-tap" th:text="${L['common.delete']}">삭제</button>
+      </li>
+    </ul>
+    <form th:if="${me.has('comment.write')}" data-comment class="mt-6 flex gap-2 items-end">
+      <textarea name="body" rows="1" maxlength="1000" class="field py-2.5 resize-none" th:placeholder="${L['post.commentPh']}" required></textarea>
+      <button class="btn-primary shrink-0" th:text="${L['post.commentSubmit']}">달기</button>
+    </form>
+  </section>
+
+  <button th:if="${canDelete}" type="button" data-del-post class="btn w-full mt-12 text-red-600" th:text="${L['post.delete']}">이 글 지우기</button>
+</main>
+<nav th:replace="~{fragments/layout :: tabbar('home')}"></nav>
+<script th:src="@{/static/post.js}" defer></script>
+</body>
+</html>

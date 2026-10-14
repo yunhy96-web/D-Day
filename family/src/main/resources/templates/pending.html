@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-font=${font},data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['pending.title']})}"></head>
+<body class="min-h-[100dvh] flex flex-col">
+<div class="wrap w-full pt-4"><div th:replace="~{fragments/layout :: prefbar}"></div></div>
+<main class="wrap w-full flex-1 flex flex-col justify-center items-center text-center pb-16">
+  <div class="w-20 h-20 rounded-full bg-accent/15 text-accent flex items-center justify-center mb-6">
+    <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 2"/></svg>
+  </div>
+  <h1 class="text-2xl font-bold" th:text="${L['pending.title']}">승인을 기다리고 있어요</h1>
+  <p class="mt-3 text-muted max-w-xs" th:text="${L['pending.desc']}">관리자가 승인하면 들어올 수 있어요.</p>
+  <a href="/pending" class="btn-primary mt-10 w-full max-w-xs" th:text="${L['pending.check']}">다시 확인</a>
+  <button type="button" data-logout class="btn mt-2 text-muted" th:text="${L['common.logout']}">나가기</button>
+</main>
+</body>
+</html>

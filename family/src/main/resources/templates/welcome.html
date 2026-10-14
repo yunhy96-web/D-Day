@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-font=${font},data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['welcome.title']})}"></head>
+<body class="min-h-[100dvh]">
+<!-- 첫 로그인 한 번: 글씨 크기 고르기 (설계 §7-1). 누르는 즉시 화면 전체가 그 크기로 바뀐다 -->
+<main class="wrap pt-12 pb-16">
+  <h1 class="text-2xl font-bold" th:text="${L['welcome.title']}">글씨 크기를 골라 주세요</h1>
+  <p class="mt-2 text-muted" th:text="${L['welcome.desc']}">나중에 '나' 화면에서 바꿀 수 있어요.</p>
+  <div class="mt-8 space-y-3">
+    <button type="button" data-pref="fontScale" value="sm" th:attr="aria-pressed=${font == 'sm'}"
+            class="w-full card p-5 text-left flex items-center gap-4 border-2 aria-pressed:border-accent aria-[pressed=true]:border-accent">
+      <span class="text-[15px] font-bold w-12 text-center">가</span>
+      <span><span class="block font-semibold" th:text="${L['font.sm']}">작게</span><span class="block text-[15px] text-muted" th:text="${L['font.smDesc']}">한 화면에 많이</span></span>
+    </button>
+    <button type="button" data-pref="fontScale" value="md" th:attr="aria-pressed=${font == 'md'}"
+            class="w-full card p-5 text-left flex items-center gap-4 border-2 aria-[pressed=true]:border-accent">
+      <span class="text-[20px] font-bold w-12 text-center">가</span>
+      <span><span class="block font-semibold" th:text="${L['font.md']}">보통</span><span class="block text-[17px] text-muted" th:text="${L['font.mdDesc']}">기본 크기</span></span>
+    </button>
+    <button type="button" data-pref="fontScale" value="lg" th:attr="aria-pressed=${font == 'lg'}"
+            class="w-full card p-5 text-left flex items-center gap-4 border-2 aria-[pressed=true]:border-accent">
+      <span class="text-[28px] font-bold w-12 text-center">가</span>
+      <span><span class="block font-semibold" th:text="${L['font.lg']}">크게</span><span class="block text-[20px] text-muted" th:text="${L['font.lgDesc']}">크고 진하게</span></span>
+    </button>
+  </div>
+  <a href="/" data-start class="btn-primary w-full mt-10" th:text="${L['welcome.start']}">시작하기</a>
+</main>
+<script th:nonce="${nonce}">
+// 아무것도 안 누르고 시작해도 "골랐음" 으로 저장(지금 크기 유지)
+document.querySelector('[data-start]').addEventListener('click', async e => {
+  e.preventDefault();
+  await App.api('PUT', '/api/prefs', { fontScale: document.documentElement.dataset.font });
+  location.href = '/';
+});
+</script>
+</body>
+</html>

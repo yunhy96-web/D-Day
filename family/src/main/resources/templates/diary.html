@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-font=${font},data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['diary.title']})}"></head>
+<body class="pb-tab">
+<header th:replace="~{fragments/layout :: top(${L['diary.title']}, '/me')}"></header>
+<main class="wrap mt-4 space-y-4">
+  <div th:if="${posts.isEmpty()}" class="py-20 text-center">
+    <p class="text-5xl mb-4">📔</p>
+    <p class="font-semibold" th:text="${L['diary.empty']}">아직 쓴 일기가 없어요</p>
+    <a href="/write?kind=diary" class="btn-primary mt-6" th:text="${L['diary.write']}">일기 쓰기</a>
+  </div>
+  <th:block th:each="p : ${posts}"><article th:replace="~{fragments/post :: card(${p})}"></article></th:block>
+  <a th:if="${hasNext}" th:href="@{/diary(page=${page + 1})}" class="btn-soft w-full" th:text="${L['common.more']}">더 보기</a>
+</main>
+<nav th:replace="~{fragments/layout :: tabbar('me')}"></nav>
+</body>
+</html>

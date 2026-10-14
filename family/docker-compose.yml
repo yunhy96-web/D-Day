@@ -1,0 +1,22 @@
+# Pi 배포. docker-compose up -d --build (설계 §13)
+# 외부 노출은 tut-cloudflared ingress(family.thaiuniontour.com → http://family-app:8080) 로만.
+services:
+  app:
+    build: .
+    image: family-app
+    container_name: family-app
+    env_file: .env
+    environment:
+      APP_DATA_DIR: /data
+      COOKIE_SECURE: "true"
+      FAMILY_BASE_URL: https://family.thaiuniontour.com
+    volumes: ["./data:/data"]
+    networks: [docker_default]
+    read_only: true
+    tmpfs: ["/tmp:rw,exec,size=64m"]   # sqlite-jdbc 가 네이티브 .so 를 /tmp 에 풀어 로드한다
+    cap_drop: [ALL]
+    mem_limit: 512m
+    restart: always
+networks:
+  docker_default:
+    external: true

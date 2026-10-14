@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- 피드·내 일기 공통 글 카드 (설계 §5). 크게 보기: 사진 정사각형 크게, 본문 2줄 -->
+<article th:fragment="card(p)" class="card overflow-hidden">
+  <a th:href="@{/p/{id}(id=${p.id})}" class="block">
+    <div class="flex items-center gap-3 px-4 pt-4">
+      <span class="avatar solid w-10 h-10 text-base" th:classappend="'c-' + ${p.authorColor}" th:text="${#strings.substring(p.authorName, 0, 1)}">아</span>
+      <div class="min-w-0 flex-1">
+        <p class="font-semibold leading-tight truncate" th:text="${p.authorName}">아빠</p>
+        <p class="text-sm text-muted leading-tight mt-0.5" th:text="${f.date(p.postDate)}">10월 14일 화</p>
+      </div>
+      <span th:if="${p.diary()}" class="shrink-0 px-2.5 py-1 rounded-full bg-soft text-sm font-medium text-muted inline-flex items-center gap-1">
+        <svg th:if="${p.isPrivate()}" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+        <span th:text="${p.isPrivate()} ? ${L['post.private']} : ${L['post.diary']}">일기</span>
+      </span>
+    </div>
+    <h2 th:if="${p.title != null}" class="px-4 mt-3 text-lg font-bold leading-snug" th:text="${p.title}">제목</h2>
+    <p th:if="${!#strings.isEmpty(p.body)}" class="px-4 mt-2 whitespace-pre-line break-words line-clamp-3 font-lg:line-clamp-2" th:text="${p.body}">본문</p>
+    <div th:if="${!p.media.isEmpty()}" class="mt-3">
+      <img th:if="${p.media.size() == 1}" th:src="${p.media[0].view}" alt="" loading="lazy" class="w-full aspect-[4/3] font-lg:aspect-square object-cover bg-soft">
+      <div th:if="${p.media.size() > 1}" class="grid grid-cols-2 gap-0.5">
+        <div th:each="m, s : ${p.media}" th:if="${s.index < 4}" class="relative bg-soft"
+             th:classappend="${p.media.size() == 3 and s.index == 0} ? 'col-span-2 aspect-[2/1]' : 'aspect-square'">
+          <img th:src="${m.thumb}" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover">
+          <span th:if="${s.index == 3 and p.media.size() > 4}" class="absolute inset-0 bg-black/45 text-white text-2xl font-bold flex items-center justify-center" th:text="'+' + ${p.media.size() - 4}">+3</span>
+        </div>
+      </div>
+    </div>
+  </a>
+  <div class="flex items-center gap-5 px-4 h-12 text-muted">
+    <span class="inline-flex items-center gap-1.5" th:classappend="${p.liked} ? 'text-red-500'">
+      <svg class="w-5 h-5" th:attr="fill=${p.liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linejoin="round" d="M12 20s-7-4.4-9-8.8C1.7 8 3.7 5 6.9 5c1.9 0 3.4 1 4.1 2.4h2C13.7 6 15.2 5 17.1 5c3.2 0 5.2 3 3.9 6.2C19 15.6 12 20 12 20z"/></svg>
+      <span th:text="${p.likeCount}">0</span>
+    </span>
+    <span class="inline-flex items-center gap-1.5">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linejoin="round" d="M4 5h16v11H8l-4 4z"/></svg>
+      <span th:text="${p.commentCount}">0</span>
+    </span>
+  </div>
+</article>
+</body>
+</html>

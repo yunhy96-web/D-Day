@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-font=${font},data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['login.title']})}"></head>
+<body class="min-h-[100dvh] flex flex-col">
+<div class="wrap w-full pt-4"><div th:replace="~{fragments/layout :: prefbar}"></div></div>
+<main class="wrap w-full flex-1 flex flex-col justify-center pb-16">
+  <div class="mb-10 text-center">
+    <div class="mx-auto mb-5 w-16 h-16 rounded-3xl bg-accent/15 text-accent flex items-center justify-center">
+      <svg class="w-9 h-9" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.5-9.2C1.1 8.4 3.3 5 6.8 5c2 0 3.6 1.1 4.4 2.6h1.6C13.6 6.1 15.2 5 17.2 5c3.5 0 5.7 3.4 4.3 6.8C19.5 16.4 12 21 12 21z"/></svg>
+    </div>
+    <h1 class="text-3xl font-bold" th:text="${familyName}">우리 가족</h1>
+    <p class="mt-2 text-muted" th:text="${L['login.subtitle']}">가족만 들어올 수 있어요</p>
+  </div>
+  <form data-login class="space-y-3" novalidate>
+    <input name="loginId" class="field" autocomplete="username" autocapitalize="none" spellcheck="false" th:placeholder="${L['login.id']}" required>
+    <input name="password" type="password" class="field" autocomplete="current-password" th:placeholder="${L['login.password']}" required>
+    <p data-msg class="min-h-[1.5rem] text-sm text-red-600" role="alert"></p>
+    <button class="btn-primary w-full" th:text="${L['login.submit']}">들어가기</button>
+  </form>
+  <p class="mt-8 text-center text-muted"><span th:text="${L['login.noAccount']}">처음이세요?</span> <a href="/signup" class="link" th:text="${L['login.toSignup']}">가입 신청</a></p>
+</main>
+<script th:nonce="${nonce}">
+document.querySelector('[data-login]').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target, msg = f.querySelector('[data-msg]'), btn = f.querySelector('button');
+  btn.disabled = true; msg.textContent = '';
+  const r = await App.api('POST', '/api/login', { loginId: f.loginId.value, password: f.password.value });
+  btn.disabled = false;
+  if (r.ok) location.href = r.json.next; else msg.textContent = App.errText(r);
+});
+</script>
+</body>
+</html>

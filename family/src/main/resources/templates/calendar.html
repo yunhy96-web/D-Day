@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-font=${font},data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['tab.calendar']})}"></head>
+<body class="pb-tab">
+<header th:replace="~{fragments/layout :: top(${L['tab.calendar']}, null)}"></header>
+<!-- 설계 §5-1. 화면 전체를 calendar.js 가 그린다 -->
+<main class="wrap mt-3" data-cal th:attr="data-today=${today},data-target=${target},data-can-write=${canWrite}">
+  <div th:if="${members != null}" class="mb-3">
+    <select data-member class="field" th:aria-label="${L['cal.whose']}">
+      <option value="" th:text="${L['cal.mine']}">내 근무표</option>
+      <option th:each="m : ${members}" th:if="${m.id != me.memberId}" th:value="${m.id}" th:selected="${target == m.id}" th:text="${m.name}">이름</option>
+    </select>
+  </div>
+  <div class="seg" data-views>
+    <button type="button" data-view="me" aria-pressed="true" th:text="${target != null ? L['cal.this'] : L['cal.me']}">나</button>
+    <button type="button" data-view="family" aria-pressed="false" th:text="${L['cal.family']}">가족</button>
+  </div>
+  <div data-body class="mt-4"></div>
+</main>
+<nav th:replace="~{fragments/layout :: tabbar('calendar')}"></nav>
+<script th:src="@{/static/calendar.js}" defer></script>
+</body>
+</html>

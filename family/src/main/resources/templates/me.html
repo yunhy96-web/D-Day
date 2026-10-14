@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-font=${font},data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['tab.me']})}"></head>
+<body class="pb-tab">
+<header th:replace="~{fragments/layout :: top(${L['tab.me']}, null)}"></header>
+<!-- 설계 §5·§7: 전부 바꾸는 즉시 저장 -->
+<main class="wrap mt-4 space-y-8">
+  <section class="flex items-center gap-4">
+    <span data-avatar class="avatar solid w-16 h-16 text-2xl" th:classappend="'c-' + ${color}" th:text="${#strings.substring(me.name, 0, 1)}">아</span>
+    <div class="flex-1 min-w-0">
+      <input name="name" data-profile="name" class="field text-lg font-semibold" maxlength="20" th:value="${me.name}" th:aria-label="${L['signup.name']}">
+      <p class="mt-1 text-sm text-muted" th:text="'@' + ${me.loginId}">@admin</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="label" th:text="${L['me.color']}">내 색</h2>
+    <div class="flex flex-wrap gap-3">
+      <button th:each="c : ${colors}" type="button" data-profile="color" th:value="${c}" th:attr="aria-pressed=${c == color}"
+              class="w-10 h-10 font-lg:w-12 font-lg:h-12 rounded-full solid aria-[pressed=true]:ring-4 ring-offset-2 ring-offset-bg ring-fg/70" th:classappend="'c-' + ${c}" th:aria-label="${c}"></button>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="label" th:text="${L['me.font']}">글씨 크기</h2>
+    <div class="seg">
+      <button type="button" data-pref="fontScale" value="sm" th:attr="aria-pressed=${font == 'sm'}"><span class="text-[15px]" th:text="${L['font.sm']}">작게</span></button>
+      <button type="button" data-pref="fontScale" value="md" th:attr="aria-pressed=${font == 'md'}"><span class="text-[17px]" th:text="${L['font.md']}">보통</span></button>
+      <button type="button" data-pref="fontScale" value="lg" th:attr="aria-pressed=${font == 'lg'}"><span class="text-[20px] font-bold" th:text="${L['font.lg']}">크게</span></button>
+    </div>
+    <p class="mt-3 px-4 py-3 rounded-2xl bg-soft" th:text="${L['me.fontPreview']}">오늘 저녁은 다 같이 먹어요.</p>
+  </section>
+
+  <section>
+    <h2 class="label" th:text="${L['me.theme']}">화면 밝기</h2>
+    <div class="seg">
+      <button type="button" data-pref="theme" value="system" th:attr="aria-pressed=${theme == 'system'}" th:text="${L['theme.system']}">자동</button>
+      <button type="button" data-pref="theme" value="light" th:attr="aria-pressed=${theme == 'light'}" th:text="${L['theme.light']}">밝게</button>
+      <button type="button" data-pref="theme" value="dark" th:attr="aria-pressed=${theme == 'dark'}" th:text="${L['theme.dark']}">어둡게</button>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="label" th:text="${L['me.lang']}">언어</h2>
+    <div class="seg">
+      <button type="button" data-pref="lang" value="ko" th:attr="aria-pressed=${lang == 'ko'}">한국어</button>
+      <button type="button" data-pref="lang" value="th" th:attr="aria-pressed=${lang == 'th'}">ภาษาไทย</button>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="label" th:text="${L['me.timezone']}">사는 곳 시간</h2>
+    <div class="seg">
+      <button type="button" data-pref="timezone" value="Asia/Seoul" th:attr="aria-pressed=${me.timezone == 'Asia/Seoul'}" th:text="${L['tz.seoul']}">한국</button>
+      <button type="button" data-pref="timezone" value="Asia/Bangkok" th:attr="aria-pressed=${me.timezone == 'Asia/Bangkok'}" th:text="${L['tz.bangkok']}">태국</button>
+    </div>
+  </section>
+
+  <section class="card divide-y divide-line/60">
+    <a href="/diary" class="flex items-center justify-between px-5 min-h-[3.4rem] font-medium"><span th:text="${L['diary.title']}">내 일기</span><span class="text-muted">›</span></a>
+    <a th:if="${me.admin()}" href="/admin" class="flex items-center justify-between px-5 min-h-[3.4rem] font-medium"><span th:text="${L['admin.title']}">가족 관리</span><span class="text-muted">›</span></a>
+  </section>
+
+  <section>
+    <h2 class="label" th:text="${L['me.password']}">비밀번호 바꾸기</h2>
+    <form data-pw class="space-y-3" novalidate>
+      <input name="current" type="password" class="field" autocomplete="current-password" th:placeholder="${L['password.current']}">
+      <input name="next" type="password" class="field" autocomplete="new-password" th:placeholder="${L['password.next']}">
+      <p data-msg class="text-sm text-red-600 min-h-[1.25rem]" role="alert"></p>
+      <button class="btn-line w-full" th:text="${L['password.submit']}">바꾸기</button>
+    </form>
+  </section>
+
+  <section class="card p-5">
+    <label class="flex items-start gap-4 cursor-pointer">
+      <input type="checkbox" data-profile="legacyConsent" class="mt-1 w-6 h-6 accent-[rgb(var(--accent))] shrink-0" th:checked="${consent}">
+      <span>
+        <span class="block font-semibold" th:text="${L['me.legacy']}">내 기록 남기기 동의</span>
+        <span class="block mt-1 text-sm text-muted" th:text="${L['me.legacyDesc']}">설명</span>
+      </span>
+    </label>
+  </section>
+
+  <button type="button" data-logout class="btn-soft w-full" th:text="${L['common.logout']}">나가기</button>
+</main>
+<nav th:replace="~{fragments/layout :: tabbar('me')}"></nav>
+<script th:src="@{/static/me.js}" defer></script>
+</body>
+</html>

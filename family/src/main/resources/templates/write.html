@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-font=${font},data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${post == null ? L['write.title'] : L['write.editTitle']})}"></head>
+<body class="pb-tab">
+<header th:replace="~{fragments/layout :: top(${post == null ? L['write.title'] : L['write.editTitle']}, ${post == null ? '/' : '/p/' + post.id})}"></header>
+<!-- 설계 §5. 종류(순간·일기) → 사진·글. 사진은 고르는 즉시 올라가고, 글은 이 기기에 임시 저장 -->
+<main class="wrap mt-4" data-write th:attr="data-post-id=${post?.id},data-today=${today}">
+  <div class="seg" role="radiogroup">
+    <button type="button" data-kind="moment" th:attr="aria-pressed=${post == null or post.kind == 'moment'}" th:text="${L['post.moment']}">순간</button>
+    <button type="button" data-kind="diary" th:attr="aria-pressed=${post != null and post.kind == 'diary'}" th:text="${L['post.diary']}">일기</button>
+  </div>
+  <p data-kind-hint class="mt-2 text-sm text-muted"></p>
+
+  <div data-diary-only class="mt-5 space-y-5" hidden>
+    <input name="title" class="field text-lg font-semibold" maxlength="100" th:placeholder="${L['write.titlePh']}" th:value="${post?.title}">
+    <div class="seg">
+      <button type="button" data-vis="family" th:attr="aria-pressed=${post == null or post.visibility == 'family'}" th:text="${L['write.visFamily']}">가족 모두</button>
+      <button type="button" data-vis="private" th:attr="aria-pressed=${post != null and post.visibility == 'private'}" th:text="${L['write.visPrivate']}">나만 보기</button>
+    </div>
+  </div>
+
+  <textarea name="body" rows="5" maxlength="20000" class="field mt-5 py-3 resize-none leading-relaxed" th:placeholder="${L['write.bodyPh']}" th:text="${post?.body}"></textarea>
+
+  <div class="mt-5">
+    <div data-photos class="grid grid-cols-3 font-sm:grid-cols-4 font-lg:grid-cols-2 gap-2">
+      <div th:each="m : ${post?.media}" class="relative aspect-square rounded-2xl overflow-hidden bg-soft" th:attr="data-media-id=${m.id}">
+        <img th:src="${m.thumb}" alt="" class="w-full h-full object-cover">
+        <button type="button" data-remove class="absolute top-1.5 right-1.5 w-8 h-8 rounded-full bg-black/60 text-white text-lg leading-none" th:aria-label="${L['common.delete']}">×</button>
+      </div>
+      <label class="aspect-square rounded-2xl border-2 border-dashed border-line flex flex-col items-center justify-center gap-1 text-muted cursor-pointer active:bg-soft">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="12" cy="12.5" r="3.5"/><path d="M8 5l1.5-2h5L16 5"/></svg>
+        <span class="text-sm font-medium" th:text="${L['write.addPhoto']}">사진 추가</span>
+        <input type="file" accept="image/*" multiple class="sr-only" data-file>
+      </label>
+    </div>
+    <p class="mt-2 text-sm text-muted" th:text="${L['write.photoHint']}">20장까지</p>
+  </div>
+
+  <div class="mt-6">
+    <label class="label" for="postDate" th:text="${L['write.date']}">날짜</label>
+    <input id="postDate" name="postDate" type="date" class="field" th:value="${post != null ? post.postDate : today}">
+  </div>
+</main>
+<div class="fixed bottom-0 inset-x-0 z-30 bg-card/95 backdrop-blur border-t border-line safe-b">
+  <div class="wrap py-3 flex items-center gap-3">
+    <p data-status class="flex-1 text-sm text-muted"></p>
+    <button type="button" data-submit class="btn-primary px-8 font-lg:flex-1" th:text="${post == null ? L['write.submit'] : L['write.save']}">올리기</button>
+  </div>
+</div>
+<script th:src="@{/static/write.js}" defer></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+app:
+  data-dir: ${APP_DATA_DIR:./data}
+  base-url: ${FAMILY_BASE_URL:}                  # 운영 https://family.thaiuniontour.com. Origin 검사용, 비면 검사 안 함
+  cookie-secure: ${COOKIE_SECURE:false}          # 운영(https) 은 compose 에서 true
+  family-name: ${FAMILY_NAME:우리 가족}
+  admin-login-id: ${ADMIN_LOGIN_ID:admin}
+  admin-pw-hash: ${ADMIN_PW_HASH:}               # 회원 0명일 때 최초 관리자 생성에만 사용
+  storage:                                       # 키가 비면 로컬 디스크(data/store)
+    endpoint: ${STORAGE_ENDPOINT:https://kr.ncloudstorage.com}
+    region: ${STORAGE_REGION:kr}
+    bucket: ${STORAGE_BUCKET:family}
+    access-key: ${NCLOUD_ACCESS_KEY:}
+    secret-key: ${NCLOUD_SECRET_KEY:}
+
+spring:
+  datasource:
+    url: jdbc:sqlite:${app.data-dir}/family.db?journal_mode=WAL&busy_timeout=5000
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 4
+  flyway:
+    locations: classpath:db/migration
+  thymeleaf:
+    cache: ${THYMELEAF_CACHE:true}
+  servlet:
+    multipart:
+      enabled: false
+  mvc:
+    static-path-pattern: /static/**
+  web:
+    resources:
+      chain:
+        strategy:
+          content:
+            enabled: true
+            paths: /**
+      cache:
+        cachecontrol:
+          max-age: 365d
+          cache-public: true
+
+server:
+  port: ${SERVER_PORT:8080}
+  max-http-request-header-size: 8KB
+  tomcat:
+    max-http-form-post-size: 16KB
+  error:
+    include-stacktrace: never
+    include-message: never
+    include-exception: false

@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-font=${font},data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(null)}"></head>
+<body class="min-h-[100dvh] flex flex-col items-center justify-center text-center px-6">
+  <p class="text-5xl mb-4">🍃</p>
+  <h1 class="text-xl font-bold" th:text="${L['notfound.title']}">찾을 수 없어요</h1>
+  <a href="/" class="btn-primary mt-8" th:text="${L['notfound.home']}">홈으로</a>
+</body>
+</html>

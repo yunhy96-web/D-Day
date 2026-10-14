@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-font=${font},data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['tab.album']})}"></head>
+<body class="pb-tab">
+<header th:replace="~{fragments/layout :: top(${L['tab.album']}, null)}"></header>
+<!-- 설계 §5: 촬영일순, 달마다 구분. 작게 4열 · 보통 3열 · 크게 2열 -->
+<main class="mt-2">
+  <div th:if="${months.isEmpty()}" class="wrap py-20 text-center">
+    <p class="text-5xl mb-4">🖼️</p>
+    <p class="font-semibold" th:text="${L['album.empty']}">아직 사진이 없어요</p>
+  </div>
+  <section th:each="e : ${months}" class="mb-6">
+    <h2 class="wrap py-2 font-bold sticky top-14 font-lg:top-16 z-10 bg-bg/90 backdrop-blur" th:text="${f.month(e.key)}">2026년 10월</h2>
+    <div class="max-w-xl mx-auto grid grid-cols-3 font-sm:grid-cols-4 font-lg:grid-cols-2 gap-0.5">
+      <a th:each="m : ${e.value}" th:href="@{/p/{id}(id=${m.postId})}" class="block aspect-square bg-soft">
+        <img th:src="${m.thumb}" alt="" loading="lazy" class="w-full h-full object-cover">
+      </a>
+    </div>
+  </section>
+  <div class="wrap"><a th:if="${hasNext}" th:href="@{/album(page=${page + 1})}" class="btn-soft w-full" th:text="${L['common.more']}">더 보기</a></div>
+</main>
+<nav th:replace="~{fragments/layout :: tabbar('album')}"></nav>
+</body>
+</html>
