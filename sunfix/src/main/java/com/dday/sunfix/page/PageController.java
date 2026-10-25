@@ -46,7 +46,28 @@ public class PageController {
         model.addAttribute("reportCount", jdbc.queryForObject("SELECT COUNT(*) FROM quote_report WHERE status = 'APPROVED'", Integer.class));
         model.addAttribute("recent", reports.recent(5));
         searchModel(model);
+        exampleModel(model);
         return "home";
+    }
+
+    /**
+     * 랜딩 "가격이 먼저 보여요" 예시: 자주 찾는 수리(없으면 첫 리프)의 각 옵션 그룹 첫 옵션 + 첫 시/군/구로 실제 비교 결과.
+     * 관리자가 코드를 바꿔 선택이 안 되면 예시만 숨긴다.
+     */
+    @SuppressWarnings("unchecked")
+    private void exampleModel(Model model) {
+        List<Code> popular = (List<Code>) model.getAttribute("popular");
+        List<Code> leaves = codes.leaves(CodeService.CATEGORY, true);
+        Code leaf = !popular.isEmpty() ? popular.get(0) : leaves.isEmpty() ? null : leaves.get(0);
+        List<CodeService.Region> regions = codes.regions(true);
+        if (leaf == null || regions.isEmpty() || regions.get(0).subs().isEmpty()) return;
+        try {
+            Selection s = codes.select(leaf.code(), codes.optionGroups(leaf.code(), true).stream().map(g -> g.options().get(0).code()).toList(),
+                    regions.get(0).subs().get(0).code());
+            model.addAttribute("ex", s);
+            model.addAttribute("exRes", prices.compare(s));
+            model.addAttribute("exQuery", query(s));
+        } catch (BadRequest | NotFound e) { /* 예시 생략 */ }
     }
 
     /**

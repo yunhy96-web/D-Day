@@ -44,8 +44,51 @@
     <script type="application/json" data-search-index th:utext="${searchIndex}"></script>
   </section>
 
+  <!-- 차별점: 연락하기 전에 가격이 먼저 (설계 §3) -->
+  <section class="wrap mt-12">
+    <h2 class="text-2xl font-extrabold tracking-tight" th:text="${L['why.title']}">견적 받는 방식이 달라요</h2>
+    <p class="text-muted mt-1" th:text="${L['why.sub']}">가격을 먼저 보고, 고른 곳에만 문의하면 돼요.</p>
+    <div class="grid sm:grid-cols-2 gap-3 mt-5">
+      <div class="card p-5 bg-soft/40">
+        <p class="font-bold text-muted" th:text="${L['why.old']}">보통의 견적 앱</p>
+        <ol class="mt-3 space-y-3 text-muted">
+          <li class="flex gap-3"><span class="w-7 h-7 shrink-0 rounded-full bg-line/70 flex items-center justify-center text-sm font-bold">1</span><span th:text="${L['why.old1']}"></span></li>
+          <li class="flex gap-3"><span class="w-7 h-7 shrink-0 rounded-full bg-line/70 flex items-center justify-center text-sm font-bold">2</span><span th:text="${L['why.old2']}"></span></li>
+          <li class="flex gap-3"><span class="w-7 h-7 shrink-0 rounded-full bg-line/70 flex items-center justify-center text-sm font-bold">3</span><span th:text="${L['why.old3']}"></span></li>
+        </ol>
+      </div>
+      <div class="card p-5 border-2 border-accent">
+        <p class="font-bold flex items-center gap-2"><svg th:replace="~{fragments/layout :: logo('w-5 h-5')}"></svg><span th:text="${L['why.new']}">Sunfix</span></p>
+        <ol class="mt-3 space-y-3 font-medium">
+          <li class="flex gap-3"><span class="w-7 h-7 shrink-0 rounded-full bg-accent text-on-accent flex items-center justify-center text-sm font-bold">1</span><span th:text="${L['why.new1']}"></span></li>
+          <li class="flex gap-3"><span class="w-7 h-7 shrink-0 rounded-full bg-accent text-on-accent flex items-center justify-center text-sm font-bold">2</span><span th:text="${L['why.new2']}"></span></li>
+          <li class="flex gap-3"><span class="w-7 h-7 shrink-0 rounded-full bg-accent text-on-accent flex items-center justify-center text-sm font-bold">3</span><span th:text="${L['why.new3']}"></span></li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- 실제 데이터로 보여 주는 예시 -->
+    <div th:if="${ex != null}" class="card p-5 mt-3">
+      <p class="text-sm font-semibold text-accent" th:text="${L['why.example']}">직접 보세요</p>
+      <p class="font-bold mt-1"><span th:text="${f.path(ex.category.code)}"></span></p>
+      <div class="flex flex-wrap gap-1.5 mt-2">
+        <span th:each="o : ${ex.options}" class="chip" th:text="${f.n(o.code)}"></span>
+        <span class="chip" th:text="${f.n(ex.sido) + ' ' + f.n(ex.region.code)}"></span>
+      </div>
+      <ul class="mt-4 divide-y divide-line/60">
+        <li th:each="q, st : ${exRes.open}" th:if="${st.index < 3}" class="py-2.5 flex items-center gap-3">
+          <span th:if="${st.first}" class="badge bg-leaf" th:text="${L['result.lowest']}">최저가</span>
+          <span class="flex-1 truncate font-medium" th:text="${q.vendor.name(lang)}"></span>
+          <span class="font-extrabold whitespace-nowrap" th:classappend="${st.first} ? 'text-leaf'" th:text="${f.won(q.total)}"></span>
+        </li>
+      </ul>
+      <p th:unless="${exRes.closed.isEmpty()}" class="text-xs text-muted mt-2" th:text="${f.t('why.hiddenN', exRes.closed.size())}"></p>
+      <a th:href="${'/c/' + ex.category.code + '/result?' + exQuery}" class="btn-primary w-full mt-4" th:text="${L['why.exampleCta']} + ' →'">비교해 보기</a>
+    </div>
+  </section>
+
   <!-- 약속 3가지 -->
-  <section class="wrap mt-6">
+  <section class="wrap mt-8">
     <ul class="grid sm:grid-cols-3 gap-2 text-sm">
       <li class="card px-4 py-3 flex gap-2"><span>☀️</span><span th:text="${L['home.pledge1']}">가격을 공개한 업체가 위에 보여요</span></li>
       <li class="card px-4 py-3 flex gap-2"><span>✅</span><span th:text="${L['home.pledge2']}">제보는 확인 후 공개해요</span></li>
