@@ -90,6 +90,8 @@
 - 옵션 그룹은 전부 **필수 단일 선택**. 복수 선택·수량 입력은 백로그.
 - 코드 조회는 앱 기동 시 메모리 캐시, 관리자 저장 시 무효화.
 
+V5(2026-10-25) 시장 공개가에 맞춤: 에어컨 종류에 천장형 4way 추가(1~2way 와 분리), '일반/완전 분해' → '송풍팬 분해'(업체들이 실제로 가르는 경계), 실외기 옵션 추가. 배수구는 '배수구·변기 막힘'으로 이름 바꾸고 변기 이물질 회수 단계 추가, 고압 세척은 '시작가' 표기(업체마다 8~30만으로 편차 큼). 예시 업체 가격도 시장 중앙값으로. 업체 공통 조건(VAT·출장비·할증·업소 추가금) 칸은 백로그.
+
 시드 트리: 방(도배·장판) / 욕실·화장실(욕조·수도·수전·배수구 막힘·욕실 전체 리모델링) / 주방(싱크 수전·싱크대 막힘) / 창문·유리(유리 교체·방충망) / 가전·냉난방(에어컨 청소·보일러) / 집 전체(누수 탐지·줄눈). 리프당 옵션 그룹 2~3개.
 
 ## 5. 가격 계산
@@ -129,6 +131,14 @@ family §6 방식 그대로, 언어만 ko·en.
   5. **문의** — 최신순 목록, 처리 상태(NEW/DONE) 토글.
   6. **견적 제보** — 대기 목록 우선, 승인/반려 버튼, 이상치 경고 배지.
 - 관리자 화면도 라벨 사용(ko/en).
+
+## 8-1. 영업 리드 `/admin/leads`
+가격표를 이미 공개한 실제 업체에 "무료로 올려 드리고 손님을 연결해 드린다"고 연락하기 위한 목록(2026-10-25 조사: 에어컨 청소 16곳, 배수구·변기 막힘 8곳).
+- 한 장에 업체 하나: 우선순위 배지(먼저 연락 / 보통 / 보류) + **추천 이유**, 공개 가격, 조건, 공개된 사업용 연락처, 출처 링크·확인일, 상태(연락 전 → 연락함 → 입점 동의 / 거절, 자동 저장), 통화 메모(자동 저장).
+- 정렬: 거절은 맨 아래, 그다음 우선순위. 카테고리·상태 필터. 위에 "연락할 때 이렇게 말해 보세요" 문구(라벨 `admin.leads.pitch`, 복사 버튼).
+- **업체로 등록**: 입점 동의하면 누른다 → 상호·첫 전화번호·지역·카테고리로 `vendor` 생성(`sample_yn='N'`, `use_yn='N'` — 가격을 넣기 전엔 사용자 화면에 안 보임), 리드에 연결하고 업체 편집 화면으로.
+- 데이터는 실제 업체 연락처라 **레포에 넣지 않는다**: `docs/private/leads-*.json`(gitignore) → `ADMIN_PW=… scripts/import-leads.sh <json> [base-url]`. 같은 (카테고리, 상호)는 조사 칸만 갱신하고 상태·메모·연결은 유지.
+- 우선순위 기준: 서울·경기 1인/동네 업체 + 가격 명확 + 전화 공개 + 최근 수정 → 먼저 연락. 크몽 메시지만 되는 곳·지역 확인 필요 → 보통. 프랜차이즈 본사·지사형(제휴 단계에서), 오래된 글, 중개 플랫폼(경쟁사) → 보류.
 
 ## 9. 데이터 모델
 ```sql
@@ -212,6 +222,14 @@ CREATE TABLE quote_report (                    -- 견적 제보(§7)
   created_at    TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX ix_report_lookup ON quote_report(category_code, status, option_codes);
+
+CREATE TABLE sales_lead (                      -- V6. 영업 리드(§8-1). 컬럼 설명은 V6__sales_lead.sql
+  id INTEGER PRIMARY KEY AUTOINCREMENT, category_code TEXT NOT NULL, name TEXT NOT NULL, region TEXT, channel TEXT,
+  prices TEXT, conditions TEXT, contact TEXT, source_url TEXT, source_date TEXT,
+  priority INTEGER NOT NULL DEFAULT 2, reason TEXT, status TEXT NOT NULL DEFAULT 'TODO', memo TEXT,
+  vendor_id INTEGER REFERENCES vendor(id), checked_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+  UNIQUE (category_code, name)
+);
 
 CREATE TABLE admin_account (                   -- V3. 화면에서 바꾼 비밀번호. 행이 있으면 .env 보다 우선
   id            INTEGER PRIMARY KEY CHECK (id = 1),

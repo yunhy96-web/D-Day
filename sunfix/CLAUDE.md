@@ -9,6 +9,7 @@
 - 화면 문구는 템플릿·JS 하드코딩 금지. 템플릿 `${L['key']}`·`${f.t('key', arg)}`·코드명 `${f.n(code)}`·금액 `${f.won(n)}`, JS `App.t('key')`. 새 키는 `R__labels.sql` 에 ko·en 둘 다(INSERT OR IGNORE 라 기존 키 문구 변경은 관리자 라벨 화면).
 - 가격은 서버에서만 계산(`PriceService`). 문의 금액도 클라이언트 값을 믿지 않는다.
 - 직접 입력한 제보 업체명(`quote_report.vendor_name`)은 관리자 화면 외에 절대 노출하지 않는다.
+- 영업 리드(실제 업체 연락처)는 레포에 넣지 않는다. `docs/private/`(gitignore) JSON → `scripts/import-leads.sh`.
 - 출력은 `th:text`·`textContent`. `th:utext` 는 `Ljson` 과 관리자만 고치는 `home.title` 뿐.
 - 색은 CSS 변수 토큰(`bg card fg muted line soft accent leaf`)만. 템플릿·JS 클래스를 바꾸면 `scripts/tailwind.sh` 후 `static/tw.css` 커밋.
 - `th:each` 와 `th:replace` 를 한 요소에 같이 쓰지 않는다(replace 가 먼저 돈다). `<th:block th:each>` 로 감싼다.

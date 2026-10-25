@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['admin.tab.leads']})}"></head>
+<body>
+<header th:replace="~{fragments/admin :: nav}"></header>
+<main class="max-w-5xl mx-auto px-4 py-6">
+  <h1 class="text-xl font-bold" th:text="${L['admin.tab.leads']}">영업 리드</h1>
+  <p class="text-sm text-muted mt-1" th:text="${L['admin.leads.sub']}">가격표를 공개한 업체들</p>
+
+  <!-- 연락 문구 -->
+  <details class="card p-4 mt-4">
+    <summary class="cursor-pointer font-semibold" th:text="${L['admin.leads.pitchTitle']}">연락할 때 이렇게 말해 보세요</summary>
+    <p data-pitch class="mt-3 text-sm whitespace-pre-line leading-relaxed" th:text="${L['admin.leads.pitch']}"></p>
+    <button type="button" data-copy-pitch class="btn-line btn-sm mt-3" th:text="${L['admin.leads.copy']}">복사</button>
+  </details>
+
+  <!-- 필터 -->
+  <div class="flex flex-wrap items-center gap-2 mt-5">
+    <a th:href="@{/admin/leads(status=${status})}" class="chip" th:classappend="${c == null || c.isEmpty()} ? 'bg-accent text-on-accent'" th:text="${L['admin.leads.all']}">전체</a>
+    <a th:each="x : ${cats}" th:href="@{/admin/leads(c=${x.category_code},status=${status})}" class="chip"
+       th:classappend="${c == x.category_code} ? 'bg-accent text-on-accent'" th:text="${f.path(x.category_code) + ' ' + x.n}"></a>
+    <span class="w-px h-6 bg-line mx-1"></span>
+    <a th:each="x : ${statusCounts}" th:href="@{/admin/leads(c=${c},status=${status == x.status ? null : x.status})}" class="chip"
+       th:classappend="${status == x.status} ? 'bg-accent text-on-accent'" th:text="${L['admin.leads.status.' + x.status] + ' ' + x.n}"></a>
+  </div>
+
+  <ul class="mt-4 space-y-3">
+    <li th:each="l : ${rows}" class="card p-5" th:classappend="${(l.priority == 1 ? 'border-2 border-accent' : '') + (l.status == 'DECLINED' ? ' opacity-50' : '')}">
+      <div class="flex flex-wrap items-start gap-2">
+        <span class="badge" th:classappend="${l.priority == 1} ? 'bg-accent text-on-accent' : (${l.priority == 3} ? 'bg-soft text-muted' : 'bg-soft')"
+              th:text="${L['admin.leads.priority.' + l.priority]}">먼저 연락</span>
+        <div class="flex-1 min-w-0">
+          <p class="font-bold text-lg leading-tight"><span th:text="${l.name}"></span>
+            <span class="text-sm font-normal text-muted" th:text="${'· ' + f.path(l.category_code) + (l.channel != null ? ' · ' + l.channel : '')}"></span></p>
+          <p class="text-sm text-muted" th:text="${l.region}"></p>
+        </div>
+        <select class="field-sm w-auto" data-field="status" th:attr="data-put=${'/admin/api/leads/' + l.id}">
+          <option th:each="st : ${ {'TODO','CONTACTED','AGREED','DECLINED'} }" th:value="${st}" th:selected="${l.status == st}" th:text="${L['admin.leads.status.' + st]}"></option>
+        </select>
+      </div>
+      <p th:if="${l.reason}" class="mt-3 text-sm rounded-xl bg-soft px-3 py-2"><b th:text="${L['admin.leads.why']} + ' '"></b><span th:text="${l.reason}"></span></p>
+      <dl class="mt-3 grid sm:grid-cols-[6rem_1fr] gap-x-3 gap-y-1.5 text-sm">
+        <dt class="text-muted" th:text="${L['admin.leads.prices']}">공개 가격</dt><dd class="font-medium" th:text="${l.prices}"></dd>
+        <th:block th:if="${l.conditions}"><dt class="text-muted" th:text="${L['admin.leads.conditions']}">조건</dt><dd th:text="${l.conditions}"></dd></th:block>
+        <dt class="text-muted" th:text="${L['admin.leads.contact']}">연락처</dt><dd class="font-semibold" th:text="${l.contact}"></dd>
+        <dt class="text-muted" th:text="${L['admin.leads.source']}">출처</dt>
+        <dd><a th:if="${l.source_url}" th:href="${l.source_url}" target="_blank" rel="noopener noreferrer" class="link break-all" th:text="${#strings.abbreviate(l.source_url, 70)}"></a>
+          <span class="text-muted" th:text="${(l.source_date != null ? ' · ' + l.source_date : '') + ' · ' + L['admin.leads.checked'] + ' ' + l.checked_at}"></span></dd>
+      </dl>
+      <div class="mt-3 flex flex-wrap items-end gap-2">
+        <textarea rows="2" class="field-sm flex-1 min-w-[14rem] h-auto py-2" data-field="memo" th:attr="data-put=${'/admin/api/leads/' + l.id}"
+                  th:placeholder="${L['admin.leads.memo']}" th:text="${l.memo}"></textarea>
+        <a th:if="${l.vendor_id}" th:href="'/admin/vendors/' + ${l.vendor_id}" class="btn-line btn-sm" th:text="${L['admin.leads.vendor'] + ': ' + l.vendor_name}"></a>
+        <button th:unless="${l.vendor_id}" type="button" class="btn-primary btn-sm" data-to-vendor th:attr="data-id=${l.id}" th:text="${L['admin.leads.toVendor']}">업체로 등록</button>
+      </div>
+    </li>
+    <li th:if="${rows.isEmpty()}" class="card p-8 text-center text-muted" th:text="${L['admin.leads.empty']}"></li>
+  </ul>
+</main>
+<script th:src="@{/static/admin.js}" defer></script>
+<script th:src="@{/static/leads.js}" defer></script>
+</body>
+</html>
