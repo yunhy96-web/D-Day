@@ -4,9 +4,10 @@
 <body>
 <header th:replace="~{fragments/layout :: header}"></header>
 <main class="wrap max-w-3xl pt-6" th:with="base='/c/' + ${s.category.code}">
+  <nav th:replace="~{fragments/layout :: crumbs(${path})}" class="mb-3"></nav>
   <!-- 고른 조건 -->
-  <div class="flex items-start gap-3">
-    <span th:replace="~{fragments/layout :: icon(${s.category.code})}"></span>
+  <div class="flex items-start gap-3 mt-3">
+    <span th:replace="~{fragments/layout :: icon(${s.category})}"></span>
     <div class="flex-1">
       <h1 class="text-2xl font-extrabold" th:text="${f.t('result.title', f.n(s.category.code))}">도배 가격 비교</h1>
       <div class="flex flex-wrap gap-1.5 mt-2">

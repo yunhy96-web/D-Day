@@ -3,7 +3,8 @@
 CREATE TABLE common_code (
   code        TEXT PRIMARY KEY,                -- 'WALLPAPER_AREA_20'
   group_code  TEXT NOT NULL,                   -- CATEGORY | OPT_GROUP | OPT | REGION | REGION_SUB
-  parent_code TEXT REFERENCES common_code(code),
+  parent_code TEXT REFERENCES common_code(code), -- CATEGORY 는 CATEGORY 아래로 몇 단계든(설계 §4)
+  icon        TEXT,                            -- 카테고리 이모지
   sort_no     INTEGER NOT NULL DEFAULT 0,
   use_yn      TEXT NOT NULL DEFAULT 'Y'
 );

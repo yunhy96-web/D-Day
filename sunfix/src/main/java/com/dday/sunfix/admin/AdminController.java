@@ -62,7 +62,7 @@ public class AdminController {
     @GetMapping("/admin/vendors/{id}")
     public String vendor(@PathVariable String id, Model model) {
         model.addAttribute("regions", codes.regions(true));
-        model.addAttribute("categories", codes.children(CodeService.CATEGORY, true));
+        model.addAttribute("categories", codes.leaves(CodeService.CATEGORY, true));   // 가격은 리프에만
         if (id.equals("new")) { model.addAttribute("v", Map.of()); return tab(model, "vendors", "admin/vendor"); }
         long vid;
         try { vid = Long.parseLong(id); } catch (NumberFormatException e) { throw new NotFound(); }
@@ -84,10 +84,19 @@ public class AdminController {
     }
 
     @GetMapping("/admin/codes")
-    public String codes(@RequestParam(defaultValue = CodeService.CATEGORY) String root, Model model) {
+    public String codes(@RequestParam(defaultValue = CodeService.CATEGORY) String root, @RequestParam(required = false) String under, Model model) {
         String r = CodeService.REGION.equals(root) ? CodeService.REGION : CodeService.CATEGORY;
         model.addAttribute("root", r);
-        model.addAttribute("tree", tree(r));
+        if (r.equals(CodeService.CATEGORY)) {
+            // 카테고리는 최상위(공간)별로 나눠서 그 아래만 보여 준다
+            List<Code> spaces = codes.children(CodeService.CATEGORY, false);
+            Code sel = spaces.stream().filter(c -> c.code().equals(under)).findFirst().orElse(spaces.isEmpty() ? null : spaces.get(0));
+            model.addAttribute("spaces", spaces);
+            model.addAttribute("under", sel == null ? null : sel.code());
+            List<Node> out = new ArrayList<>();
+            if (sel != null) { out.add(node(sel, 0)); walk(sel.code(), 1, out); }
+            model.addAttribute("tree", out);
+        } else model.addAttribute("tree", tree(r));
         model.addAttribute("ko", labels.raw("ko"));
         model.addAttribute("en", labels.raw("en"));
         return tab(model, "codes");
@@ -105,8 +114,8 @@ public class AdminController {
         return tab(model, "labels");
     }
 
-    /** 트리 한 줄: 코드 + 깊이 (화면은 들여쓰기만) */
-    public record Node(Code code, int depth) {}
+    /** 트리 한 줄: 코드 + 깊이(들여쓰기) + 카테고리면 하위 카테고리·옵션 그룹 보유 여부(추가 버튼 결정) */
+    public record Node(Code code, int depth, boolean hasSubs, boolean hasOptions) {}
 
     private List<Node> tree(String root) {
         List<Node> out = new ArrayList<>();
@@ -115,7 +124,12 @@ public class AdminController {
     }
 
     private void walk(String parent, int depth, List<Node> out) {
-        for (Code c : codes.children(parent, false)) { out.add(new Node(c, depth)); walk(c.code(), depth + 1, out); }
+        for (Code c : codes.children(parent, false)) { out.add(node(c, depth)); walk(c.code(), depth + 1, out); }
+    }
+
+    private Node node(Code c, int depth) {
+        boolean cat = CodeService.CATEGORY.equals(c.group());
+        return new Node(c, depth, cat && !codes.isLeaf(c.code()), cat && !codes.optionGroups(c.code(), false).isEmpty());
     }
 
     private static String tab(Model model, String tab) { return tab(model, tab, "admin/" + tab); }

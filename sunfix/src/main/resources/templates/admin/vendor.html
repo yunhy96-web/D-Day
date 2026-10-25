@@ -37,12 +37,12 @@
   <!-- 카테고리 -->
   <section class="card p-5" th:attr="data-set=${'/admin/api/vendors/' + v.id + '/categories'}" data-reload>
     <h2 class="font-bold mb-3" th:text="${L['admin.vendor.categories']}">카테고리</h2>
-    <label th:each="c : ${categories}" class="inline-flex items-center gap-2 mr-4 mb-2"><input type="checkbox" class="w-4 h-4 accent-amber-500" th:value="${c.code}" th:checked="${base.containsKey(c.code)}"><span th:text="${f.n(c.code)}"></span></label>
+    <label th:each="c : ${categories}" class="inline-flex items-center gap-2 mr-4 mb-2"><input type="checkbox" class="w-4 h-4 accent-amber-500" th:value="${c.code}" th:checked="${base.containsKey(c.code)}"><span th:text="${f.path(c.code)}"></span></label>
   </section>
 
   <!-- 가격표: 칸을 벗어나면 자동 저장. 빈 칸 = 미공개 -->
   <section th:each="c : ${categories}" th:if="${base.containsKey(c.code)}" class="card p-5">
-    <h2 class="font-bold" th:text="${f.n(c.code)} + ' ' + ${L['vendor.priceTable']}">가격표</h2>
+    <h2 class="font-bold" th:text="${f.path(c.code)} + ' · ' + ${L['vendor.priceTable']}">가격표</h2>
     <p class="text-sm text-muted mb-3" th:text="${L['admin.vendor.priceSub']}">빈 칸은 미공개. 바꾸면 바로 저장돼요</p>
     <div class="grid grid-cols-[1fr_9rem] gap-2 items-center text-sm">
       <span class="font-semibold" th:text="${L['result.base']}">기본가</span>

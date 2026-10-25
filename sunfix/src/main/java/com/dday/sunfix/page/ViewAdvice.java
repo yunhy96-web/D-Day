@@ -1,6 +1,7 @@
 package com.dday.sunfix.page;
 
 import com.dday.sunfix.admin.AdminController;
+import com.dday.sunfix.code.CodeService;
 import com.dday.sunfix.common.NotFound;
 import com.dday.sunfix.common.Valid;
 import com.dday.sunfix.label.LabelService;
@@ -31,6 +32,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ViewAdvice {
     private final LabelService labels;
+    private final CodeService codes;
 
     @ModelAttribute
     public void common(Model model, HttpServletRequest req, HttpServletResponse res) {
@@ -48,9 +50,8 @@ public class ViewAdvice {
         model.addAttribute("theme", theme != null && Valid.THEMES.contains(theme) ? theme : "system");
         model.addAttribute("L", L);
         model.addAttribute("Ljson", labels.json(lang));
-        model.addAttribute("f", new Fmt(lang, L));
+        model.addAttribute("f", new Fmt(lang, L, codes));
         model.addAttribute("nonce", req.getAttribute("cspNonce"));
-        model.addAttribute("path", req.getRequestURI());
     }
 
     @ExceptionHandler(NotFound.class)

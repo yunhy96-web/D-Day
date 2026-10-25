@@ -50,17 +50,22 @@
   </div>
 </footer>
 
-<!-- 카테고리 아이콘 -->
-<span th:fragment="icon(code)" class="text-3xl leading-none" aria-hidden="true" th:switch="${code}">
-  <th:block th:case="'WALLPAPER'">🧻</th:block><th:block th:case="'FLOOR'">🪵</th:block><th:block th:case="'BATH'">🛁</th:block>
-  <th:block th:case="'LEAK'">💧</th:block><th:block th:case="'AIRCON'">❄️</th:block><th:block th:case="'BOILER'">🔥</th:block>
-  <th:block th:case="'GROUT'">🧱</th:block><th:block th:case="'SCREEN'">🪟</th:block><th:block th:case="*">🔧</th:block>
-</span>
+<!-- 카테고리 아이콘(관리자가 정하는 이모지, 없으면 공구) -->
+<span th:fragment="icon(c)" class="text-3xl leading-none" aria-hidden="true" th:text="${c.icon != null ? c.icon : '🔧'}">🔧</span>
+
+<!-- 카테고리 경로: 처음 › 욕실·화장실 › 배수구 막힘 -->
+<nav th:fragment="crumbs(path)" class="text-sm text-muted flex flex-wrap items-center gap-1">
+  <a href="/#categories" class="hover:underline" th:text="${L['common.home']}">처음으로</a>
+  <th:block th:each="p, st : ${path}"><span>›</span>
+    <a th:unless="${st.last}" th:href="@{'/c/' + ${p.code}}" class="hover:underline" th:text="${f.n(p.code)}"></a>
+    <span th:if="${st.last}" class="text-fg font-medium" th:text="${f.n(p.code)}"></span>
+  </th:block>
+</nav>
 
 <!-- 제보 한 줄 -->
 <li th:fragment="report(r)" class="py-3 flex items-start gap-3">
   <div class="flex-1 min-w-0">
-    <p class="font-semibold"><span th:text="${f.n(r.categoryCode)}">도배</span> · <span class="text-muted font-normal" th:text="${f.n(r.regionCode)}">강남구</span></p>
+    <p class="font-semibold"><span th:text="${f.path(r.categoryCode)}">도배</span> · <span class="text-muted font-normal" th:text="${f.n(r.regionCode)}">강남구</span></p>
     <p class="text-sm text-muted truncate"><th:block th:each="o, st : ${r.options}"><span th:text="${f.n(o.code)}"></span><th:block th:unless="${st.last}"> · </th:block></th:block></p>
     <p class="text-xs text-muted mt-0.5">
       <span th:text="${r.vendorName != null ? r.vendorName : L['report.unregistered']}">미등록 업체</span> · <span th:text="${r.ym}">2026-10</span>

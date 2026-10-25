@@ -43,8 +43,9 @@ public class AdminApiController {
     public record VendorReq(String name, String nameEn, String phone, String address, String intro, String sampleYn, String useYn) {}
     public record Codes(List<String> codes) {}
     public record PriceReq(String categoryCode, String optionCode, Integer price) {}
-    public record NewCode(String code, String parentCode, String rootGroup, String ko, String en) {}
-    public record CodeReq(Integer sort, String useYn, String ko, String en) {}
+    /** parentCode 가 없으면 rootGroup(CATEGORY·REGION), 부모가 카테고리면 childGroup(CATEGORY·OPT_GROUP) */
+    public record NewCode(String code, String parentCode, String rootGroup, String childGroup, String icon, String ko, String en) {}
+    public record CodeReq(Integer sort, String useYn, String icon, String ko, String en, String kwKo, String kwEn) {}
     public record LabelReq(String key, String lang, String text) {}
 
     @PostMapping("/admin/api/login")
@@ -111,7 +112,7 @@ public class AdminApiController {
         List<String> list = b.codes() == null ? List.of() : b.codes();
         for (String c : list) {
             Code code = codes.find(c);
-            if (code == null || !CodeService.CATEGORY.equals(code.group())) throw new BadRequest("category");
+            if (code == null || !CodeService.CATEGORY.equals(code.group()) || !codes.isLeaf(c)) throw new BadRequest("leaf");
         }
         jdbc.query("SELECT category_code FROM vendor_category WHERE vendor_id = ?", (rs, i) -> rs.getString(1), id).stream()
                 .filter(c -> !list.contains(c)).forEach(c -> jdbc.update("DELETE FROM vendor_category WHERE vendor_id = ? AND category_code = ?", id, c));
@@ -139,7 +140,10 @@ public class AdminApiController {
         return ResponseEntity.noContent().build();
     }
 
-    /** 코드 추가. 부모가 있으면 부모 그룹의 자식 그룹, 없으면 CATEGORY·REGION 루트 */
+    /**
+     * 코드 추가. 카테고리는 하위 카테고리와 옵션 그룹 중 한 종류만 가진다(리프만 가격을 매김).
+     * 업체 가격이 붙은 리프 아래에는 하위 카테고리를 못 단다(가격이 갈 곳을 잃음).
+     */
     @Transactional
     @PostMapping("/admin/api/codes")
     public ResponseEntity<Void> createCode(@RequestBody NewCode b) {
@@ -148,11 +152,21 @@ public class AdminApiController {
         String group;
         if (b.parentCode() != null) {
             Code parent = codes.find(b.parentCode());
-            if (parent == null || !CodeService.CHILD_GROUP.containsKey(parent.group())) throw new BadRequest("parent");
-            group = CodeService.CHILD_GROUP.get(parent.group());
+            if (parent == null || !CodeService.CHILD_GROUPS.containsKey(parent.group())) throw new BadRequest("parent");
+            Set<String> allowed = CodeService.CHILD_GROUPS.get(parent.group());
+            group = allowed.size() == 1 ? allowed.iterator().next() : Valid.oneOf(b.childGroup(), allowed, "group");
+            if (CodeService.CATEGORY.equals(parent.group())) {
+                boolean hasSubs = !codes.isLeaf(parent.code());
+                boolean hasOptions = !codes.children(parent.code(), false).stream().filter(c -> CodeService.OPT_GROUP.equals(c.group())).toList().isEmpty();
+                if (group.equals(CodeService.CATEGORY) && hasOptions) throw new BadRequest("hasOptions");
+                if (group.equals(CodeService.OPT_GROUP) && hasSubs) throw new BadRequest("hasSubs");
+                if (group.equals(CodeService.CATEGORY) && jdbc.queryForObject("SELECT COUNT(*) FROM vendor_category WHERE category_code = ?", Integer.class, parent.code()) > 0)
+                    throw new BadRequest("hasVendors");
+            }
         } else group = Valid.oneOf(b.rootGroup(), Set.of(CodeService.CATEGORY, CodeService.REGION), "group");
+        String icon = CodeService.CATEGORY.equals(group) ? Valid.optText(b.icon(), 8, "icon") : null;
         int sort = jdbc.queryForObject("SELECT COALESCE(MAX(sort_no), 0) + 1 FROM common_code WHERE group_code = ? AND parent_code IS ?", Integer.class, group, b.parentCode());
-        jdbc.update("INSERT INTO common_code(code, group_code, parent_code, sort_no) VALUES (?,?,?,?)", code, group, b.parentCode(), sort);
+        jdbc.update("INSERT INTO common_code(code, group_code, parent_code, sort_no, icon) VALUES (?,?,?,?,?)", code, group, b.parentCode(), sort, icon);
         putLabel("code." + code, "ko", Valid.text(b.ko(), 50, "name"));
         String en = Valid.optText(b.en(), 50, "name");
         if (en != null) putLabel("code." + code, "en", en);
@@ -167,8 +181,12 @@ public class AdminApiController {
         if (codes.find(code) == null) throw new NotFound();
         if (b.sort() != null) jdbc.update("UPDATE common_code SET sort_no = ? WHERE code = ?", b.sort(), code);
         if (b.useYn() != null) jdbc.update("UPDATE common_code SET use_yn = ? WHERE code = ?", Valid.oneOf(b.useYn(), YN, "useYn"), code);
+        if (b.icon() != null) jdbc.update("UPDATE common_code SET icon = ? WHERE code = ?", Valid.optText(b.icon(), 8, "icon"), code);
         if (b.ko() != null) putLabel("code." + code, "ko", Valid.text(b.ko(), 50, "name"));
         if (b.en() != null) putLabel("code." + code, "en", Valid.text(b.en(), 50, "name"));
+        // 검색어: 비우면 빈 문자열로(라벨 행은 남김)
+        if (b.kwKo() != null) putLabel("kw." + code, "ko", b.kwKo().isBlank() ? "" : Valid.text(b.kwKo(), 300, "keywords"));
+        if (b.kwEn() != null) putLabel("kw." + code, "en", b.kwEn().isBlank() ? "" : Valid.text(b.kwEn(), 300, "keywords"));
         codes.invalidate();
         return ResponseEntity.noContent().build();
     }

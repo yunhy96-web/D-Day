@@ -40,6 +40,15 @@ class PriceTest {
     }
 
     @Test
+    void categoryTreeOnlyPricesLeaves() {
+        assertEquals(List.of("BATHROOM", "DRAIN"), codes.path("DRAIN").stream().map(CodeService.Code::code).toList());
+        assertTrue(codes.leaves("BATHROOM", true).stream().anyMatch(c -> c.code().equals("DRAIN")));
+        assertThrows(BadRequest.class, () -> codes.select("BATHROOM", List.of(), "SEOUL_GANGNAM"));   // 공간은 가격 비교 대상 아님
+        int all = prices.count(codes.leaves("BATHROOM", true), null);
+        assertTrue(all >= prices.count(List.of(codes.find("DRAIN")), null));
+    }
+
+    @Test
     void selectionNeedsExactlyOneOptionPerGroup() {
         assertThrows(BadRequest.class, () -> codes.select("WALLPAPER", List.of("WALLPAPER_AREA_20"), "SEOUL_GANGNAM"));
         assertThrows(BadRequest.class, () -> codes.select("WALLPAPER",

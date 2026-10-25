@@ -7,17 +7,19 @@
   <h1 class="text-2xl font-extrabold" th:text="${L['report.title']}">받은 견적 제보하기</h1>
   <p class="text-muted mt-1" th:text="${L['report.sub']}">업체에서 받은 견적을 알려 주세요. 확인 후 공개되고, 연락처는 받지 않아요.</p>
 
-  <!-- 1단계: 카테고리 -->
+  <!-- 1단계: 리프 카테고리까지 내려가며 고르기 -->
+  <p th:if="${cat == null && parent != null}" class="chip mt-6"><span th:text="${f.path(parent.code)}"></span>
+    <a th:href="@{/report(c=${parent.parent})}" class="link ml-1" th:text="${L['report.back']}">위로</a></p>
   <div th:if="${cat == null}" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
     <a th:each="c : ${categories}" th:href="@{/report(c=${c.code})}" class="card p-4 flex flex-col gap-3 hover:border-accent transition">
-      <span th:replace="~{fragments/layout :: icon(${c.code})}"></span>
+      <span th:replace="~{fragments/layout :: icon(${c})}"></span>
       <span class="font-bold" th:text="${f.n(c.code)}">도배</span>
     </a>
   </div>
 
   <!-- 2단계: 조건 + 금액 -->
   <form th:if="${cat != null}" data-report class="mt-6 space-y-8" novalidate>
-    <p class="chip"><span th:text="${f.n(cat.code)}">도배</span> <a th:href="@{/report}" class="link ml-1" th:text="${L['report.changeCategory']}">바꾸기</a></p>
+    <p class="chip"><span th:text="${f.path(cat.code)}">도배</span> <a th:href="@{/report}" class="link ml-1" th:text="${L['report.changeCategory']}">바꾸기</a></p>
     <div th:replace="~{fragments/pick :: pick}"></div>
     <section class="space-y-4">
       <h2 class="text-lg font-bold" th:text="${L['report.quote']}">받은 견적</h2>

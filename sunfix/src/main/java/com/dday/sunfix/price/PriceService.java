@@ -72,14 +72,17 @@ public class PriceService {
         return new Result(open, closed, open.get(0).total(), avg, open.get(open.size() - 1).total());
     }
 
-    /** /api/count: 카테고리(+지역)를 다루는 업체 수. 옵션을 다 고르기 전에도 보여주려고 가격은 안 본다 */
-    public int count(String category, Code region) {
-        if (region == null)
-            return jdbc.queryForObject("SELECT COUNT(*) FROM vendor_category vc JOIN vendor v ON v.id = vc.vendor_id WHERE v.use_yn = 'Y' AND vc.category_code = ?", Integer.class, category);
-        return jdbc.queryForObject("""
-                SELECT COUNT(*) FROM vendor_category vc JOIN vendor v ON v.id = vc.vendor_id
-                WHERE v.use_yn = 'Y' AND vc.category_code = ?
-                  AND EXISTS (SELECT 1 FROM vendor_region r WHERE r.vendor_id = v.id AND r.region_code IN (?, ?))""",
-                Integer.class, category, region.code(), region.parent() == null ? region.code() : region.parent());
+    /** 리프 카테고리들(+지역)을 다루는 업체 수. 옵션을 다 고르기 전에도 보여주려고 가격은 안 본다 */
+    public int count(List<Code> leaves, Code region) {
+        if (leaves.isEmpty()) return 0;
+        List<Object> args = new ArrayList<>(leaves.stream().map(Code::code).toList());
+        String sql = "SELECT COUNT(DISTINCT v.id) FROM vendor_category vc JOIN vendor v ON v.id = vc.vendor_id WHERE v.use_yn = 'Y' AND vc.category_code IN ("
+                + String.join(",", Collections.nCopies(leaves.size(), "?")) + ")";
+        if (region != null) {
+            sql += " AND EXISTS (SELECT 1 FROM vendor_region r WHERE r.vendor_id = v.id AND r.region_code IN (?, ?))";
+            args.add(region.code());
+            args.add(region.parent() == null ? region.code() : region.parent());
+        }
+        return jdbc.queryForObject(sql, Integer.class, args.toArray());
     }
 }

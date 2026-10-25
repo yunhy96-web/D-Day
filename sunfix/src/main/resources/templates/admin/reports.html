@@ -17,7 +17,7 @@
       <tr th:each="r : ${reports}" th:classappend="${r.status == 'REJECTED'} ? 'opacity-50'">
         <td th:text="${r.id}"></td>
         <td><span class="badge" th:classappend="${r.status == 'PENDING'} ? 'bg-accent text-on-accent' : (${r.status == 'APPROVED'} ? 'bg-leaf' : 'bg-soft')" th:text="${L['admin.status.' + r.status]}"></span></td>
-        <td class="min-w-[14rem]"><b th:text="${f.n(r.categoryCode)}"></b> · <span th:text="${f.n(r.regionCode)}"></span><br>
+        <td class="min-w-[14rem]"><b th:text="${f.path(r.categoryCode)}"></b> · <span th:text="${f.n(r.regionCode)}"></span><br>
           <span class="text-muted"><th:block th:each="o, st : ${r.options}"><span th:text="${f.n(o.code)}"></span><th:block th:unless="${st.last}"> · </th:block></th:block></span></td>
         <td><span th:text="${r.vendorName != null ? r.vendorName : r.typedName}"></span>
           <span th:if="${r.vendorId == null}" class="badge bg-soft text-muted" th:text="${L['admin.typed']}">직접 입력</span></td>

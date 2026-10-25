@@ -4,9 +4,9 @@
 <body>
 <header th:replace="~{fragments/layout :: header}"></header>
 <main class="wrap max-w-3xl pt-6 pb-32">
-  <a href="/#categories" class="text-sm text-muted hover:underline" th:text="'← ' + ${L['common.home']}">← 처음으로</a>
+  <nav th:replace="~{fragments/layout :: crumbs(${path})}"></nav>
   <div class="flex items-center gap-3 mt-3 mb-8">
-    <span th:replace="~{fragments/layout :: icon(${cat.code})}"></span>
+    <span th:replace="~{fragments/layout :: icon(${cat})}"></span>
     <div>
       <h1 class="text-2xl font-extrabold" th:text="${f.n(cat.code)}">도배</h1>
       <p class="text-muted text-sm" th:text="${L['pick.sub']}">조건을 고르면 업체별 총액을 바로 비교해요</p>

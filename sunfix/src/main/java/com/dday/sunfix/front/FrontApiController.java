@@ -37,7 +37,7 @@ public class FrontApiController {
 
     @GetMapping("/api/count")
     public Map<String, Integer> count(@RequestParam String c, @RequestParam(required = false) String r) {
-        return Map.of("count", prices.count(codes.category(c).code(), codes.find(r)));
+        return Map.of("count", prices.count(List.of(codes.leaf(c)), codes.find(r)));
     }
 
     /** 총액은 클라이언트 값을 믿지 않고 서버에서 다시 계산해 스냅샷 */

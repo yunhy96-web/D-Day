@@ -6,7 +6,7 @@
 <main>
   <!-- 히어로 -->
   <section class="bg-soft/70 border-b border-line/60">
-    <div class="wrap py-10 sm:py-14 grid sm:grid-cols-[1fr_auto] gap-8 items-center">
+    <div class="wrap pt-10 pb-14 sm:pt-14 sm:pb-20 grid sm:grid-cols-[1fr_auto] gap-8 items-center">
       <div>
         <p class="chip bg-card mb-4" th:text="${L['home.badge']}">🌻 Sunflower 가 운영하는 집수리 가격비교</p>
         <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight tracking-tight" th:utext="${L['home.title']}">숨은 견적을<br>햇빛 아래로</h1>
@@ -19,9 +19,29 @@
       <dl class="grid grid-cols-3 sm:grid-cols-1 gap-3 text-center sm:text-left">
         <div class="card px-4 py-3"><dt class="text-xs text-muted" th:text="${L['home.statVendors']}">가격 공개 업체</dt><dd class="text-2xl font-extrabold" th:text="${vendorCount}">20</dd></div>
         <div class="card px-4 py-3"><dt class="text-xs text-muted" th:text="${L['home.statReports']}">견적 제보</dt><dd class="text-2xl font-extrabold" th:text="${reportCount}">30</dd></div>
-        <div class="card px-4 py-3"><dt class="text-xs text-muted" th:text="${L['home.statCategories']}">수리 종류</dt><dd class="text-2xl font-extrabold" th:text="${categories.size()}">8</dd></div>
+        <div class="card px-4 py-3"><dt class="text-xs text-muted" th:text="${L['home.statCategories']}">수리 종류</dt><dd class="text-2xl font-extrabold" th:text="${leafCount}">8</dd></div>
       </dl>
     </div>
+  </section>
+
+  <!-- 검색 (설계 §3-1). 동작은 search.js -->
+  <section class="wrap -mt-7 relative z-10" data-search>
+    <div class="card p-2 shadow-lg shadow-accent/10">
+      <label class="flex items-center gap-2 px-3">
+        <svg class="w-5 h-5 text-muted shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M20 20l-3.5-3.5"/></svg>
+        <input type="search" data-search-input class="w-full h-12 bg-transparent outline-none text-lg placeholder:text-muted/70" autocomplete="off"
+               th:placeholder="${L['search.placeholder']}" th:aria-label="${L['search.title']}">
+      </label>
+      <ul data-search-results class="hidden border-t border-line/60 mt-1 pt-1"></ul>
+      <p data-search-empty class="hidden border-t border-line/60 mt-1 px-3 py-4 text-sm text-muted">
+        <span th:text="${L['search.empty']}">찾는 수리가 없나요?</span> <a href="/report" class="link" th:text="${L['home.ctaReport']}">받은 견적 제보하기</a></p>
+    </div>
+    <div th:unless="${popular.isEmpty()}" class="flex flex-wrap items-center gap-2 mt-3 text-sm">
+      <span class="text-muted" th:text="${L['search.popular']}">자주 찾는 수리</span>
+      <a th:each="c : ${popular}" th:href="@{'/c/' + ${c.code}}" class="chip bg-card border border-line/70">
+        <span th:text="${c.icon}"></span><span th:text="${f.n(c.code)}"></span></a>
+    </div>
+    <script type="application/json" data-search-index th:utext="${searchIndex}"></script>
   </section>
 
   <!-- 약속 3가지 -->
@@ -46,10 +66,10 @@
   <!-- 카테고리 -->
   <section id="categories" class="wrap mt-8 scroll-mt-20">
     <h2 class="text-xl font-bold mb-3" th:text="${L['home.category']}">어떤 수리가 필요하세요?</h2>
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
       <a th:each="c : ${categories}" th:href="@{'/c/' + ${c.code}(sido=${sido})}"
          class="card p-4 flex flex-col gap-3 hover:border-accent transition">
-        <span th:replace="~{fragments/layout :: icon(${c.code})}"></span>
+        <span th:replace="~{fragments/layout :: icon(${c})}"></span>
         <span class="font-bold text-lg" th:text="${f.n(c.code)}">도배</span>
         <span class="text-sm text-muted" th:text="${f.t('home.vendorsN', counts[c.code])}">업체 5곳</span>
       </a>
@@ -69,5 +89,6 @@
   </section>
 </main>
 <footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:src="@{/static/search.js}" defer></script>
 </body>
 </html>

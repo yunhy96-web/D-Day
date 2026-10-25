@@ -7,6 +7,8 @@ import com.dday.sunfix.common.BadRequest;
 import com.dday.sunfix.common.NotFound;
 import com.dday.sunfix.front.ReportService;
 import com.dday.sunfix.price.PriceService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
@@ -30,26 +32,55 @@ public class PageController {
     private final PriceService prices;
     private final ReportService reports;
     private final JdbcTemplate jdbc;
+    private final ObjectMapper json;
 
     @GetMapping("/")
     public String home(@RequestParam(required = false) String sido, Model model) {
-        List<Code> cats = codes.children(CodeService.CATEGORY, true);
-        Map<String, Integer> counts = new HashMap<>();
-        for (Code c : cats) counts.put(c.code(), prices.count(c.code(), null));
+        List<Code> cats = codes.subCategories(CodeService.CATEGORY, true);
         model.addAttribute("categories", cats);
-        model.addAttribute("counts", counts);
+        model.addAttribute("counts", counts(cats));
         model.addAttribute("sidos", codes.children(CodeService.REGION, true));
         model.addAttribute("sido", codes.find(sido) != null ? sido : null);
+        model.addAttribute("leafCount", codes.leaves(CodeService.CATEGORY, true).size());
         model.addAttribute("vendorCount", jdbc.queryForObject("SELECT COUNT(*) FROM vendor WHERE use_yn = 'Y'", Integer.class));
         model.addAttribute("reportCount", jdbc.queryForObject("SELECT COUNT(*) FROM quote_report WHERE status = 'APPROVED'", Integer.class));
         model.addAttribute("recent", reports.recent(5));
+        searchModel(model);
         return "home";
     }
 
+    /**
+     * 홈 검색(설계 §3-1): 리프 카테고리 수십 개라 서버 검색 없이 페이지에 목록·검색어를 넣고 브라우저에서 거른다.
+     * ponytail: 리프가 수백 개를 넘으면 /api/search 로
+     */
+    private void searchModel(Model model) {
+        Fmt f = (Fmt) model.getAttribute("f");
+        List<Map<String, String>> index = codes.leaves(CodeService.CATEGORY, true).stream().map(c -> Map.of(
+                "code", c.code(), "icon", c.icon() == null ? "🔧" : c.icon(), "path", f.path(c.code()),
+                "kw", f.labels().getOrDefault("kw." + c.code(), ""))).toList();
+        try { model.addAttribute("searchIndex", json.writeValueAsString(index).replace("<", "\\u003c")); }
+        catch (JsonProcessingException e) { throw new IllegalStateException(e); }
+        // 자주 찾는 수리: 승인 제보가 많은 리프
+        model.addAttribute("popular", jdbc.queryForList("""
+                SELECT category_code FROM quote_report WHERE status = 'APPROVED' GROUP BY category_code ORDER BY COUNT(*) DESC LIMIT 8""", String.class)
+                .stream().map(codes::find).filter(c -> c != null && codes.isLeaf(c.code()) && codes.path(c.code()).stream().allMatch(Code::use)).limit(4).toList());
+    }
+
+    /** 하위 카테고리가 있으면 고르는 격자, 리프면 옵션 선택 */
     @GetMapping("/c/{category}")
-    public String options(@PathVariable String category, @RequestParam(required = false) String sido,
-                          @RequestParam(required = false) List<String> o, @RequestParam(required = false) String r, Model model) {
-        pickModel(model, codes.category(category), sido, o, r);
+    public String category(@PathVariable String category, @RequestParam(required = false) String sido,
+                           @RequestParam(required = false) List<String> o, @RequestParam(required = false) String r, Model model) {
+        Code cat = codes.category(category);
+        model.addAttribute("path", codes.path(cat.code()));
+        if (!codes.isLeaf(cat.code())) {
+            List<Code> subs = codes.subCategories(cat.code(), true);
+            model.addAttribute("cat", cat);
+            model.addAttribute("subs", subs);
+            model.addAttribute("counts", counts(subs));
+            model.addAttribute("sido", codes.find(sido) != null ? sido : null);
+            return "categories";
+        }
+        pickModel(model, cat, sido, o, r);
         return "options";
     }
 
@@ -58,10 +89,11 @@ public class PageController {
                          @RequestParam(required = false) String r, @RequestParam(defaultValue = "asc") String sort, Model model) {
         Selection s;
         try { s = codes.select(category, o, r); }
-        catch (BadRequest e) { return "redirect:/c/" + codes.category(category).code(); }   // 덜 고른 URL 은 고르는 화면으로
+        catch (BadRequest e) { return "redirect:/c/" + codes.category(category).code(); }   // 덜 고른 URL·리프 아닌 카테고리는 고르는 화면으로
         PriceService.Result res = prices.compare(s);
         if ("desc".equals(sort)) Collections.reverse(res.open());   // open 은 compare 가 만든 ArrayList
         model.addAttribute("s", s);
+        model.addAttribute("path", codes.path(s.category().code()));
         model.addAttribute("res", res);
         model.addAttribute("sort", "desc".equals(sort) ? "desc" : "asc");
         model.addAttribute("query", query(s));
@@ -94,13 +126,23 @@ public class PageController {
     @GetMapping("/report")
     public String report(@RequestParam(required = false) String c, @RequestParam(required = false) List<String> o,
                          @RequestParam(required = false) String r, Model model) {
-        if (c == null) { model.addAttribute("categories", codes.children(CodeService.CATEGORY, true)); return "report"; }
-        Code cat = codes.category(c);
+        Code cat = c == null || c.isBlank() ? null : codes.category(c);
+        if (cat == null || !codes.isLeaf(cat.code())) {   // 리프까지 내려가며 고르기
+            model.addAttribute("parent", cat);
+            model.addAttribute("categories", codes.subCategories(cat == null ? CodeService.CATEGORY : cat.code(), true));
+            return "report";
+        }
         pickModel(model, cat, null, o, r);
         model.addAttribute("vendors", jdbc.queryForList("""
                 SELECT v.id, v.name, v.name_en FROM vendor v JOIN vendor_category vc ON vc.vendor_id = v.id
                 WHERE v.use_yn = 'Y' AND vc.category_code = ? ORDER BY v.name""", cat.code()));
         return "report";
+    }
+
+    private Map<String, Integer> counts(List<Code> cats) {
+        Map<String, Integer> counts = new HashMap<>();
+        for (Code c : cats) counts.put(c.code(), prices.count(codes.leaves(c.code(), true), null));
+        return counts;
     }
 
     /** 고르는 화면 공통(옵션 선택·제보). o·r·sido 로 미리 선택 */
