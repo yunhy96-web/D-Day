@@ -41,7 +41,8 @@ public class AdminApiController {
     public record Login(String loginId, String password) {}
     public record Status(String status) {}
     public record PasswordReq(String current, String next, String confirm) {}
-    public record VendorReq(String name, String nameEn, String phone, String address, String intro, String sampleYn, String useYn) {}
+    public record VendorReq(String name, String nameEn, String phone, String address, String intro, String sampleYn, String useYn,
+                            String vat, Integer tripFee, Integer failFee, String surcharge, String extraNote) {}
     public record Codes(List<String> codes) {}
     public record PriceReq(String categoryCode, String optionCode, Integer price) {}
     /** parentCode 가 없으면 rootGroup(CATEGORY·REGION), 부모가 카테고리면 childGroup(CATEGORY·OPT_GROUP) */
@@ -85,16 +86,18 @@ public class AdminApiController {
     @PostMapping("/admin/api/vendors")
     public Map<String, Long> createVendor(@RequestBody VendorReq b) {
         Long id = jdbc.queryForObject("""
-                INSERT INTO vendor(name, name_en, phone, address, intro, sample_yn, use_yn, created_at)
-                VALUES (?,?,?,?,?,?,?,?) RETURNING id""", Long.class, vendorArgs(b, Times.now()));
+                INSERT INTO vendor(name, name_en, phone, address, intro, sample_yn, use_yn, vat, trip_fee, fail_fee, surcharge, extra_note, created_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id""", Long.class, vendorArgs(b, Times.now()));
         return Map.of("id", id);
     }
 
     @PutMapping("/admin/api/vendors/{id}")
     public ResponseEntity<Void> updateVendor(@PathVariable long id, @RequestBody VendorReq b) {
         Object[] a = vendorArgs(b, null);
-        if (jdbc.update("UPDATE vendor SET name=?, name_en=?, phone=?, address=?, intro=?, sample_yn=?, use_yn=? WHERE id=?",
-                a[0], a[1], a[2], a[3], a[4], a[5], a[6], id) == 0) throw new NotFound();
+        if (jdbc.update("""
+                UPDATE vendor SET name=?, name_en=?, phone=?, address=?, intro=?, sample_yn=?, use_yn=?,
+                  vat=?, trip_fee=?, fail_fee=?, surcharge=?, extra_note=? WHERE id=?""",
+                a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], id) == 0) throw new NotFound();
         return ResponseEntity.noContent().build();
     }
 
@@ -219,7 +222,9 @@ public class AdminApiController {
     private static Object[] vendorArgs(VendorReq b, String createdAt) {
         Object[] a = {Valid.text(b.name(), 50, "name"), Valid.optText(b.nameEn(), 50, "name"), Valid.optText(b.phone(), 20, "phone"),
                 Valid.text(b.address(), 200, "address"), Valid.optText(b.intro(), 1000, "intro"),
-                Valid.oneOf(b.sampleYn(), YN, "sampleYn"), Valid.oneOf(b.useYn(), YN, "useYn")};
+                Valid.oneOf(b.sampleYn(), YN, "sampleYn"), Valid.oneOf(b.useYn(), YN, "useYn"),
+                b.vat() == null ? null : Valid.oneOf(b.vat(), Set.of("INCL", "EXCL"), "vat"), Valid.optPrice(b.tripFee()), Valid.optPrice(b.failFee()),
+                b.surcharge() == null ? null : Valid.oneOf(b.surcharge(), YN, "surcharge"), Valid.optText(b.extraNote(), 300, "extraNote")};
         if (createdAt == null) return a;
         Object[] c = Arrays.copyOf(a, a.length + 1);
         c[a.length] = createdAt;

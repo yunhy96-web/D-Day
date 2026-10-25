@@ -62,6 +62,19 @@
   </th:block>
 </nav>
 
+<!-- 업체 공통 조건 칩(설계 §5-1). 밝히지 않은 조건은 안 보인다 -->
+<div th:fragment="conds(vat, tripFee, failFee, surcharge, extraNote)" class="flex flex-wrap items-center gap-1.5 text-xs">
+  <span th:if="${vat == 'INCL'}" class="badge bg-leaf" th:text="${L['cond.vatIncl']}">VAT 포함</span>
+  <span th:if="${vat == 'EXCL'}" class="badge bg-soft" th:text="${L['cond.vatExcl']}">VAT 별도</span>
+  <span th:if="${tripFee != null}" class="badge" th:classappend="${tripFee == 0} ? 'bg-leaf' : 'bg-soft'"
+        th:text="${tripFee == 0 ? L['cond.tripFree'] : f.t('cond.trip', f.won(tripFee))}">출장비 무료</span>
+  <span th:if="${failFee != null}" class="badge" th:classappend="${failFee == 0} ? 'bg-leaf' : 'bg-soft'"
+        th:text="${failFee == 0 ? L['cond.failZero'] : f.t('cond.fail', f.won(failFee))}">못 고치면 0원</span>
+  <span th:if="${surcharge == 'N'}" class="badge bg-leaf" th:text="${L['cond.noSurcharge']}">할증 없음</span>
+  <span th:if="${surcharge == 'Y'}" class="badge bg-soft" th:text="${L['cond.surcharge']}">할증 있음</span>
+  <span th:if="${extraNote != null}" class="text-muted basis-full" th:text="'+ ' + ${extraNote}"></span>
+</div>
+
 <!-- 제보 한 줄 -->
 <li th:fragment="report(r)" class="py-3 flex items-start gap-3">
   <div class="flex-1 min-w-0">

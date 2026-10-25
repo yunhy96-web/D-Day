@@ -2,6 +2,7 @@ package com.dday.sunfix.price;
 
 import com.dday.sunfix.code.CodeService.Code;
 import com.dday.sunfix.code.CodeService.Selection;
+import com.dday.sunfix.common.Rs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
@@ -23,7 +24,9 @@ import java.util.Map;
 public class PriceService {
     private final JdbcTemplate jdbc;
 
-    public record Vendor(long id, String name, String nameEn, String phone, String address, boolean sample) {
+    /** 조건 칸(vat·tripFee·failFee·surcharge·extraNote)은 null = 업체가 밝히지 않음 (설계 §5-1) */
+    public record Vendor(long id, String name, String nameEn, String phone, String address, boolean sample,
+                         String vat, Integer tripFee, Integer failFee, String surcharge, String extraNote) {
         public String name(String lang) { return "en".equals(lang) && nameEn != null ? nameEn : name; }
     }
     /** price 가 null 이면 미공개 */
@@ -35,11 +38,13 @@ public class PriceService {
 
     public Result compare(Selection s) {
         List<Object[]> rows = jdbc.query("""
-                SELECT v.id, v.name, v.name_en, v.phone, v.address, v.sample_yn, vc.base_price
+                SELECT v.id, v.name, v.name_en, v.phone, v.address, v.sample_yn, vc.base_price,
+                       v.vat, v.trip_fee, v.fail_fee, v.surcharge, v.extra_note
                 FROM vendor v JOIN vendor_category vc ON vc.vendor_id = v.id AND vc.category_code = ?
                 WHERE v.use_yn = 'Y'
                   AND EXISTS (SELECT 1 FROM vendor_region r WHERE r.vendor_id = v.id AND r.region_code IN (?, ?))""",
-                (rs, i) -> new Object[]{new Vendor(rs.getLong(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), "Y".equals(rs.getString(6))),
+                (rs, i) -> new Object[]{new Vendor(rs.getLong(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), "Y".equals(rs.getString(6)),
+                        rs.getString(8), Rs.integer(rs, 9), Rs.integer(rs, 10), rs.getString(11), rs.getString(12)),
                         rs.getObject(7) == null ? null : rs.getInt(7)},
                 s.category().code(), s.region().code(), s.sido());
 

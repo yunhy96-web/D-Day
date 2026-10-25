@@ -66,7 +66,14 @@ public class AdminController {
     public String vendor(@PathVariable String id, Model model) {
         model.addAttribute("regions", codes.regions(true));
         model.addAttribute("categories", codes.leaves(CodeService.CATEGORY, true));   // 가격은 리프에만
-        if (id.equals("new")) { model.addAttribute("v", Map.of()); return tab(model, "vendors", "admin/vendor"); }
+        if (id.equals("new")) {
+            // SpEL 은 없는 키를 null 로 못 읽으니 칸을 전부 null 로 채워 둔다
+            Map<String, Object> empty = new HashMap<>();
+            for (String k : List.of("id", "name", "name_en", "phone", "address", "intro", "sample_yn", "use_yn", "vat", "trip_fee", "fail_fee", "surcharge", "extra_note"))
+                empty.put(k, null);
+            model.addAttribute("v", empty);
+            return tab(model, "vendors", "admin/vendor");
+        }
         long vid;
         try { vid = Long.parseLong(id); } catch (NumberFormatException e) { throw new NotFound(); }
         List<Map<String, Object>> v = jdbc.queryForList("SELECT * FROM vendor WHERE id = ?", vid);
