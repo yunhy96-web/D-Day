@@ -120,7 +120,7 @@ family §6 방식 그대로, 언어만 ko·en.
   `ponytail: 승인제 + IP 제한뿐, 어뷰징이 보이면 휴대폰 인증 추가`
 
 ## 8. 관리자 `/admin`
-- 로그인: 아이디 `sunflower`, 비밀번호 해시는 `.env` `ADMIN_PW_HASH`. 관리자 1명뿐이라 역할·권한 테이블 없음.
+- 로그인: 아이디 `sunflower`. 처음 비밀번호는 `.env` `ADMIN_PW_HASH`, 관리자 화면 **비밀번호 변경**(`/admin/password`: 현재·새·확인, 8자 이상)으로 바꾸면 `admin_account` 해시가 우선. 바꾸면 모든 관리자 세션을 끊고 지금 기기만 새로 로그인. 관리자 1명뿐이라 역할·권한 테이블 없음.
 - 화면:
   1. **카테고리·코드** — 카테고리/지역 탭. 카테고리는 최상위 공간별 탭으로 나눠 그 아래 트리(하위 카테고리 → 옵션 그룹 → 옵션)를 들여쓰기로. 행마다 아이콘·ko·en 이름·순서·사용여부 인라인 편집. 카테고리 행에는 규칙에 맞는 버튼만(`+ 하위 카테고리` / `+ 옵션 그룹`), 공간 탭 옆 `+ 최상위 추가`.
   2. **업체** — 목록/등록/수정. 기본 정보, 출장 지역(시/도 전체 또는 시/군/구 체크), 카테고리 선택.
@@ -212,6 +212,12 @@ CREATE TABLE quote_report (                    -- 견적 제보(§7)
   created_at    TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX ix_report_lookup ON quote_report(category_code, status, option_codes);
+
+CREATE TABLE admin_account (                   -- V3. 화면에서 바꾼 비밀번호. 행이 있으면 .env 보다 우선
+  id            INTEGER PRIMARY KEY CHECK (id = 1),
+  password_hash TEXT NOT NULL,
+  updated_at    TEXT NOT NULL
+);
 
 CREATE TABLE admin_session (                   -- 관리자 로그인. 쿠키 토큰의 SHA-256 만 저장
   token_hash TEXT PRIMARY KEY,

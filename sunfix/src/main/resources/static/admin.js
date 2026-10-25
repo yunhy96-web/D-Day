@@ -5,6 +5,7 @@
 
   function value(el) {
     if (el.type === 'checkbox') return el.checked ? 'Y' : 'N';
+    if (el.type === 'password') return el.value;   // 비밀번호는 공백도 그대로
     const v = el.value.trim();
     if (el.dataset.type === 'int') return v === '' ? null : +v;
     return v;
@@ -46,7 +47,7 @@
     if (!f) return;
     e.preventDefault();
     const body = {};
-    for (const el of f.elements) if (el.name) { const v = value(el); body[el.name] = v === '' ? null : v; }
+    for (const el of f.elements) if (el.name && !el.disabled) { const v = value(el); body[el.name] = v === '' ? null : v; }
     const res = await App.api(f.dataset.method || 'POST', f.dataset.form, body);
     if (!res.ok) return failed(res);
     if (f.dataset.next) location.href = f.dataset.next.replace('{id}', res.json.id);

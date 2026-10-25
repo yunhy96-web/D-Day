@@ -190,4 +190,13 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES
 ('search.popular','ko','자주 찾는 수리'),('search.popular','en','Popular'),
 ('admin.keywords','ko','검색어'),('admin.keywords','en','Search keywords'),
 ('admin.keywordsPh','ko','쉼표로 구분: 에어컨, 냉방, 실외기'),('admin.keywordsPh','en','Comma-separated'),
-('err.keywords','ko','검색어가 너무 길어요'),('err.keywords','en','Keywords are too long');
+('err.keywords','ko','검색어가 너무 길어요'),('err.keywords','en','Keywords are too long'),
+('admin.tab.password','ko','비밀번호 변경'),('admin.tab.password','en','Change password'),
+('admin.password.current','ko','현재 비밀번호'),('admin.password.current','en','Current password'),
+('admin.password.next','ko','새 비밀번호(8자 이상)'),('admin.password.next','en','New password (8+ chars)'),
+('admin.password.confirm','ko','새 비밀번호 확인'),('admin.password.confirm','en','Confirm new password'),
+('admin.password.sub','ko','바꾸면 다른 기기에서 열려 있던 관리자 화면은 모두 로그아웃돼요.'),('admin.password.sub','en','Other signed-in devices will be logged out.'),
+('admin.password.done','ko','비밀번호를 바꿨어요'),('admin.password.done','en','Password changed'),
+('err.currentPassword','ko','현재 비밀번호가 틀렸어요'),('err.currentPassword','en','Current password is wrong'),
+('err.password','ko','새 비밀번호는 8자 이상이어야 해요'),('err.password','en','New password must be at least 8 characters'),
+('err.confirm','ko','새 비밀번호 확인이 달라요'),('err.confirm','en','Passwords don''t match');

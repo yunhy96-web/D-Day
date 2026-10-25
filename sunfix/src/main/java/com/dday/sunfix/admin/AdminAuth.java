@@ -1,6 +1,7 @@
 package com.dday.sunfix.admin;
 
 import com.dday.sunfix.common.AppProps;
+import com.dday.sunfix.common.BadRequest;
 import com.dday.sunfix.common.Times;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,10 +22,11 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.List;
 
 /**
  * 관리자 1명(sunflower) 로그인 + /admin/** 문지기 (설계 §8). 역할·권한 테이블 없음.
- * 비밀번호는 .env 의 BCrypt 해시와 비교, 세션 토큰은 DB 에 SHA-256 만.
+ * 비밀번호는 BCrypt 해시와 비교(화면에서 바꾼 admin_account 가 있으면 그것, 없으면 .env), 세션 토큰은 DB 에 SHA-256 만.
  */
 @Component
 @RequiredArgsConstructor
@@ -39,16 +41,36 @@ public class AdminAuth implements HandlerInterceptor {
 
     /** 성공하면 세션 쿠키를 심고 true */
     public boolean login(String loginId, String password, HttpServletResponse res) {
-        String hash = props.getAdminPwHash();
-        boolean ok = BCRYPT.matches(password == null ? "" : password, hash.isBlank() ? DUMMY_HASH : hash)
-                && !hash.isBlank() && props.getAdminLoginId().equals(loginId);
-        if (!ok) return false;
+        if (!props.getAdminLoginId().equals(loginId) | !matches(password)) return false;   // | : 아이디가 틀려도 같은 시간
+        newSession(res);
+        return true;
+    }
+
+    /** 현재 비밀번호 확인 후 변경. 모든 세션을 끊고 지금 기기만 새 세션 */
+    public void changePassword(String current, String next, HttpServletResponse res) {
+        if (!matches(current)) throw new BadRequest("currentPassword");
+        if (next == null || next.length() < 8 || next.getBytes(StandardCharsets.UTF_8).length > 72) throw new BadRequest("password");   // BCrypt 는 72바이트까지만 본다
+        jdbc.update("""
+                INSERT INTO admin_account(id, password_hash, updated_at) VALUES (1, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET password_hash = excluded.password_hash, updated_at = excluded.updated_at""",
+                BCRYPT.encode(next), Times.now());
+        jdbc.update("DELETE FROM admin_session");
+        newSession(res);
+    }
+
+    private boolean matches(String password) {
+        List<String> db = jdbc.queryForList("SELECT password_hash FROM admin_account WHERE id = 1", String.class);
+        String hash = db.isEmpty() ? props.getAdminPwHash() : db.get(0);
+        boolean ok = BCRYPT.matches(password == null ? "" : password, hash.isBlank() ? DUMMY_HASH : hash);
+        return ok && !hash.isBlank();
+    }
+
+    private void newSession(HttpServletResponse res) {
         byte[] b = new byte[32]; RND.nextBytes(b);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(b);
         jdbc.update("DELETE FROM admin_session WHERE expires_at < ?", Times.now());
         jdbc.update("INSERT INTO admin_session(token_hash, expires_at) VALUES (?,?)", sha256(token), Times.after(SESSION_SEC));
         cookie(res, token, Duration.ofSeconds(SESSION_SEC));
-        return true;
     }
 
     public void logout(HttpServletRequest req, HttpServletResponse res) {

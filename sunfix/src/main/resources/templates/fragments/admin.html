@@ -10,6 +10,7 @@
     <span class="flex-1"></span>
     <button type="button" data-lang th:value="${lang == 'en' ? 'ko' : 'en'}" class="h-9 px-3 rounded-xl bg-soft text-sm font-semibold shrink-0" th:text="${lang == 'en' ? '한국어' : 'EN'}">EN</button>
     <a href="/" class="h-9 px-3 inline-flex items-center rounded-xl text-sm text-muted hover:bg-soft shrink-0" th:text="${L['admin.site']}">사이트</a>
+    <a href="/admin/password" class="h-9 px-3 inline-flex items-center rounded-xl text-sm shrink-0" th:classappend="${tab == 'password'} ? 'bg-soft text-fg' : 'text-muted hover:bg-soft'" th:text="${L['admin.tab.password']}">비밀번호</a>
     <button type="button" data-logout class="h-9 px-3 rounded-xl text-sm text-muted hover:bg-soft shrink-0" th:text="${L['admin.logout']}">로그아웃</button>
   </div>
 </header>

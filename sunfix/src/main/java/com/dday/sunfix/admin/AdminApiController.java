@@ -40,6 +40,7 @@ public class AdminApiController {
 
     public record Login(String loginId, String password) {}
     public record Status(String status) {}
+    public record PasswordReq(String current, String next, String confirm) {}
     public record VendorReq(String name, String nameEn, String phone, String address, String intro, String sampleYn, String useYn) {}
     public record Codes(List<String> codes) {}
     public record PriceReq(String categoryCode, String optionCode, Integer price) {}
@@ -58,6 +59,14 @@ public class AdminApiController {
     @PostMapping("/admin/api/logout")
     public ResponseEntity<Void> logout(HttpServletRequest req, HttpServletResponse res) {
         auth.logout(req, res);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/admin/api/password")
+    public ResponseEntity<Void> password(@RequestBody PasswordReq b, HttpServletRequest req, HttpServletResponse res) {
+        limiter.check(req, "admin-password", 10, 600);
+        if (b.next() == null || !b.next().equals(b.confirm())) throw new BadRequest("confirm");
+        auth.changePassword(b.current(), b.next(), res);
         return ResponseEntity.noContent().build();
     }
 

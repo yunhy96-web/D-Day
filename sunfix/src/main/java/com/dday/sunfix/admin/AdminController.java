@@ -34,6 +34,9 @@ public class AdminController {
     @GetMapping("/admin/login")
     public String login() { return "admin/login"; }
 
+    @GetMapping("/admin/password")
+    public String password(Model model) { return tab(model, "password"); }
+
     @GetMapping("/admin/reports")
     public String reports(Model model) {
         model.addAttribute("reports", reports.forAdmin());
