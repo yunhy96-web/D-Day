@@ -1,5 +1,5 @@
 # Pi 배포. docker-compose up -d --build
-# 외부 노출은 tut-cloudflared ingress(sunfix.thaiuniontour.com → http://sunfix-app:8080) 로만.
+# 외부 노출은 tut-cloudflared ingress(sunfix.union-selim.com → http://sunfix-app:8080) 로만.
 services:
   app:
     build: .
@@ -9,7 +9,7 @@ services:
     environment:
       APP_DATA_DIR: /data
       COOKIE_SECURE: "true"
-      SUNFIX_BASE_URL: https://sunfix.thaiuniontour.com
+      SUNFIX_BASE_URL: https://sunfix.union-selim.com
     volumes: ["./data:/data"]
     networks: [docker_default]
     read_only: true

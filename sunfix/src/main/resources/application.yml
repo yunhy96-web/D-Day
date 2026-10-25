@@ -1,6 +1,6 @@
 app:
   data-dir: ${APP_DATA_DIR:./data}
-  base-url: ${SUNFIX_BASE_URL:}                  # 운영 https://sunfix.thaiuniontour.com. Origin 검사용, 비면 Host 와 비교
+  base-url: ${SUNFIX_BASE_URL:}                  # 운영 https://sunfix.union-selim.com. Origin 검사용, 비면 Host 와 비교
   cookie-secure: ${COOKIE_SECURE:false}
   admin-login-id: ${ADMIN_LOGIN_ID:sunflower}
   admin-pw-hash: ${ADMIN_PW_HASH:}

@@ -19,7 +19,7 @@
 | 10-25 | 가격 미공개 업체 | 숨기지 않고 목록 아래 "가격 미공개(문의 필요)"로 따로 노출 — 공개 업체가 위로 오는 것 자체가 경쟁 유인 |
 | 10-25 | 문의 | 결과 화면에서 업체에 "견적 문의" → `inquiry` 저장, 관리자 화면에서 확인. 문자·메일 발송 없음 |
 | 10-25 | 견적 제보 | 1차 범위에 포함. 비회원 제보 → 관리자 승인 후 공개(§7) |
-| 10-25 | 이름·도메인 | **Sunfix 썬픽스**(sunflower + fix, "숨은 견적을 햇빛 아래로"), `sunfix.thaiuniontour.com` |
+| 10-25 | 이름·도메인 | **Sunfix 썬픽스**(sunflower + fix, "숨은 견적을 햇빛 아래로"), `sunfix.union-selim.com` |
 | 10-25 | 카테고리 트리 | 카테고리 아래 하위 카테고리를 몇 단계든(공간 → 세부 항목). 옵션 그룹·업체 가격은 맨 아래(리프)에만(§4) |
 | 10-25 | 검색 | 홈 검색창. 리프 카테고리 경로 + 검색어(`kw.{코드}` 라벨)를 브라우저에서 필터(§3-1). 에어컨·보일러는 '가전·냉난방' 공간으로 분리 |
 | 10-25 | 운영자 | 엄마(sunflower). 관리자 아이디 `sunflower` |
@@ -30,7 +30,7 @@
 - Thymeleaf + 미리 빌드한 Tailwind(`static/tw.css`) + vanilla JS. 다크모드는 family §7 방식 그대로.
 - family 에서 **복사**: `LabelService`(th → en 으로만 변경), `RateLimiter`, `ClientIp`, `SecurityHeadersFilter`, `OriginInterceptor`, `Valid`, `ApiExceptionHandler`, 관리자 로그인(BCrypt + `session` 테이블).
 - 추가 금지: Spring Security, JPA, Redis, MessageSource, 프론트 빌드 도구, 지도 SDK.
-- 배포: Pi docker-compose + `tut-cloudflared` ingress 한 줄(`sunfix.thaiuniontour.com` → `http://sunfix-app:8080`).
+- 배포: Pi docker-compose + `tut-cloudflared` ingress 한 줄(`sunfix.union-selim.com` → `http://sunfix-app:8080`).
 
 ## 3. 화면 흐름 (사용자)
 ```
