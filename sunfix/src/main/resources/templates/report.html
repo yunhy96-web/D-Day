@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['report.title']})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="wrap max-w-3xl pt-6 pb-16">
+  <h1 class="text-2xl font-extrabold" th:text="${L['report.title']}">받은 견적 제보하기</h1>
+  <p class="text-muted mt-1" th:text="${L['report.sub']}">업체에서 받은 견적을 알려 주세요. 확인 후 공개되고, 연락처는 받지 않아요.</p>
+
+  <!-- 1단계: 카테고리 -->
+  <div th:if="${cat == null}" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
+    <a th:each="c : ${categories}" th:href="@{/report(c=${c.code})}" class="card p-4 flex flex-col gap-3 hover:border-accent transition">
+      <span th:replace="~{fragments/layout :: icon(${c.code})}"></span>
+      <span class="font-bold" th:text="${f.n(c.code)}">도배</span>
+    </a>
+  </div>
+
+  <!-- 2단계: 조건 + 금액 -->
+  <form th:if="${cat != null}" data-report class="mt-6 space-y-8" novalidate>
+    <p class="chip"><span th:text="${f.n(cat.code)}">도배</span> <a th:href="@{/report}" class="link ml-1" th:text="${L['report.changeCategory']}">바꾸기</a></p>
+    <div th:replace="~{fragments/pick :: pick}"></div>
+    <section class="space-y-4">
+      <h2 class="text-lg font-bold" th:text="${L['report.quote']}">받은 견적</h2>
+      <div>
+        <label class="label" th:text="${L['report.vendor']}">업체</label>
+        <select name="vendorId" class="field">
+          <option value="" th:text="${L['report.vendorOther']}">목록에 없는 업체</option>
+          <option th:each="v : ${vendors}" th:value="${v.id}" th:text="${lang == 'en' && v.name_en != null ? v.name_en : v.name}">업체</option>
+        </select>
+        <input name="vendorName" class="field mt-2" maxlength="50" th:placeholder="${L['report.vendorName']}">
+        <p class="text-xs text-muted mt-1" th:text="${L['report.vendorNameHint']}">직접 입력한 업체명은 공개되지 않아요</p>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="label" th:text="${L['report.price']}">견적 금액(원)</label>
+          <input name="price" type="number" inputmode="numeric" min="1000" step="1000" class="field" required placeholder="1200000">
+        </div>
+        <div>
+          <label class="label" th:text="${L['report.ym']}">견적 받은 달</label>
+          <input name="ym" type="month" class="field" required th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM')}" th:max="${#temporals.format(#temporals.createNow(), 'yyyy-MM')}">
+        </div>
+      </div>
+      <div>
+        <label class="label" th:text="${L['report.memo']}">한 줄 메모(선택)</label>
+        <input name="memo" class="field" maxlength="200" th:placeholder="${L['report.memoPh']}">
+      </div>
+      <p data-msg class="min-h-[1.25rem] text-sm text-red-600" role="alert"></p>
+      <button class="btn-primary w-full" th:text="${L['report.submit']}">제보하기</button>
+    </section>
+  </form>
+  <div data-report-done class="hidden card p-8 mt-6 text-center">
+    <p class="text-4xl">🌻</p>
+    <p class="text-xl font-bold mt-3" th:text="${L['report.thanks']}">고마워요!</p>
+    <p class="text-muted mt-1" th:text="${L['report.thanksSub']}">확인 후 공개할게요</p>
+    <a href="/" class="btn-primary mt-6" th:text="${L['common.home']}">처음으로</a>
+  </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:src="@{/static/pick.js}" defer></script>
+</body>
+</html>

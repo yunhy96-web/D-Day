@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['admin.tab.' + tab]})}"></head>
+<body>
+<header th:replace="~{fragments/admin :: nav}"></header>
+<main class="max-w-6xl mx-auto px-4 py-6">
+  <h1 class="text-xl font-bold mb-1" th:text="${L['admin.tab.reports']}">견적 제보</h1>
+  <p class="text-sm text-muted mb-4" th:text="${L['admin.reports.sub']}">대기 먼저. 같은 조합 중간값의 1/3 미만·3배 초과면 이상치 표시</p>
+  <div class="card overflow-x-auto">
+    <table class="tbl">
+      <thead><tr>
+        <th>#</th><th th:text="${L['admin.status']}">상태</th><th th:text="${L['admin.condition']}">조건</th>
+        <th th:text="${L['report.vendor']}">업체</th><th class="text-right" th:text="${L['report.price']}">금액</th>
+        <th th:text="${L['report.ym']}">달</th><th th:text="${L['report.memo']}">메모</th><th></th>
+      </tr></thead>
+      <tbody>
+      <tr th:each="r : ${reports}" th:classappend="${r.status == 'REJECTED'} ? 'opacity-50'">
+        <td th:text="${r.id}"></td>
+        <td><span class="badge" th:classappend="${r.status == 'PENDING'} ? 'bg-accent text-on-accent' : (${r.status == 'APPROVED'} ? 'bg-leaf' : 'bg-soft')" th:text="${L['admin.status.' + r.status]}"></span></td>
+        <td class="min-w-[14rem]"><b th:text="${f.n(r.categoryCode)}"></b> · <span th:text="${f.n(r.regionCode)}"></span><br>
+          <span class="text-muted"><th:block th:each="o, st : ${r.options}"><span th:text="${f.n(o.code)}"></span><th:block th:unless="${st.last}"> · </th:block></th:block></span></td>
+        <td><span th:text="${r.vendorName != null ? r.vendorName : r.typedName}"></span>
+          <span th:if="${r.vendorId == null}" class="badge bg-soft text-muted" th:text="${L['admin.typed']}">직접 입력</span></td>
+        <td class="text-right whitespace-nowrap"><b th:text="${f.won(r.price)}"></b>
+          <span th:if="${r.outlier}" class="badge bg-red-600 text-white ml-1" th:text="${L['admin.outlier']}">이상치</span></td>
+        <td th:text="${r.ym}"></td>
+        <td class="max-w-[16rem]" th:text="${r.memo}"></td>
+        <td class="whitespace-nowrap">
+          <button th:if="${r.status != 'APPROVED'}" class="btn-primary btn-sm" th:attr="data-status=@{'/admin/api/reports/' + ${r.id} + '/status'}" value="APPROVED" th:text="${L['admin.approve']}">승인</button>
+          <button th:if="${r.status != 'REJECTED'}" class="btn-line btn-sm" th:attr="data-status=@{'/admin/api/reports/' + ${r.id} + '/status'}" value="REJECTED" th:text="${L['admin.reject']}">반려</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+<script th:src="@{/static/admin.js}" defer></script>
+</body>
+</html>

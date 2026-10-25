@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${f.n(s.category.code)})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="wrap max-w-3xl pt-6" th:with="base='/c/' + ${s.category.code}">
+  <!-- 고른 조건 -->
+  <div class="flex items-start gap-3">
+    <span th:replace="~{fragments/layout :: icon(${s.category.code})}"></span>
+    <div class="flex-1">
+      <h1 class="text-2xl font-extrabold" th:text="${f.t('result.title', f.n(s.category.code))}">도배 가격 비교</h1>
+      <div class="flex flex-wrap gap-1.5 mt-2">
+        <span th:each="o : ${s.options}" class="chip" th:text="${f.n(o.code)}">20평대</span>
+        <span class="chip" th:text="${f.n(s.sido) + ' ' + f.n(s.region.code)}">서울 강남구</span>
+      </div>
+    </div>
+    <a th:href="${base + '?' + query}" class="btn-sm btn-line shrink-0" th:text="${L['result.change']}">조건 변경</a>
+  </div>
+
+  <!-- 요약 -->
+  <section class="card mt-6 p-5">
+    <div th:if="${res.min != null}" class="grid grid-cols-3 gap-2 text-center">
+      <div><p class="text-xs text-muted" th:text="${L['result.min']}">최저가</p><p class="text-base sm:text-2xl font-extrabold whitespace-nowrap text-leaf" th:text="${f.won(res.min)}"></p></div>
+      <div><p class="text-xs text-muted" th:text="${L['result.avg']}">평균가</p><p class="text-base sm:text-2xl font-extrabold whitespace-nowrap" th:text="${f.won(res.avg)}"></p></div>
+      <div><p class="text-xs text-muted" th:text="${L['result.max']}">최고가</p><p class="text-base sm:text-2xl font-extrabold whitespace-nowrap" th:text="${f.won(res.max)}"></p></div>
+    </div>
+    <p th:if="${res.min == null}" class="text-center text-muted" th:text="${L['result.noOpen']}">가격을 공개한 업체가 아직 없어요</p>
+    <p th:if="${median != null}" class="mt-4 pt-4 border-t border-line/60 text-sm text-center">
+      ☀️ <span th:text="${f.t('result.median', sameCount)}">같은 조건 실제 제보 N건 중간값</span> <b th:text="${f.won(median)}"></b>
+    </p>
+  </section>
+
+  <!-- 정렬 -->
+  <div class="flex items-center justify-between mt-8 mb-3">
+    <h2 class="font-bold" th:text="${f.t('result.openN', res.open.size())}">가격 공개 업체 N곳</h2>
+    <div class="flex gap-1 text-sm whitespace-nowrap">
+      <a th:href="${base + '/result?' + query + '&sort=asc'}" class="chip" th:classappend="${sort == 'asc'} ? 'bg-accent text-on-accent'" th:text="${L['result.sortAsc']}">낮은 가격순</a>
+      <a th:href="${base + '/result?' + query + '&sort=desc'}" class="chip" th:classappend="${sort == 'desc'} ? 'bg-accent text-on-accent'" th:text="${L['result.sortDesc']}">높은 가격순</a>
+    </div>
+  </div>
+
+  <ul class="space-y-3">
+    <li th:each="q, st : ${res.open}" class="card p-5" th:classappend="${q.total == res.min} ? 'border-accent border-2'">
+      <div class="flex items-start gap-3">
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span th:if="${q.total == res.min}" class="badge bg-leaf" th:text="${L['result.lowest']}">최저가</span>
+            <span th:if="${q.vendor.sample}" class="badge bg-soft text-muted" th:text="${L['common.sample']}">예시</span>
+          </div>
+          <a th:href="@{'/v/' + ${q.vendor.id}}" class="block text-lg font-bold hover:underline mt-1" th:text="${q.vendor.name(lang)}">햇살도배</a>
+          <p class="text-sm text-muted truncate" th:text="${q.vendor.address}">서울 강남구</p>
+        </div>
+        <p class="text-xl sm:text-2xl font-extrabold whitespace-nowrap" th:text="${f.won(q.total)}">1,200,000원</p>
+      </div>
+      <details class="mt-3 text-sm">
+        <summary class="cursor-pointer text-muted" th:text="${L['result.breakdown']}">금액 내역</summary>
+        <dl class="mt-2 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1">
+          <dt th:text="${L['result.base']}">기본가</dt><dd class="text-right" th:text="${f.won(q.basePrice)}"></dd>
+          <th:block th:each="l : ${q.lines}"><dt th:text="'+ ' + ${f.n(l.option.code)}"></dt><dd class="text-right" th:text="${f.won(l.price)}"></dd></th:block>
+        </dl>
+      </details>
+      <p th:if="${q.reportCount > 0}" class="mt-2 text-sm">☀️ <span th:text="${f.t('result.vendorReports', q.reportCount)}">제보 N건 평균</span> <b th:text="${f.won(q.reportAvg)}"></b></p>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button type="button" class="btn-primary btn-sm" data-inquiry th:attr="data-vendor=${q.vendor.id},data-name=${q.vendor.name(lang)}" th:text="${L['result.inquiry']}">견적 문의</button>
+        <a th:if="${q.vendor.phone}" th:href="'tel:' + ${q.vendor.phone}" class="btn-line btn-sm" th:text="${L['result.call']}">전화</a>
+        <a th:href="'https://map.kakao.com/link/search/' + ${#uris.escapePathSegment(q.vendor.address)}" target="_blank" rel="noopener" class="btn-line btn-sm" th:text="${L['result.map']}">지도</a>
+      </div>
+    </li>
+  </ul>
+
+  <!-- 미공개 -->
+  <section th:unless="${res.closed.isEmpty()}" class="mt-8">
+    <h2 class="font-bold" th:text="${f.t('result.closedN', res.closed.size())}">가격 미공개 업체 N곳</h2>
+    <p class="text-sm text-muted mb-3" th:text="${L['result.closedSub']}">일부 가격을 공개하지 않아 총액을 계산할 수 없어요</p>
+    <ul class="space-y-2">
+      <li th:each="q : ${res.closed}" class="card p-4 opacity-80 flex items-center gap-3">
+        <div class="flex-1 min-w-0">
+          <a th:href="@{'/v/' + ${q.vendor.id}}" class="font-semibold hover:underline" th:text="${q.vendor.name(lang)}">업체</a>
+          <span th:if="${q.vendor.sample}" class="badge bg-soft text-muted ml-1" th:text="${L['common.sample']}">예시</span>
+          <p class="text-sm text-muted truncate" th:text="${q.vendor.address}"></p>
+        </div>
+        <span class="hidden sm:inline text-muted font-semibold" th:text="${L['price.hidden']}">문의 필요</span>
+        <button type="button" class="btn-line btn-sm" data-inquiry th:attr="data-vendor=${q.vendor.id},data-name=${q.vendor.name(lang)}" th:text="${L['result.inquiry']}">문의</button>
+      </li>
+    </ul>
+  </section>
+
+  <!-- 제보 -->
+  <section class="mt-10">
+    <div class="flex items-end justify-between mb-2">
+      <div>
+        <h2 class="font-bold" th:text="${f.t('result.reports', f.n(s.sido))}">서울 실제 견적 제보</h2>
+        <p class="text-sm text-muted" th:text="${L['result.reportsSub']}">사용자들이 실제로 받은 견적이에요</p>
+      </div>
+      <a th:href="@{/report} + '?c=' + ${s.category.code} + '&' + ${query}" class="btn-primary btn-sm shrink-0" th:text="${L['home.ctaReport']}">제보하기</a>
+    </div>
+    <ul class="card px-4 divide-y divide-line/60">
+      <th:block th:each="r : ${reports}"><li th:replace="~{fragments/layout :: report(${r})}"></li></th:block>
+      <li th:if="${reports.isEmpty()}" class="py-6 text-center text-muted" th:text="${L['report.empty']}">아직 제보가 없어요</li>
+    </ul>
+  </section>
+</main>
+
+<!-- 견적 문의 -->
+<dialog data-inquiry-dialog class="w-[min(28rem,calc(100vw-2rem))] rounded-3xl bg-card text-fg p-0 backdrop:bg-black/40">
+  <form method="dialog" data-inquiry-form class="p-6 space-y-3" th:attr="data-category=${s.category.code},data-region=${s.region.code}">
+    <input type="hidden" name="options" th:value="${s.optionKey}">
+    <h2 class="text-lg font-bold"><span data-vendor-name></span> · <span th:text="${L['result.inquiry']}">견적 문의</span></h2>
+    <p class="text-sm text-muted" th:text="${L['inquiry.sub']}">선택한 조건과 금액이 함께 전달돼요</p>
+    <input name="name" class="field" maxlength="30" th:placeholder="${L['inquiry.name']}" required>
+    <input name="phone" class="field" inputmode="tel" maxlength="20" th:placeholder="${L['inquiry.phone']}" required>
+    <textarea name="memo" class="field py-3" rows="3" maxlength="500" th:placeholder="${L['inquiry.memo']}"></textarea>
+    <p data-msg class="min-h-[1.25rem] text-sm text-red-600" role="alert"></p>
+    <div class="flex gap-2">
+      <button type="button" value="cancel" data-close class="btn-soft flex-1" th:text="${L['common.cancel']}">취소</button>
+      <button type="submit" value="send" class="btn-primary flex-1" th:text="${L['inquiry.send']}">보내기</button>
+    </div>
+  </form>
+</dialog>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:src="@{/static/pick.js}" defer></script>
+</body>
+</html>

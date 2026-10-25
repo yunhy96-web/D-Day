@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['admin.login']})}"></head>
+<body class="min-h-[100dvh] flex items-center">
+<main class="w-full max-w-sm mx-auto px-4">
+  <div class="text-center mb-8">
+    <svg th:replace="~{fragments/layout :: logo('w-14 h-14 mx-auto')}"></svg>
+    <h1 class="text-2xl font-extrabold mt-3" th:text="${L['admin.login']}">관리자 로그인</h1>
+  </div>
+  <form data-form="/admin/api/login" data-next="/admin" class="space-y-3">
+    <input name="loginId" class="field" autocomplete="username" autocapitalize="none" th:placeholder="${L['admin.id']}" required>
+    <input name="password" type="password" class="field" autocomplete="current-password" th:placeholder="${L['admin.password']}" required>
+    <button class="btn-primary w-full" th:text="${L['admin.login']}">로그인</button>
+  </form>
+</main>
+<script th:src="@{/static/admin.js}" defer></script>
+</body>
+</html>

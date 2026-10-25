@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['admin.tab.labels']})}"></head>
+<body>
+<header th:replace="~{fragments/admin :: nav}"></header>
+<main class="max-w-6xl mx-auto px-4 py-6">
+  <form class="flex flex-wrap items-center gap-2 mb-4" action="/admin/labels">
+    <h1 class="text-xl font-bold mr-auto" th:text="${L['admin.tab.labels']}">라벨</h1>
+    <input name="q" class="field-sm w-56" th:value="${q}" th:placeholder="${L['admin.labels.search']}">
+    <label class="text-sm flex items-center gap-1.5"><input type="checkbox" name="missing" value="true" class="w-4 h-4 accent-amber-500" th:checked="${missing}"><span th:text="${L['admin.labels.missing']}">영어 미번역</span></label>
+    <button class="btn-line btn-sm" th:text="${L['admin.labels.find']}">찾기</button>
+  </form>
+  <div class="card overflow-x-auto">
+    <table class="tbl">
+      <thead><tr><th>key</th><th>한국어</th><th>English</th></tr></thead>
+      <tbody>
+      <tr th:each="r : ${rows}">
+        <td class="font-mono text-xs whitespace-nowrap" th:text="${r.key}"></td>
+        <td><input class="field-sm min-w-[14rem]" data-put="/admin/api/labels" data-field="text" data-arg-lang="ko" th:attr="data-arg-key=${r.key}" th:value="${r.ko}"></td>
+        <td><input class="field-sm min-w-[14rem]" data-put="/admin/api/labels" data-field="text" data-arg-lang="en" th:attr="data-arg-key=${r.key}" th:value="${r.en}" th:classappend="${r.en == null} ? 'border-red-400'"></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+<script th:src="@{/static/admin.js}" defer></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(null)}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="wrap py-24 text-center">
+  <p class="text-5xl">🌻</p>
+  <h1 class="text-2xl font-bold mt-4" th:text="${L['notfound.title']}">찾는 페이지가 없어요</h1>
+  <a href="/" class="btn-primary mt-6" th:text="${L['common.home']}">처음으로</a>
+</main>
+</body>
+</html>

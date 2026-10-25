@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['admin.tab.codes']})}"></head>
+<body>
+<header th:replace="~{fragments/admin :: nav}"></header>
+<main class="max-w-5xl mx-auto px-4 py-6">
+  <div class="flex items-center gap-2 mb-1">
+    <h1 class="text-xl font-bold mr-auto" th:text="${L['admin.tab.codes']}">공통코드</h1>
+    <a href="/admin/codes?root=CATEGORY" class="chip" th:classappend="${root == 'CATEGORY'} ? 'bg-accent text-on-accent'" th:text="${L['admin.codes.category']}">카테고리·옵션</a>
+    <a href="/admin/codes?root=REGION" class="chip" th:classappend="${root == 'REGION'} ? 'bg-accent text-on-accent'" th:text="${L['admin.codes.region']}">지역</a>
+  </div>
+  <p class="text-sm text-muted mb-4" th:text="${L['admin.codes.sub']}">이름·순서·사용여부는 바꾸면 바로 저장. 코드는 지우지 않고 사용 해제</p>
+
+  <div class="card overflow-x-auto">
+    <table class="tbl">
+      <thead><tr><th th:text="${L['admin.code']}">코드</th><th>한국어</th><th>English</th><th th:text="${L['admin.sort']}">순서</th><th th:text="${L['admin.use']}">사용</th><th></th></tr></thead>
+      <tbody>
+      <tr th:each="n : ${tree}" th:with="c=${n.code}, api=${'/admin/api/codes/' + n.code.code}" th:classappend="${!c.use} ? 'opacity-50'">
+        <td class="whitespace-nowrap font-mono text-xs" th:classappend="${n.depth == 0} ? 'font-bold text-sm' : (${n.depth == 1} ? 'pl-8' : 'pl-14')">
+          <span class="badge bg-soft text-muted mr-1" th:text="${c.group}"></span><span th:text="${c.code}"></span></td>
+        <td><input class="field-sm min-w-[8rem]" data-field="ko" th:attr="data-put=${api}" th:value="${ko['code.' + c.code]}"></td>
+        <td><input class="field-sm min-w-[8rem]" data-field="en" th:attr="data-put=${api}" th:value="${en['code.' + c.code]}"></td>
+        <td><input class="field-sm w-16" type="number" data-type="int" data-field="sort" th:attr="data-put=${api}" th:value="${c.sort}"></td>
+        <td><input type="checkbox" class="w-4 h-4 accent-amber-500" data-field="useYn" th:attr="data-put=${api}" th:checked="${c.use}"></td>
+        <td><button type="button" th:if="${c.group != 'OPT' && c.group != 'REGION_SUB'}" class="btn-line btn-sm whitespace-nowrap" data-add-child th:attr="data-parent=${c.code}" th:text="${L['admin.codes.addChild']}">+ 하위</button></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 추가: 부모를 비우면 루트 -->
+  <form data-form="/admin/api/codes" class="card p-5 mt-6 grid sm:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-2 items-end">
+    <input type="hidden" name="rootGroup" th:value="${root}">
+    <div><label class="label" th:text="${L['admin.codes.parent']}">부모 코드</label><input name="parentCode" data-parent-input class="field-sm font-mono" th:placeholder="${L['admin.codes.root']}"></div>
+    <div><label class="label" th:text="${L['admin.code']}">코드</label><input name="code" class="field-sm font-mono uppercase" placeholder="WALLPAPER_AREA_50" required pattern="[A-Z0-9_]+"></div>
+    <div><label class="label">한국어</label><input name="ko" class="field-sm" required></div>
+    <div><label class="label">English</label><input name="en" class="field-sm"></div>
+    <button class="btn-primary btn-sm" th:text="${L['admin.codes.add']}">추가</button>
+  </form>
+</main>
+<script th:src="@{/static/admin.js}" defer></script>
+<script th:nonce="${nonce}">
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-add-child]');
+  if (!b) return;
+  const input = document.querySelector('[data-parent-input]');
+  input.value = b.dataset.parent;
+  input.closest('form').querySelector('[name=code]').value = b.dataset.parent + '_';
+  input.closest('form').scrollIntoView({ behavior: 'smooth' });
+  input.closest('form').querySelector('[name=code]').focus();
+});
+</script>
+</body>
+</html>

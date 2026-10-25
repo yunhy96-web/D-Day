@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- 옵션 그룹마다 하나 + 지역(시/도 → 시/군/구). 옵션 선택·견적 제보 화면 공통. 동작은 pick.js -->
+<div th:fragment="pick" data-pick th:attr="data-category=${cat.code}" class="space-y-8">
+  <section th:each="g, st : ${groups}" data-step class="scroll-mt-20">
+    <p class="text-sm font-semibold text-accent" th:text="${st.count + ' / ' + (groups.size() + 1)}">1 / 4</p>
+    <h2 class="text-lg font-bold mb-3" th:text="${f.n(g.group.code)}">시공 면적</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <label th:each="o : ${g.options}">
+        <input type="radio" class="peer sr-only" data-opt th:name="${g.group.code}" th:value="${o.code}" th:checked="${picked.contains(o.code)}" required>
+        <span class="pick" th:text="${f.n(o.code)}">20평대</span>
+      </label>
+    </div>
+  </section>
+  <section data-step class="scroll-mt-20">
+    <p class="text-sm font-semibold text-accent" th:text="${(groups.size() + 1) + ' / ' + (groups.size() + 1)}">4 / 4</p>
+    <h2 class="text-lg font-bold mb-3" th:text="${L['pick.region']}">지역</h2>
+    <div class="flex flex-wrap gap-2 mb-3">
+      <label th:each="rg : ${regions}">
+        <input type="radio" class="peer sr-only" name="sido" th:value="${rg.sido.code}" th:checked="${pickedSido == rg.sido.code}">
+        <span class="pick min-h-0 h-10 px-4 rounded-full" th:text="${f.n(rg.sido.code)}">서울</span>
+      </label>
+    </div>
+    <div th:each="rg : ${regions}" data-subs th:attr="data-sido=${rg.sido.code}" class="grid grid-cols-3 sm:grid-cols-6 gap-2"
+         th:classappend="${pickedSido != rg.sido.code} ? 'hidden'">
+      <label th:each="s : ${rg.subs}">
+        <input type="radio" class="peer sr-only" name="r" th:value="${s.code}" th:checked="${pickedRegion == s.code}" required>
+        <span class="pick text-sm" th:text="${f.n(s.code)}">강남구</span>
+      </label>
+    </div>
+    <p th:if="${pickedSido == null}" data-sido-hint class="text-sm text-muted" th:text="${L['pick.sidoFirst']}">시/도를 먼저 골라 주세요</p>
+  </section>
+</div>
+</body>
+</html>

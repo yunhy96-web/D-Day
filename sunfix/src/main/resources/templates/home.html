@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(null)}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main>
+  <!-- 히어로 -->
+  <section class="bg-soft/70 border-b border-line/60">
+    <div class="wrap py-10 sm:py-14 grid sm:grid-cols-[1fr_auto] gap-8 items-center">
+      <div>
+        <p class="chip bg-card mb-4" th:text="${L['home.badge']}">🌻 Sunflower 가 운영하는 집수리 가격비교</p>
+        <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight tracking-tight" th:utext="${L['home.title']}">숨은 견적을<br>햇빛 아래로</h1>
+        <p class="mt-4 text-muted sm:text-lg max-w-xl" th:text="${L['home.sub']}">‘가격은 문의하세요’ 대신, 업체별 가격을 바로 비교하세요.</p>
+        <div class="mt-6 flex flex-wrap gap-2">
+          <a href="#categories" class="btn-primary" th:text="${L['home.cta']}">수리 고르기</a>
+          <a href="/report" class="btn-line" th:text="${L['home.ctaReport']}">받은 견적 제보하기</a>
+        </div>
+      </div>
+      <dl class="grid grid-cols-3 sm:grid-cols-1 gap-3 text-center sm:text-left">
+        <div class="card px-4 py-3"><dt class="text-xs text-muted" th:text="${L['home.statVendors']}">가격 공개 업체</dt><dd class="text-2xl font-extrabold" th:text="${vendorCount}">20</dd></div>
+        <div class="card px-4 py-3"><dt class="text-xs text-muted" th:text="${L['home.statReports']}">견적 제보</dt><dd class="text-2xl font-extrabold" th:text="${reportCount}">30</dd></div>
+        <div class="card px-4 py-3"><dt class="text-xs text-muted" th:text="${L['home.statCategories']}">수리 종류</dt><dd class="text-2xl font-extrabold" th:text="${categories.size()}">8</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 약속 3가지 -->
+  <section class="wrap mt-6">
+    <ul class="grid sm:grid-cols-3 gap-2 text-sm">
+      <li class="card px-4 py-3 flex gap-2"><span>☀️</span><span th:text="${L['home.pledge1']}">가격을 공개한 업체가 위에 보여요</span></li>
+      <li class="card px-4 py-3 flex gap-2"><span>✅</span><span th:text="${L['home.pledge2']}">제보는 확인 후 공개해요</span></li>
+      <li class="card px-4 py-3 flex gap-2"><span>🔒</span><span th:text="${L['home.pledge3']}">제보할 때 연락처를 받지 않아요</span></li>
+    </ul>
+  </section>
+
+  <!-- 지역 -->
+  <section class="wrap mt-10">
+    <h2 class="text-xl font-bold mb-3" th:text="${L['home.region']}">어디에서 수리하세요?</h2>
+    <div class="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4">
+      <a href="/#categories" class="chip h-10 px-4 shrink-0" th:classappend="${sido == null} ? 'bg-accent text-on-accent'" th:text="${L['home.regionAll']}">전체</a>
+      <a th:each="s : ${sidos}" th:href="@{/(sido=${s.code})} + '#categories'" class="chip h-10 px-4 shrink-0"
+         th:classappend="${sido == s.code} ? 'bg-accent text-on-accent'" th:text="${f.n(s.code)}">서울</a>
+    </div>
+  </section>
+
+  <!-- 카테고리 -->
+  <section id="categories" class="wrap mt-8 scroll-mt-20">
+    <h2 class="text-xl font-bold mb-3" th:text="${L['home.category']}">어떤 수리가 필요하세요?</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <a th:each="c : ${categories}" th:href="@{'/c/' + ${c.code}(sido=${sido})}"
+         class="card p-4 flex flex-col gap-3 hover:border-accent transition">
+        <span th:replace="~{fragments/layout :: icon(${c.code})}"></span>
+        <span class="font-bold text-lg" th:text="${f.n(c.code)}">도배</span>
+        <span class="text-sm text-muted" th:text="${f.t('home.vendorsN', counts[c.code])}">업체 5곳</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 최근 제보 -->
+  <section class="wrap mt-10">
+    <div class="flex items-end justify-between mb-2">
+      <h2 class="text-xl font-bold" th:text="${L['home.recent']}">최근 견적 제보</h2>
+      <a href="/report" class="link text-sm" th:text="${L['home.ctaReport']}">제보하기</a>
+    </div>
+    <ul class="card px-4 divide-y divide-line/60">
+      <th:block th:each="r : ${recent}"><li th:replace="~{fragments/layout :: report(${r})}"></li></th:block>
+      <li th:if="${recent.isEmpty()}" class="py-6 text-center text-muted" th:text="${L['report.empty']}">아직 제보가 없어요</li>
+    </ul>
+  </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

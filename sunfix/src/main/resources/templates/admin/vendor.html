@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['admin.tab.vendors']})}"></head>
+<body>
+<header th:replace="~{fragments/admin :: nav}"></header>
+<main class="max-w-4xl mx-auto px-4 py-6 space-y-6" th:with="isNew=${v.id == null}">
+  <a href="/admin/vendors" class="text-sm text-muted hover:underline" th:text="'← ' + ${L['admin.tab.vendors']}">← 업체</a>
+
+  <!-- 기본 정보 -->
+  <form class="card p-5 space-y-3" th:attr="data-form=${isNew ? '/admin/api/vendors' : '/admin/api/vendors/' + v.id},data-method=${isNew ? 'POST' : 'PUT'},data-next=${isNew ? '/admin/vendors/{id}' : null}">
+    <h1 class="text-lg font-bold" th:text="${isNew ? L['admin.vendor.new'] : v.name}">업체</h1>
+    <div class="grid sm:grid-cols-2 gap-3">
+      <div><label class="label" th:text="${L['admin.vendor.name']}">업체명</label><input name="name" class="field" th:value="${v.name}" maxlength="50" required></div>
+      <div><label class="label" th:text="${L['admin.vendor.nameEn']}">영문명</label><input name="nameEn" class="field" th:value="${v.name_en}" maxlength="50"></div>
+      <div><label class="label" th:text="${L['admin.vendor.phone']}">전화</label><input name="phone" class="field" th:value="${v.phone}" maxlength="20"></div>
+      <div><label class="label" th:text="${L['admin.vendor.address']}">주소</label><input name="address" class="field" th:value="${v.address}" maxlength="200" required></div>
+    </div>
+    <div><label class="label" th:text="${L['admin.vendor.intro']}">소개</label><textarea name="intro" class="field py-3" rows="3" maxlength="1000" th:text="${v.intro}"></textarea></div>
+    <div class="flex flex-wrap gap-4 text-sm">
+      <label class="flex items-center gap-2"><input type="checkbox" name="sampleYn" class="w-4 h-4 accent-amber-500" th:checked="${isNew || v.sample_yn == 'Y'}"><span th:text="${L['admin.vendor.sample']}">예시 데이터</span></label>
+      <label class="flex items-center gap-2"><input type="checkbox" name="useYn" class="w-4 h-4 accent-amber-500" th:checked="${isNew || v.use_yn == 'Y'}"><span th:text="${L['admin.use']}">사용</span></label>
+    </div>
+    <button class="btn-primary" th:text="${L['common.save']}">저장</button>
+  </form>
+
+  <th:block th:unless="${isNew}">
+  <!-- 출장 지역 -->
+  <section class="card p-5" th:attr="data-set=${'/admin/api/vendors/' + v.id + '/regions'}">
+    <h2 class="font-bold" th:text="${L['vendor.regions']}">출장 지역</h2>
+    <p class="text-sm text-muted mb-3" th:text="${L['admin.vendor.regionsSub']}">시/도를 체크하면 그 시/도 전체</p>
+    <div th:each="rg : ${regions}" class="py-2 border-b border-line/60 last:border-0">
+      <label class="inline-flex items-center gap-2 font-semibold mr-4"><input type="checkbox" class="w-4 h-4 accent-amber-500" th:value="${rg.sido.code}" th:checked="${vRegions.contains(rg.sido.code)}"><span th:text="${f.n(rg.sido.code)} + ' ' + ${L['admin.vendor.whole']}">서울 전체</span></label>
+      <label th:each="s : ${rg.subs}" class="inline-flex items-center gap-1.5 text-sm mr-3"><input type="checkbox" class="w-4 h-4 accent-amber-500" th:value="${s.code}" th:checked="${vRegions.contains(s.code)}"><span th:text="${f.n(s.code)}"></span></label>
+    </div>
+  </section>
+
+  <!-- 카테고리 -->
+  <section class="card p-5" th:attr="data-set=${'/admin/api/vendors/' + v.id + '/categories'}" data-reload>
+    <h2 class="font-bold mb-3" th:text="${L['admin.vendor.categories']}">카테고리</h2>
+    <label th:each="c : ${categories}" class="inline-flex items-center gap-2 mr-4 mb-2"><input type="checkbox" class="w-4 h-4 accent-amber-500" th:value="${c.code}" th:checked="${base.containsKey(c.code)}"><span th:text="${f.n(c.code)}"></span></label>
+  </section>
+
+  <!-- 가격표: 칸을 벗어나면 자동 저장. 빈 칸 = 미공개 -->
+  <section th:each="c : ${categories}" th:if="${base.containsKey(c.code)}" class="card p-5">
+    <h2 class="font-bold" th:text="${f.n(c.code)} + ' ' + ${L['vendor.priceTable']}">가격표</h2>
+    <p class="text-sm text-muted mb-3" th:text="${L['admin.vendor.priceSub']}">빈 칸은 미공개. 바꾸면 바로 저장돼요</p>
+    <div class="grid grid-cols-[1fr_9rem] gap-2 items-center text-sm">
+      <span class="font-semibold" th:text="${L['result.base']}">기본가</span>
+      <input class="field-sm text-right" type="number" min="0" step="1000" data-type="int" data-field="price"
+             th:attr="data-put=${'/admin/api/vendors/' + v.id + '/prices'},data-arg-category-code=${c.code}" th:value="${base[c.code]}">
+      <th:block th:each="g : ${groups[c.code]}">
+        <span class="col-span-2 mt-2 text-xs text-muted font-semibold" th:text="${f.n(g.group.code)}"></span>
+        <th:block th:each="o : ${g.options}">
+          <span th:text="'+ ' + ${f.n(o.code)}"></span>
+          <input class="field-sm text-right" type="number" min="0" step="1000" data-type="int" data-field="price"
+                 th:attr="data-put=${'/admin/api/vendors/' + v.id + '/prices'},data-arg-category-code=${c.code},data-arg-option-code=${o.code}" th:value="${opt[o.code]}">
+        </th:block>
+      </th:block>
+    </div>
+  </section>
+  </th:block>
+</main>
+<script th:src="@{/static/admin.js}" defer></script>
+</body>
+</html>

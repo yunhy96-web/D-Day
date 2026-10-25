@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['admin.tab.' + tab]})}"></head>
+<body>
+<header th:replace="~{fragments/admin :: nav}"></header>
+<main class="max-w-6xl mx-auto px-4 py-6">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-xl font-bold" th:text="${L['admin.tab.vendors']}">업체</h1>
+    <a href="/admin/vendors/new" class="btn-primary btn-sm" th:text="${L['admin.vendor.new']}">새 업체</a>
+  </div>
+  <div class="card overflow-x-auto">
+    <table class="tbl">
+      <thead><tr><th>#</th><th th:text="${L['admin.vendor.name']}">업체명</th><th th:text="${L['admin.vendor.address']}">주소</th>
+        <th th:text="${L['admin.vendor.categories']}">카테고리</th><th th:text="${L['admin.use']}">사용</th></tr></thead>
+      <tbody>
+      <tr th:each="v : ${rows}" th:classappend="${v.use_yn == 'N'} ? 'opacity-50'">
+        <td th:text="${v.id}"></td>
+        <td><a th:href="'/admin/vendors/' + ${v.id}" class="link" th:text="${v.name}"></a>
+          <span th:if="${v.sample_yn == 'Y'}" class="badge bg-soft text-muted" th:text="${L['common.sample']}">예시</span></td>
+        <td th:text="${v.address}"></td>
+        <td><span th:if="${v.cats != null}" th:each="c : ${#strings.arraySplit(v.cats, ',')}" class="chip h-6 mr-1 mb-1" th:text="${f.n(c)}"></span></td>
+        <td th:text="${v.use_yn}"></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+<script th:src="@{/static/admin.js}" defer></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${lang}" th:attr="data-theme=${theme}" th:classappend="${theme == 'dark'} ? 'dark'">
+<head th:replace="~{fragments/layout :: head(${L['admin.tab.' + tab]})}"></head>
+<body>
+<header th:replace="~{fragments/admin :: nav}"></header>
+<main class="max-w-6xl mx-auto px-4 py-6">
+  <h1 class="text-xl font-bold mb-4" th:text="${L['admin.tab.inquiries']}">문의</h1>
+  <div class="card overflow-x-auto">
+    <table class="tbl">
+      <thead><tr>
+        <th>#</th><th th:text="${L['admin.status']}">상태</th><th th:text="${L['report.vendor']}">업체</th><th th:text="${L['admin.condition']}">조건</th>
+        <th class="text-right" th:text="${L['admin.quoted']}">안내 금액</th><th th:text="${L['inquiry.name']}">이름</th><th th:text="${L['inquiry.phone']}">연락처</th>
+        <th th:text="${L['inquiry.memo']}">메모</th><th th:text="${L['admin.createdAt']}">접수</th><th></th>
+      </tr></thead>
+      <tbody>
+      <tr th:each="r : ${rows}" th:classappend="${r.status == 'DONE'} ? 'opacity-50'">
+        <td th:text="${r.id}"></td>
+        <td><span class="badge" th:classappend="${r.status == 'NEW'} ? 'bg-accent text-on-accent' : 'bg-soft'" th:text="${L['admin.status.' + r.status]}"></span></td>
+        <td th:text="${r.vendor_name}"></td>
+        <td class="min-w-[14rem]"><b th:text="${f.n(r.category_code)}"></b> · <span th:text="${f.n(r.region_code)}"></span><br>
+          <span class="text-muted"><th:block th:each="o, st : ${r.options}"><span th:text="${f.n(o.code)}"></span><th:block th:unless="${st.last}"> · </th:block></th:block></span></td>
+        <td class="text-right whitespace-nowrap" th:text="${f.won(r.quoted_price)}"></td>
+        <td th:text="${r.name}"></td><td class="whitespace-nowrap" th:text="${r.phone}"></td>
+        <td class="max-w-[16rem]" th:text="${r.memo}"></td>
+        <td class="whitespace-nowrap text-muted" th:text="${#strings.substring(r.created_at, 0, 10)}"></td>
+        <td><button class="btn-line btn-sm" th:attr="data-status=@{'/admin/api/inquiries/' + ${r.id} + '/status'}"
+                    th:value="${r.status == 'NEW' ? 'DONE' : 'NEW'}" th:text="${r.status == 'NEW' ? L['admin.done'] : L['admin.undo']}">처리</button></td>
+      </tr>
+      <tr th:if="${rows.isEmpty()}"><td colspan="10" class="text-center text-muted py-8" th:text="${L['admin.empty']}">없음</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+<script th:src="@{/static/admin.js}" defer></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---- 색 토큰. 크림 바탕 + 해바라기 노랑 포인트 + 씨앗 갈색 글자. 다크는 변수만 교체 */
+:root {
+  --bg: 255 251 240; --card: 255 255 255; --soft: 253 243 214; --line: 238 226 196;
+  --fg: 46 34 18; --muted: 122 108 84; --accent: 245 166 35; --on-accent: 46 30 4; --leaf: 34 128 70;
+  color-scheme: light;
+}
+.dark {
+  --bg: 23 20 15; --card: 34 30 23; --soft: 48 42 30; --line: 68 59 43;
+  --fg: 246 239 224; --muted: 172 160 137; --accent: 250 186 62; --on-accent: 33 22 3; --leaf: 102 199 135;
+  color-scheme: dark;
+}
+
+html { font-size: 16px; }
+body {
+  background: rgb(var(--bg)); color: rgb(var(--fg)); line-height: 1.55;
+  font-family: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent;
+}
+
+@layer components {
+  .wrap { @apply max-w-5xl mx-auto px-4; }
+  .btn { @apply inline-flex items-center justify-center gap-2 min-h-tap px-5 rounded-2xl font-semibold transition active:scale-[.98] disabled:opacity-40 disabled:active:scale-100; }
+  .btn-primary { @apply btn bg-accent text-on-accent; }
+  .btn-soft { @apply btn bg-soft text-fg; }
+  .btn-line { @apply btn border border-line text-fg bg-card; }
+  .btn-sm { @apply min-h-0 h-9 px-3 rounded-xl text-sm; }
+  .link { @apply text-accent font-medium underline-offset-2 hover:underline; }
+  .field { @apply w-full min-h-tap px-4 rounded-xl border border-line bg-card text-fg placeholder:text-muted/70 outline-none focus:border-accent focus:ring-2 focus:ring-accent/25; }
+  .field-sm { @apply w-full h-9 px-2.5 rounded-lg border border-line bg-card text-fg text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/25; }
+  .label { @apply block text-sm font-medium text-muted mb-1.5; }
+  .card { @apply bg-card rounded-3xl border border-line/70; }
+  .chip { @apply inline-flex items-center gap-1 px-3 h-8 rounded-full bg-soft text-sm font-medium; }
+  .badge { @apply inline-flex items-center px-2 h-6 rounded-md text-xs font-semibold; }
+  /* 고르는 카드: <label><input class="peer sr-only"><span class="pick">..</span></label> */
+  .pick { @apply flex items-center justify-center text-center min-h-[3.25rem] px-3 py-2 rounded-2xl border-2 border-line bg-card font-medium transition cursor-pointer hover:border-accent/60; }
+  .peer:checked + .pick { @apply border-accent bg-soft; }
+  .peer:focus-visible + .pick { @apply ring-2 ring-accent/40; }
+  .tbl { @apply w-full text-sm; }
+  .tbl th { @apply text-left font-semibold text-muted px-3 py-2 border-b border-line whitespace-nowrap; }
+  .tbl td { @apply px-3 py-2 border-b border-line/60 align-top; }
+}
+
+.text-leaf { color: rgb(var(--leaf)); }
+.bg-leaf { background: rgb(var(--leaf) / .14); color: rgb(var(--leaf)); }
+.safe-b { padding-bottom: env(safe-area-inset-bottom); }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+dialog::backdrop { background: rgb(0 0 0 / .45); }
