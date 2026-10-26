@@ -1,0 +1,143 @@
+---
+import Base from '../../layouts/Base.astro';
+import Lightbox from '../../components/Lightbox.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import portfolio from '../../data/portfolio.json';
+import { getLang, getSite, href, langPaths, t } from '../../i18n';
+export const getStaticPaths = langPaths;
+const lang = getLang(Astro.url);
+const site = getSite(lang);
+const tr = t(lang);
+
+const featured = site.featured.map((id) => portfolio.projects.find((p) => p.id === id)!);
+const coverOf = (category: string) => portfolio.covers.find((c) => c.category === category)!;
+
+const pad = (n: number) => String(n + 1).padStart(2, '0');
+---
+<Base>
+  <section class="hero-full">
+    <div class="hero-slides">
+      {site.heroSlides.map((name, i) => (
+        <img class:list={[{ 'is-on': i === 0 }]} src={`/photos/large/${name}.webp`} srcset={`/photos/thumb/${name}.webp 800w, /photos/large/${name}.webp 2400w`} sizes="100vw" alt="" fetchpriority={i === 0 ? 'high' : undefined} />
+      ))}
+    </div>
+    <div class="hero-content">
+      <p class="label hero-fade">(STUDIO — {site.name})</p>
+      <h1 class="display">
+        {site.heroTitle.map((line, i) => (
+          <span class="hero-line" style={`--i:${i}`}><span>{line}</span></span>
+        ))}
+      </h1>
+      <p class="hero-sub hero-fade">{site.heroText}</p>
+      <div class="hero-ctas hero-fade">
+        <a href={site.contact.kakao} target="_blank" rel="noopener" class="btn btn-light">{tr.ctaInquiry}</a>
+        <a href={href(lang, '/work')} class="btn btn-ghost">{tr.ctaPortfolio}</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee" aria-label={tr.clients}>
+    <div class="marquee-track">
+      {[...site.clients, ...site.clients].map((c) => <span>{c}</span>)}
+    </div>
+  </div>
+
+  <section class="section wrap">
+    <div class="row-head">
+      <div>
+        <p class="label">(01 — SELECTED WORK)</p>
+        <h2 class="h2" data-reveal>SELECTED<br />WORK</h2>
+      </div>
+      <a href={href(lang, '/work')} class="link-arrow">{tr.viewAll}</a>
+    </div>
+    <div class="grid-work">
+      {featured.map((p, i) => <ProjectCard project={p} i={i} />)}
+    </div>
+  </section>
+  <Lightbox />
+
+  <section class="section wrap">
+    <p class="label">(02 — ABOUT)</p>
+    <p class="statement" data-reveal>{site.about}</p>
+  </section>
+
+  <section class="section wrap">
+    <p class="label">(03 — SERVICE)</p>
+    <h2 class="h2" data-reveal style="margin-bottom:48px">WHAT WE SHOOT</h2>
+    <div class="cat-grid">
+      {site.services.map((s, i) => (
+        <a class="cat-card" href={`${href(lang, '/work')}#${s.category.toLowerCase().replace(/\s+/g, '-')}`} data-reveal style={`--i:${i}`}>
+          <div class="work-item"><img src={`/photos/large/${coverOf(s.category).name}.webp`} alt={`${s.category} ${tr.coverAlt}`} loading="lazy" decoding="async" /></div>
+          <div class="cat-meta">
+            <span class="num">{pad(i)}</span>
+            <h3>{s.category}</h3>
+            <p>{s.text}</p>
+            <span class="link-arrow">{tr.viewWork}</span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <p class="label">(04 — PROCESS)</p>
+    <h2 class="h2" data-reveal style="margin-bottom:48px">HOW WE WORK</h2>
+    <div class="steps">
+      {site.process.map((p, i) => (
+        <div class="step" data-reveal style={`--i:${i}`}>
+          <span class="num">STEP {pad(i)}</span>
+          <h3>{p.title}</h3>
+          <p>{p.text}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <p class="label">(05 — REVIEWS)</p>
+    <div class="reviews">
+      {site.reviews.map((r, i) => (
+        <div class="review" data-reveal style={`--i:${i}`}>
+          <p>“{r.text}”</p>
+          <span>— {r.author}</span>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="section wrap faq">
+    <p class="label">(06 — FAQ)</p>
+    <h2 class="h2" data-reveal style="margin-bottom:48px">FAQ</h2>
+    {site.faq.map((f) => (
+      <details data-reveal>
+        <summary>{f.q}</summary>
+        <p>{f.a}</p>
+      </details>
+    ))}
+  </section>
+
+  <section class="section cta">
+    <div class="wrap cta-inner" data-reveal>
+      <div>
+        <h2 class="cta-title">{tr.ctaTitle}</h2>
+        <p class="cta-sub">{tr.ctaSub}</p>
+      </div>
+      <div class="cta-actions">
+        <a href={site.contact.kakao} target="_blank" rel="noopener" class="btn btn-kakao">{tr.ctaKakao}</a>
+        <a href={href(lang, '/contact')} class="link-arrow">{tr.ctaOther}</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // 첫 화면 사진 순환: 6초마다 1.4초 크로스페이드, 보이는 동안 천천히 확대(켄 번스)
+  const slides = document.querySelectorAll<HTMLImageElement>('.hero-slides img');
+  let cur = 0;
+  if (slides.length > 1) setInterval(() => {
+    slides.forEach((s) => s.classList.remove('is-prev'));
+    slides[cur].classList.replace('is-on', 'is-prev'); // 사라지는 동안에도 확대 유지(튀지 않게)
+    cur = (cur + 1) % slides.length;
+    slides[cur].classList.add('is-on');
+  }, 6000);
+</script>

@@ -1,0 +1,13 @@
+---
+import { getLang, t } from '../i18n';
+const { project, i = 0 } = Astro.props;
+const tr = t(getLang(Astro.url));
+const cover = project.photos[0];
+---
+<button class="work-card" data-project={project.id} data-cat={project.category} data-reveal style={`--i:${i % 3}`}>
+  <div class="work-item">
+    <img src={`/photos/thumb/${cover.name}.webp`} alt={`${project.title} ${tr.photoAlt}`} loading="lazy" decoding="async" />
+    <span class="badge">{project.photos.length} PHOTOS</span>
+  </div>
+  <div class="work-meta"><span>{project.title}</span><span>{project.category}</span></div>
+</button>

@@ -1,0 +1,15 @@
+# Pi 배포. docker-compose up -d
+# 외부 노출은 tut-cloudflared ingress(devstudio.thaiuniontour.com → http://devstudio-web:80) 로만.
+services:
+  web:
+    image: nginx:alpine
+    container_name: devstudio-web
+    volumes:
+      - ./dist:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks: [docker_default]
+    mem_limit: 64m
+    restart: always
+networks:
+  docker_default:
+    external: true

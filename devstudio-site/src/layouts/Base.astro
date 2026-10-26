@@ -1,0 +1,95 @@
+---
+import { getLang, getSite, href, stripLang, langs, langLabels, t } from '../i18n';
+import '../styles/global.css';
+
+const lang = getLang(Astro.url);
+const site = getSite(lang);
+const tr = t(lang);
+const { title, description = site.tagline } = Astro.props;
+const nav = [
+  { href: href(lang, '/work'), label: 'Work' },
+  { href: href(lang, '/contact'), label: 'Contact' },
+];
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const home = href(lang, '/');
+const basePath = stripLang(path);
+const langNav = langs.map((l) => ({ lang: l, href: href(l, basePath), label: langLabels[l] }));
+const { contact } = site;
+---
+<!doctype html>
+<html lang={lang} style={`--accent:${site.theme.accent}`}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title ? `${title} | ${site.name}` : `${site.name} | ${site.tagline}`}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#f4f2ee" />
+    <meta property="og:title" content={title ?? site.name} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={site.ogImage} />
+    {langNav.map((n) => <link rel="alternate" hreflang={n.lang} href={`https://devstudio.ai.kr${n.href}`} />)}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+  </head>
+  <body>
+    <header class="header">
+      <a href={home} class="logo">{site.name}<span class="logo-dot">.</span></a>
+      <nav class="nav-desktop">
+        {nav.map((n) => <a href={n.href} aria-current={path === n.href ? 'page' : undefined}>{n.label}</a>)}
+        <span class="lang-switch">{langNav.map((n) => <a href={n.href} hreflang={n.lang} aria-current={n.lang === lang ? 'true' : undefined}>{n.label}</a>)}</span>
+      </nav>
+      <details class="nav-mobile">
+        <summary aria-label={tr.menu}><span class="label-open">Menu</span><span class="label-close">Close</span></summary>
+        <nav>
+          <a href={home} aria-current={path === home ? 'page' : undefined}>Home</a>
+          {nav.map((n) => <a href={n.href} aria-current={path === n.href ? 'page' : undefined}>{n.label}</a>)}
+          <span class="lang-switch">{langNav.map((n) => <a href={n.href} hreflang={n.lang} aria-current={n.lang === lang ? 'true' : undefined}>{n.label}</a>)}</span>
+        </nav>
+      </details>
+    </header>
+
+    <main><slot /></main>
+
+    <footer class="footer wrap">
+      <div>
+        <a href={home} class="logo">{site.name}<span class="logo-dot">.</span></a>
+        <p>{contact.address}</p>
+        <p>{contact.phone} · {contact.email}</p>
+        <p>© {new Date().getFullYear()} {site.name}</p>
+      </div>
+      <div class="footer-links">
+        {contact.instagram && <a href={contact.instagram} target="_blank" rel="noopener">Instagram</a>}
+        {contact.kakao && <a href={contact.kakao} target="_blank" rel="noopener">KakaoTalk</a>}
+        {contact.naverPlace && <a href={contact.naverPlace} target="_blank" rel="noopener">Naver Place</a>}
+      </div>
+    </footer>
+
+    {contact.kakao && basePath !== '/contact' && <a class="kakao-fab" href={contact.kakao} target="_blank" rel="noopener">{tr.kakaoFab}</a>}
+
+    <script>
+      // 첫 화면 등장 애니메이션
+      requestAnimationFrame(() => document.body.classList.add('is-loaded'));
+
+      // 스크롤 시 [data-reveal] 요소 등장
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+        }
+      }, { threshold: 0.12, rootMargin: '0px 0px -5% 0px' });
+      document.querySelectorAll('[data-reveal]').forEach((el) => io.observe(el));
+
+      // 내릴 땐 헤더 숨기고, 올릴 땐 보이기
+      const header = document.querySelector('.header')!;
+      let lastY = scrollY;
+      addEventListener('scroll', () => {
+        const y = scrollY;
+        header.classList.toggle('is-scrolled', y > 10);
+        header.classList.toggle('is-hidden', y > lastY && y > 200);
+        lastY = y;
+      }, { passive: true });
+    </script>
+  </body>
+</html>

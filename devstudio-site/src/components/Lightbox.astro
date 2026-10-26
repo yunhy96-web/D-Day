@@ -1,0 +1,77 @@
+---
+import portfolio from '../data/portfolio.json';
+import { getLang, t } from '../i18n';
+const tr = t(getLang(Astro.url));
+---
+<dialog class="lightbox" aria-label={tr.lbLabel}>
+  <span class="lb-count"></span>
+  <button class="lb-close" aria-label={tr.lbClose}>✕</button>
+  <button class="lb-prev" aria-label={tr.lbPrev}>←</button>
+  <img class="lb-img" alt="" />
+  <button class="lb-next" aria-label={tr.lbNext}>→</button>
+  <div class="lb-thumbs"></div>
+  <p class="lb-title"></p>
+</dialog>
+<script type="application/json" class="projects-data" set:html={JSON.stringify(portfolio.projects)}></script>
+
+<script>
+  // [data-project] 클릭 → 그 프로젝트 사진을 크게 보기
+  type Project = { id: string; title: string; category: string; photos: { name: string }[] };
+  const dlg = document.querySelector<HTMLDialogElement>('.lightbox')!;
+  const projects: Project[] = JSON.parse(document.querySelector('.projects-data')!.textContent!);
+  const img = dlg.querySelector<HTMLImageElement>('.lb-img')!;
+  const count = dlg.querySelector('.lb-count')!;
+  const title = dlg.querySelector('.lb-title')!;
+  const thumbs = dlg.querySelector('.lb-thumbs')!;
+  const url = (size: 'thumb' | 'large', name: string) => `/photos/${size}/${name}.webp`;
+  let list: string[] = [];
+  let idx = 0;
+
+  function show(i: number) {
+    idx = (i + list.length) % list.length;
+    img.src = url('large', list[idx]);
+    img.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 250 });
+    count.textContent = `${idx + 1} / ${list.length}`;
+    [...thumbs.children].forEach((b, j) => b.classList.toggle('is-active', j === idx));
+    thumbs.children[idx]?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    for (const d of [1, -1]) new Image().src = url('large', list[(idx + d + list.length) % list.length]); // 앞뒤 미리 받기
+  }
+
+  function open(p: Project) {
+    list = p.photos.map((ph) => ph.name);
+    img.alt = title.textContent = `${p.title} — ${p.category}`;
+    thumbs.replaceChildren(...list.map((name, j) => {
+      const b = document.createElement('button');
+      b.setAttribute('aria-label', `${j + 1} / ${list.length}`);
+      b.innerHTML = `<img src="${url('thumb', name)}" alt="" loading="lazy">`;
+      b.onclick = () => show(j);
+      return b;
+    }));
+    dlg.showModal();
+    document.body.style.overflow = 'hidden';
+    show(0);
+  }
+
+  document.addEventListener('click', (e) => {
+    const t = (e.target as Element).closest<HTMLElement>('[data-project]');
+    if (t) open(projects.find((p) => p.id === t.dataset.project)!);
+  });
+
+  dlg.querySelector('.lb-prev')!.addEventListener('click', () => show(idx - 1));
+  dlg.querySelector('.lb-next')!.addEventListener('click', () => show(idx + 1));
+  dlg.querySelector('.lb-close')!.addEventListener('click', () => dlg.close());
+  dlg.addEventListener('close', () => (document.body.style.overflow = ''));
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  dlg.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') show(idx - 1);
+    if (e.key === 'ArrowRight') show(idx + 1);
+  });
+
+  // 모바일 스와이프
+  let startX = 0;
+  img.addEventListener('touchstart', (e) => (startX = e.touches[0].clientX), { passive: true });
+  img.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) show(idx + (dx < 0 ? 1 : -1));
+  });
+</script>

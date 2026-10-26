@@ -1,0 +1,49 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getLang, getSite, href, langPaths, t } from '../../i18n';
+export const getStaticPaths = langPaths;
+const lang = getLang(Astro.url);
+const site = getSite(lang);
+const tr = t(lang);
+
+const { contact } = site;
+---
+<Base title="Contact" description={`${site.name} ${tr.contactDesc}`}>
+  <section class="hero wrap">
+    <p class="label">(CONTACT)</p>
+    <h1 class="display">
+      <span class="hero-line"><span>LET'S</span></span>
+      <span class="hero-line" style="--i:1"><span class="accent">TALK</span></span>
+    </h1>
+    <p class="lead" style="margin-top:32px" data-reveal>{tr.contactLead}</p>
+  </section>
+
+  <section class="section wrap">
+    <div class="contact-grid">
+      <div class="info" data-reveal>
+        <dl>
+          <div><dt>EMAIL</dt><dd><a href={`mailto:${contact.email}`}>{contact.email}</a></dd></div>
+          <div><dt>PHONE</dt><dd><a href={`tel:${contact.phone}`}>{contact.phone}</a></dd></div>
+          <div><dt>ADDRESS</dt><dd>{contact.address}{lang === 'ko' && <span class="addr-en">{contact.addressEn}</span>}</dd></div>
+          <div><dt>HOURS</dt><dd>{contact.hours}</dd></div>
+        </dl>
+      </div>
+
+      <div class="chat-box" data-reveal style="--i:1">
+        <h2 set:html={tr.chatTitle} />
+        <div>
+          <p class="label" style="margin-bottom:12px">{tr.chatLabel}</p>
+          <ol>{tr.checklist.map((c) => <li>{c}</li>)}</ol>
+        </div>
+        <a href={contact.kakao} target="_blank" rel="noopener" class="btn btn-kakao">{tr.chatBtn}</a>
+      </div>
+    </div>
+
+    {contact.calendarEmbed && (
+      <div class="calendar" data-reveal>
+        <p class="label">{tr.schedule}</p>
+        <iframe src={contact.calendarEmbed} title={tr.scheduleTitle} loading="lazy"></iframe>
+      </div>
+    )}
+  </section>
+</Base>

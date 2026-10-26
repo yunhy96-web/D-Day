@@ -1,0 +1,57 @@
+---
+import Base from '../../layouts/Base.astro';
+import Lightbox from '../../components/Lightbox.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import portfolio from '../../data/portfolio.json';
+import { getLang, getSite, href, langPaths, t } from '../../i18n';
+export const getStaticPaths = langPaths;
+const lang = getLang(Astro.url);
+const site = getSite(lang);
+const tr = t(lang);
+
+const { projects } = portfolio;
+const categories = [...new Set(projects.map((p) => p.category))];
+const tabs = [['ALL', projects.length], ...categories.map((c) => [c, projects.filter((p) => p.category === c).length])];
+const slug = (s: string) => s.toLowerCase().replace(/\s+/g, '-');
+---
+<Base title="Work" description={`${site.name} ${tr.portfolio}`}>
+  <section class="hero wrap">
+    <p class="label">(PORTFOLIO)</p>
+    <h1 class="display">
+      <span class="hero-line"><span>OUR</span></span>
+      <span class="hero-line" style="--i:1"><span class="accent">WORK</span></span>
+    </h1>
+  </section>
+
+  <section class="section wrap" style="padding-top:clamp(40px, 6vw, 72px)">
+    <div class="tabs" role="tablist">
+      {tabs.map(([name, n], i) => (
+        <button class:list={['tab', { 'is-active': i === 0 }]} data-filter={name} data-hash={slug(String(name))} role="tab" aria-selected={i === 0 ? 'true' : 'false'}>
+          {name}<span>{n}</span>
+        </button>
+      ))}
+    </div>
+    <div class="grid-work">
+      {projects.map((p, i) => <ProjectCard project={p} i={i} />)}
+    </div>
+  </section>
+  <Lightbox />
+</Base>
+
+<script>
+  // 분류 탭. /work#food 처럼 들어오면 그 탭을 선택
+  const tabs = document.querySelectorAll<HTMLButtonElement>('.tab');
+  const select = (tab: HTMLButtonElement) => {
+    const f = tab.dataset.filter!;
+    tabs.forEach((t) => { t.classList.toggle('is-active', t === tab); t.setAttribute('aria-selected', String(t === tab)); });
+    document.querySelectorAll<HTMLElement>('.grid-work .work-card').forEach((c) => {
+      c.hidden = f !== 'ALL' && c.dataset.cat !== f;
+      if (!c.hidden) c.classList.add('is-in'); // 탭 전환 시 이미 화면 안에 있는 카드가 숨은 채로 남지 않게
+    });
+    history.replaceState(null, '', f === 'ALL' ? location.pathname : `#${tab.dataset.hash}`);
+  };
+  tabs.forEach((tab) => tab.addEventListener('click', () => select(tab)));
+  const syncHash = () => select([...tabs].find((t) => `#${t.dataset.hash}` === location.hash) ?? tabs[0]);
+  if (location.hash) syncHash();
+  addEventListener('hashchange', syncHash);
+</script>
