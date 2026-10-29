@@ -30,3 +30,8 @@ AWS 액세스 키는 배포에 필요 없음 (서버 생성·변경할 때만).
   1. SNS `devstudio-budget-stop` → Lambda `devstudio-stop-lightsail` → Lightsail `devstudio-web` 중지 (사이트 내려감)
   2. 예산 액션 → IAM 사용자 `devstudio-dev` 에 `AWSDenyAll` 부착 (CLI·콘솔 모두 차단)
 - 복구: 루트 계정 로그인 → IAM → devstudio-dev → 권한에서 AWSDenyAll 제거 → Lightsail 콘솔에서 인스턴스 시작 (고정 IP 유지)
+
+## 방화벽 (Lightsail)
+- 80·443: Cloudflare IP 대역만 허용 (https://www.cloudflare.com/ips-v4 , ips-v6). IP 직접 접속은 차단
+- 22(SSH): 전체 허용, 키 인증만
+- Cloudflare IP 대역이 바뀌면 Lightsail 콘솔 → 네트워킹 → IPv4/IPv6 방화벽 규칙의 80·443 허용 대역을 갱신
