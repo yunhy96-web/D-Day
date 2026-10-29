@@ -12,14 +12,7 @@
     "accent": "#ff4d00"
   },
   "about": "제품의 가치를 담고, 브랜드의 이미지를 완성합니다.",
-  "clients": [
-    "BRAND A",
-    "BRAND B",
-    "BRAND C",
-    "BRAND D",
-    "BRAND E",
-    "BRAND F"
-  ],
+  "clients": [],
   "services": [
     {
       "category": "COSMETICS",

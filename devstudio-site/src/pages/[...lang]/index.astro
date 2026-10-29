@@ -36,11 +36,13 @@ const pad = (n: number) => String(n + 1).padStart(2, '0');
     </div>
   </section>
 
-  <div class="marquee" aria-label={tr.clients}>
-    <div class="marquee-track">
-      {[...site.clients, ...site.clients].map((c) => <span>{c}</span>)}
+  {site.clients.length > 0 && (
+    <div class="marquee" aria-label={tr.clients}>
+      <div class="marquee-track">
+        {[...site.clients, ...site.clients].map((c) => <span>{c}</span>)}
+      </div>
     </div>
-  </div>
+  )}
 
   <section class="section wrap">
     <div class="row-head">

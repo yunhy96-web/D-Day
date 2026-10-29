@@ -5,4 +5,4 @@ set -e
 cd "$(dirname "$0")/.."
 npm run build
 rsync -az --delete dist/ devstudio-lightsail:/var/www/devstudio/
-echo "배포 완료: http://52.78.193.240"
+echo "배포 완료: https://devstudio.ai.kr"
