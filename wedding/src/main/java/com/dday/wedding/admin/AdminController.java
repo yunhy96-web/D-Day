@@ -1,6 +1,7 @@
 package com.dday.wedding.admin;
 
 import com.dday.wedding.common.BadRequest;
+import java.nio.charset.StandardCharsets;
 import com.dday.wedding.common.Images;
 import com.dday.wedding.common.ObjectStore;
 import com.dday.wedding.common.Valid;
@@ -41,6 +42,7 @@ public class AdminController {
     }
 
     public record Login(String username, String password) {}
+    public record PwChange(String current, String next) {}
     public record Quiz(Long id, String question, List<String> choices, Integer answerNo, Integer points, String hint) {}
     public record TimelineEdit(String month, String caption) {}
 
@@ -54,12 +56,28 @@ public class AdminController {
     @PostMapping("/admin/api/login")
     public ResponseEntity<Void> login(@RequestBody Login l, HttpServletRequest req) {
         limiter.check(req, "admin", 5, 600);
-        String hash = props.getAdminPwHash();
+        String hash = pwHash();
         if (hash.isBlank() || !props.getAdminId().equals(l.username()) || l.password() == null || !bcrypt.matches(l.password(), hash)) return ResponseEntity.status(403).build();
         req.getSession(true);
         req.changeSessionId();   // 세션 고정 방지
         req.getSession().setAttribute(AdminInterceptor.ATTR, true);
         return ResponseEntity.noContent().build();
+    }
+
+    /** 비밀번호 변경. 새 해시는 setting 테이블에 저장(재배포·.env 와 무관하게 유지) */
+    @PostMapping("/admin/api/password")
+    public ResponseEntity<Void> changePassword(@RequestBody PwChange c, HttpServletRequest req) {
+        limiter.check(req, "adminpw", 5, 600);
+        if (c.current() == null || !bcrypt.matches(c.current(), pwHash())) return ResponseEntity.status(403).build();
+        // bcrypt 는 72바이트까지만 본다
+        if (c.next() == null || c.next().length() < 4 || c.next().getBytes(StandardCharsets.UTF_8).length > 72) throw new BadRequest("password");
+        jdbc.update("INSERT INTO setting(key, value) VALUES ('admin_pw_hash', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", bcrypt.encode(c.next()));
+        return ResponseEntity.noContent().build();
+    }
+
+    private String pwHash() {
+        String db = jdbc.query("SELECT value FROM setting WHERE key='admin_pw_hash'", rs -> rs.next() ? rs.getString(1) : null);
+        return db != null ? db : props.getAdminPwHash();
     }
 
     @PostMapping("/admin/api/logout")

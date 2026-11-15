@@ -33,6 +33,7 @@
       <button type="button" data-tab="timeline" class="pb-2 border-b-2 -mb-px">타임라인</button>
       <button type="button" data-tab="quiz" class="pb-2 border-b-2 -mb-px">퀴즈</button>
       <button type="button" data-tab="guestbook" class="pb-2 border-b-2 -mb-px">방명록</button>
+      <button type="button" data-tab="settings" class="pb-2 border-b-2 -mb-px">설정</button>
     </nav>
 
     <!-- 업로드 진행 (사진·타임라인 공통) -->
@@ -95,6 +96,17 @@
       <p class="text-ink/50">숨긴 글은 하객 화면에서 사라진다(되돌리기 가능). 사진 × 는 파일까지 지운다.</p>
       <ol data-gb-list class="mt-4"></ol>
       <button type="button" data-gb-more class="hidden mt-4 text-sky">더 보기</button>
+    </section>
+
+    <section data-panel="settings" class="mt-8 max-w-sm">
+      <h2 class="font-semibold">비밀번호 변경</h2>
+      <form data-pw class="mt-4 space-y-3">
+        <input type="password" name="current" required autocomplete="current-password" placeholder="현재 비밀번호" class="w-full border-b border-ink/15 bg-transparent py-2 outline-none focus:border-sky">
+        <input type="password" name="next" required minlength="4" maxlength="72" autocomplete="new-password" placeholder="새 비밀번호 (4자 이상)" class="w-full border-b border-ink/15 bg-transparent py-2 outline-none focus:border-sky">
+        <input type="password" name="confirm" required minlength="4" maxlength="72" autocomplete="new-password" placeholder="새 비밀번호 확인" class="w-full border-b border-ink/15 bg-transparent py-2 outline-none focus:border-sky">
+        <button class="mt-2 px-6 py-2 rounded-full bg-sky text-white">변경</button>
+        <p data-pw-msg class="text-[14px] text-ink/60 min-h-[1.25rem]"></p>
+      </form>
     </section>
   </th:block>
 </main>

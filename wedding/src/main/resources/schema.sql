@@ -77,6 +77,12 @@ CREATE TABLE IF NOT EXISTS quiz_nickname (
   nickname   TEXT NOT NULL
 );
 
+-- 어드민에서 바꾸는 값. admin_pw_hash 가 있으면 .env ADMIN_PW_HASH 보다 우선
+CREATE TABLE IF NOT EXISTS setting (
+  key   TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS timeline (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
   month      TEXT NOT NULL,

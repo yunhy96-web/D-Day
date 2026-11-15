@@ -228,5 +228,15 @@
     });
   }
 
+  // ---- 설정: 비밀번호 변경
+  const pw = $('[data-pw]'), pwMsg = $('[data-pw-msg]');
+  pw.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (pw.next.value !== pw.confirm.value) { pwMsg.textContent = '새 비밀번호 두 칸이 다르다'; return; }
+    const r = guard(await json('/admin/api/password', 'POST', { current: pw.current.value, next: pw.next.value }));
+    pwMsg.textContent = r.ok ? '변경했다. 다음 로그인부터 새 비밀번호' : r.status === 403 ? '현재 비밀번호가 틀렸다' : r.status === 429 ? '잠시 후 다시 (10분에 5회)' : '4~72자로 입력';
+    if (r.ok) pw.reset();
+  });
+
   loadPhotos(); loadTimeline(); loadQuiz(); loadGuestbook();
 })();
