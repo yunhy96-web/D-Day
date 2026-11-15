@@ -25,6 +25,8 @@ body { color: rgb(var(--ink)); font-family: Pretendard, "Noto Sans KR", system-u
 /* 입력창: 밑줄 하나 */
 .field { display:block; width:100%; background:transparent; border:0; border-bottom:1px solid rgb(var(--ink) / .15); padding:.75rem 0; font-size:16px; /* 16px 미만이면 iOS 가 입력칸 탭할 때 자동 확대 */ outline:none; margin-top:.25rem; text-align:center; }
 .field:focus { border-bottom-color: rgb(var(--sky)); }
+/* 터치 기기에서 입력칸 글자가 16px 미만이면 iOS 가 탭할 때 자동 확대한다(어드민 폼 포함) */
+@media (pointer: coarse) { input, textarea, select { font-size: 16px; } }
 /* 언어 버튼: 글자만, 선택은 밑줄 */
 .lang { color: rgb(var(--ink) / .45); padding-bottom:2px; border-bottom:1px solid transparent; }
 .lang[aria-pressed="true"] { color: rgb(var(--ink)); border-bottom-color: rgb(var(--sky)); }
