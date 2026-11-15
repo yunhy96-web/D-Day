@@ -58,6 +58,7 @@
       if (!r.ok) return;
       const { online, total } = await r.json();
       document.querySelectorAll('[data-online]').forEach(el => { el.dataset.args = online; el.textContent = t('footer.online', online); });
+      document.querySelectorAll('[data-online-pill]').forEach(el => { el.classList.remove('hidden'); el.classList.add('flex'); });
       document.querySelectorAll('[data-total]').forEach(el => { el.dataset.args = total; el.textContent = t('footer.total', total); });
     } catch {}
   }

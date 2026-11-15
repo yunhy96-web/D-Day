@@ -60,8 +60,11 @@
 
 <!-- 푸터 -->
 <footer th:fragment="footer" class="max-w-[420px] mx-auto px-5 pt-16 pb-14 text-[13px] text-ink/50 text-center">
-  <p><span data-online data-i18n="footer.online" data-args="0" th:text="${t['footer.online']}">online</span></p>
-  <p class="mt-1"><span data-total data-i18n="footer.total" data-args="0" th:text="${t['footer.total']}">total</span></p>
+  <!-- 현재 접속자: 화면 하단에 고정. 첫 heartbeat 응답 후 보인다 -->
+  <p data-online-pill class="hidden fixed z-30 left-1/2 -translate-x-1/2 bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-mist/80 backdrop-blur border border-ink/10 text-[12px] text-ink/70 whitespace-nowrap">
+    <i class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></i><span data-online data-i18n="footer.online" data-args="0" th:text="${t['footer.online']}">online</span>
+  </p>
+  <p><span data-total data-i18n="footer.total" data-args="0" th:text="${t['footer.total']}">total</span></p>
   <button type="button" data-share class="mt-6 text-sky" data-i18n="btn.share" th:text="${t['btn.share']}">share</button>
 </footer>
 
