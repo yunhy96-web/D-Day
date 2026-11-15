@@ -44,9 +44,10 @@
     const list = byMonth[months[i]] || [];
     list.forEach(it => {
       const fig = document.createElement('figure'); fig.className = 'snap-center shrink-0 ' + (list.length > 1 ? 'w-[85%]' : 'w-full');
-      const img = document.createElement('img'); img.src = it.url; img.alt = it.caption || ''; img.className = 'w-full aspect-[3/4] object-cover rounded-xl bg-jasmine';
-      fig.append(img);
-      if (it.caption) { const c = document.createElement('figcaption'); c.className = 'mt-3 text-[14px] text-ink/70'; c.textContent = it.caption; fig.append(c); }
+      // 사진 높이·설명 칸을 고정해서 달마다 아래 눈금이 움직이지 않게 한다. 설명은 2줄까지
+      const img = document.createElement('img'); img.src = it.url; img.alt = it.caption || ''; img.className = 'w-full h-[min(62vh,480px)] object-cover rounded-xl bg-jasmine';
+      const c = document.createElement('figcaption'); c.className = 'mt-3 h-10 line-clamp-2 text-[14px] leading-5 text-ink/70'; c.textContent = it.caption || '';
+      fig.append(img, c);
       box.append(fig);
     });
   }
