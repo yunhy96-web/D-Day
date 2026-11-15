@@ -5,7 +5,8 @@
 :root[data-theme="dark"] { --mist:23 22 20; --ink:236 231 222; --sky:118 152 182; --cloud:46 44 40; --yeonji:206 128 118; --gold:201 172 112; --marigold:214 160 92; --jasmine:33 32 29; }
 /* 노을: 복숭아빛 크림 바탕 + 짙은 갈색 글씨 + 테라코타 포인트 */
 :root[data-theme="sunset"] { --mist:248 237 226; --ink:74 46 40; --sky:196 104 74; --cloud:240 216 198; --yeonji:176 72 72; --gold:178 132 66; --marigold:214 132 64; --jasmine:255 248 241; }
-html { background: rgb(var(--mist)); color-scheme: light; transition: background .25s; }
+/* 더블탭 확대 끔. 두 손가락 확대는 그대로 둔다(접근성) */
+html { background: rgb(var(--mist)); color-scheme: light; transition: background .25s; touch-action: manipulation; }
 body { background:
   radial-gradient(70% 45% at 10% 5%, rgb(var(--sky) / .14), transparent 70%),
   radial-gradient(55% 40% at 95% 60%, rgb(var(--sky) / .10), transparent 70%);
@@ -22,7 +23,7 @@ body { color: rgb(var(--ink)); font-family: Pretendard, "Noto Sans KR", system-u
 .serif { font-family: "MaruBuri", "Noto Serif Thai", serif; font-weight: 400; letter-spacing: -0.01em; }
 :lang(th) .serif { font-family: "Noto Serif Thai", "MaruBuri", serif; letter-spacing: 0; }
 /* 입력창: 밑줄 하나 */
-.field { display:block; width:100%; background:transparent; border:0; border-bottom:1px solid rgb(var(--ink) / .15); padding:.75rem 0; font-size:15px; outline:none; margin-top:.25rem; text-align:center; }
+.field { display:block; width:100%; background:transparent; border:0; border-bottom:1px solid rgb(var(--ink) / .15); padding:.75rem 0; font-size:16px; /* 16px 미만이면 iOS 가 입력칸 탭할 때 자동 확대 */ outline:none; margin-top:.25rem; text-align:center; }
 .field:focus { border-bottom-color: rgb(var(--sky)); }
 /* 언어 버튼: 글자만, 선택은 밑줄 */
 .lang { color: rgb(var(--ink) / .45); padding-bottom:2px; border-bottom:1px solid transparent; }
