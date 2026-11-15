@@ -15,8 +15,10 @@ public class ContentService {
     public record Card(String key, String path, String icon, Long stat) {}
 
     public List<Card> cards() {
-        return jdbc.query("SELECT key, path, icon, stat_sql FROM content WHERE enabled_yn='Y' ORDER BY sort",
-                (rs, i) -> new Card(rs.getString("key"), rs.getString("path"), rs.getString("icon"), stat(rs.getString("stat_sql"))));
+        // stat 쿼리는 바깥 쿼리가 끝난 뒤에. 콜백 안에서 부르면 커넥션 2개를 동시에 잡아, 동시 접속 4명 이상이면 풀(4)이 교착된다
+        List<String[]> rows = jdbc.query("SELECT key, path, icon, stat_sql FROM content WHERE enabled_yn='Y' ORDER BY sort",
+                (rs, i) -> new String[]{rs.getString("key"), rs.getString("path"), rs.getString("icon"), rs.getString("stat_sql")});
+        return rows.stream().map(r -> new Card(r[0], r[1], r[2], stat(r[3]))).toList();
     }
 
     /** 페이지 접근 가능 여부. enabled_yn 은 허브 카드 노출만 제어한다 */
