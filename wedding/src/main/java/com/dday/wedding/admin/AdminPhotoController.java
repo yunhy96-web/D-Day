@@ -33,18 +33,20 @@ public class AdminPhotoController {
     }
 
     public record Order(List<Long> ids) {}
-    public record Flag(Boolean worldcup) {}
+    /** 여러 장 한 번에. null 인 항목은 안 바꾼다 */
+    public record Bulk(List<Long> ids, Boolean visible, Boolean worldcup) {}
+    public record Ids(List<Long> ids) {}
     public record Hide(Boolean hidden) {}
 
     // ---- 갤러리·월드컵 사진
 
     @GetMapping("/admin/api/photos")
-    public List<PhotoService.Photo> list() { return photos.all(); }
+    public List<PhotoService.Photo> list() { return photos.adminAll(); }
 
     /** body = 보기용 | 썸네일 | 원본. 앞 두 개 길이는 쿼리로. 셋 다 브라우저가 만든다(EXIF 회전 반영, Pi 메모리 보호) */
     @PostMapping(value = "/admin/api/photos", consumes = "application/octet-stream")
     public Map<String, Object> upload(@RequestParam int view, @RequestParam int thumb, @RequestParam(defaultValue = "Y") String worldcup,
-                                      HttpServletRequest req) throws IOException {
+                                      @RequestParam(defaultValue = "Y") String visible, HttpServletRequest req) throws IOException {
         if (view <= 0 || view > MAX_VIEW || thumb <= 0 || thumb > MAX_THUMB) throw new BadRequest("size");
         byte[] body = Images.read(req.getInputStream(), view + thumb + MAX_ORIGINAL);
         if (body.length <= view + thumb) throw new BadRequest("size");
@@ -58,6 +60,7 @@ public class AdminPhotoController {
         store.put(PhotoService.viewKey(file), v);
         Long id = jdbc.queryForObject("INSERT INTO photo(file, original, sort, worldcup_yn) VALUES (?, ?, (SELECT COALESCE(MAX(sort), 0) + 1 FROM photo), ?) RETURNING id",
                 Long.class, file, file + "." + ext, "N".equals(worldcup) ? "N" : "Y");
+        if ("N".equals(visible)) jdbc.update("INSERT OR IGNORE INTO photo_hidden(photo_id) VALUES (?)", id);
         return Map.of("id", id);
     }
 
@@ -71,23 +74,44 @@ public class AdminPhotoController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/admin/api/photos/{id}")
-    public ResponseEntity<Void> flag(@PathVariable long id, @RequestBody Flag f) {
-        if (f.worldcup() == null) throw new BadRequest("worldcup");
-        int n = jdbc.update("UPDATE photo SET worldcup_yn=? WHERE id=?", f.worldcup() ? "Y" : "N", id);
-        return n == 0 ? ResponseEntity.notFound().build() : ResponseEntity.noContent().build();
+    /** 노출·월드컵 일괄 변경 */
+    @PutMapping("/admin/api/photos/bulk")
+    public ResponseEntity<Void> bulk(@RequestBody Bulk b) {
+        List<Long> ids = ids(b.ids());
+        if (b.visible() == null && b.worldcup() == null) throw new BadRequest("nothing");
+        tx.executeWithoutResult(s -> {
+            for (Long id : ids) {
+                if (b.worldcup() != null) jdbc.update("UPDATE photo SET worldcup_yn=? WHERE id=?", b.worldcup() ? "Y" : "N", id);
+                if (Boolean.TRUE.equals(b.visible())) jdbc.update("DELETE FROM photo_hidden WHERE photo_id=?", id);
+                if (Boolean.FALSE.equals(b.visible())) jdbc.update("INSERT OR IGNORE INTO photo_hidden(photo_id) SELECT id FROM photo WHERE id=?", id);
+            }
+        });
+        return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/admin/api/photos/{id}")
-    public ResponseEntity<Void> delete(@PathVariable long id) throws IOException {
-        List<String[]> rows = jdbc.query("SELECT file, original FROM photo WHERE id=?", (rs, i) -> new String[]{rs.getString(1), rs.getString(2)}, id);
-        if (rows.isEmpty()) return ResponseEntity.notFound().build();
-        jdbc.update("DELETE FROM photo WHERE id=?", id);
-        String[] r = rows.get(0);
-        store.delete(PhotoService.viewKey(r[0]));
-        store.delete(PhotoService.thumbKey(r[0]));
-        Files.deleteIfExists(originalDir.resolve(r[1]));
-        return ResponseEntity.noContent().build();
+    /** 일괄 삭제(원본·보기용·썸네일 파일까지). DB 를 먼저 지우고 파일은 그다음 — 파일 삭제가 실패해도 화면엔 안 남는다 */
+    @PostMapping("/admin/api/photos/delete")
+    public Map<String, Object> delete(@RequestBody Ids body) throws IOException {
+        List<Long> ids = ids(body.ids());
+        List<String[]> rows = new ArrayList<>();
+        tx.executeWithoutResult(s -> {
+            for (Long id : ids) {
+                rows.addAll(jdbc.query("SELECT file, original FROM photo WHERE id=?", (rs, i) -> new String[]{rs.getString(1), rs.getString(2)}, id));
+                jdbc.update("DELETE FROM photo WHERE id=?", id);
+                jdbc.update("DELETE FROM photo_hidden WHERE photo_id=?", id);
+            }
+        });
+        for (String[] r : rows) {
+            store.delete(PhotoService.viewKey(r[0]));
+            store.delete(PhotoService.thumbKey(r[0]));
+            Files.deleteIfExists(originalDir.resolve(r[1]));
+        }
+        return Map.of("deleted", rows.size());
+    }
+
+    private static List<Long> ids(List<Long> ids) {
+        if (ids == null || ids.isEmpty() || ids.size() > 1000 || ids.contains(null)) throw new BadRequest("ids");
+        return ids.stream().distinct().toList();
     }
 
     // ---- 방명록 관리 (숨김 포함 전체)

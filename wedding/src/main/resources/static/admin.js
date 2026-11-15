@@ -65,34 +65,57 @@
   const pf = $('[data-photo-form]'), grid = $('[data-photo-grid]');
   pf.addEventListener('submit', e => {
     e.preventDefault();
-    const wc = pf.worldcup.checked ? 'Y' : 'N';
+    const wc = pf.worldcup.checked ? 'Y' : 'N', vis = pf.visible.checked ? 'Y' : 'N';
     const jobs = [...pf.files.files].map(f => ({ name: f.name, run: async onP => {
       const view = await Up.resize(f, 2560, .92), thumb = await Up.resize(f, 600, .8);
-      return sendJob(`/admin/api/photos?view=${view.size}&thumb=${thumb.size}&worldcup=${wc}`, new Blob([view, thumb, f]), 'application/octet-stream', onP);
+      return sendJob(`/admin/api/photos?view=${view.size}&thumb=${thumb.size}&worldcup=${wc}&visible=${vis}`, new Blob([view, thumb, f]), 'application/octet-stream', onP);
     } }));
     pf.files.value = '';
     runUploads(jobs, loadPhotos);
   });
+  // 선택 상태는 다시 그려도 유지(id 집합)
+  const picked = new Set(), allBox = $('[data-photo-all]'), delBtn = $('[data-photo-delete]');
+  function syncPick() {
+    const n = picked.size, total = grid.children.length;
+    $('[data-photo-count]').textContent = n + '장 선택';
+    document.querySelectorAll('[data-bulk]').forEach(b => b.disabled = !n); delBtn.disabled = !n;
+    allBox.checked = total > 0 && n === total; allBox.indeterminate = n > 0 && n < total;
+    grid.querySelectorAll('li').forEach(li => { const on = picked.has(+li.dataset.id); li.querySelector('[data-pick]').checked = on; li.querySelector('img').classList.toggle('ring-4', on); });
+  }
+  allBox.addEventListener('change', () => { picked.clear(); if (allBox.checked) grid.querySelectorAll('li').forEach(li => picked.add(+li.dataset.id)); syncPick(); });
+  document.querySelectorAll('[data-bulk]').forEach(b => b.addEventListener('click', async () => {
+    await guard(await json('/admin/api/photos/bulk', 'PUT', { ids: [...picked], ...JSON.parse(b.dataset.bulk) }));
+    loadPhotos();
+  }));
+  delBtn.addEventListener('click', async () => {
+    if (!confirm(`선택한 ${picked.size}장을 원본까지 삭제할까? 되돌릴 수 없다`)) return;
+    await guard(await json('/admin/api/photos/delete', 'POST', { ids: [...picked] }));
+    picked.clear(); loadPhotos();
+  });
+
   async function loadPhotos() {
     const list = await (await guard(await fetch('/admin/api/photos'))).json();
-    const wc = list.filter(p => p.worldcup).length;
-    $('[data-photo-stat]').textContent = `총 ${list.length}장 · 월드컵 후보 ${wc}장` + (wc < 32 ? ` (32강은 32장 필요, 지금은 ${2 ** Math.floor(Math.log2(Math.max(1, wc)))}강)` : ' (랜덤 32장)');
+    const shown = list.filter(p => p.visible), wc = shown.filter(p => p.worldcup).length;
+    $('[data-photo-stat]').textContent = `총 ${list.length}장 · 노출 ${shown.length}장 · 숨김 ${list.length - shown.length}장 · 월드컵 후보 ${wc}장` + (wc < 32 ? ` (32강은 32장 필요, 지금은 ${2 ** Math.floor(Math.log2(Math.max(1, wc)))}강)` : ' (랜덤 32장)');
+    [...picked].forEach(id => { if (!list.some(p => p.id === id)) picked.delete(id); });
     grid.textContent = '';
+    let no = 0;   // 메인·번호는 노출 사진 기준(하객이 보는 순서)
     list.forEach((ph, i) => {
       const li = el('li', 'space-y-1 text-[12px]'); li.dataset.id = ph.id;
       const fig = el('div', 'relative cursor-grab');
-      const img = el('img', 'w-full aspect-square object-cover rounded-lg'); img.src = ph.thumb; img.alt = '';
-      fig.append(img, el('span', 'absolute top-1 left-1 px-1.5 rounded bg-night/60 text-white tabular', i === 0 ? '1 · 메인' : String(i + 1)));
-      const wcl = el('label', 'flex gap-1 items-center'); const cb = el('input'); cb.type = 'checkbox'; cb.checked = ph.worldcup;
-      cb.addEventListener('change', async () => { await guard(await json('/admin/api/photos/' + ph.id, 'PUT', { worldcup: cb.checked })); loadPhotos(); });
-      wcl.append(cb, document.createTextNode('월드컵'));
-      const act = el('p', 'space-x-2');
-      const top = el('button', 'text-sky', '맨 앞으로'); top.type = 'button'; top.addEventListener('click', () => { grid.prepend(li); saveOrder(); });
-      const del = el('button', 'text-ink/45', '삭제'); del.type = 'button';
-      del.addEventListener('click', async () => { if (confirm('원본까지 삭제할까?')) { await guard(await json('/admin/api/photos/' + ph.id, 'DELETE')); loadPhotos(); } });
-      if (i > 0) act.append(top); act.append(del);
-      li.append(fig, wcl, act); grid.append(li);
+      const img = el('img', 'w-full aspect-square object-cover rounded-lg ring-sky' + (ph.visible ? '' : ' opacity-35 grayscale')); img.src = ph.thumb; img.alt = '';
+      img.addEventListener('click', () => { picked.has(ph.id) ? picked.delete(ph.id) : picked.add(ph.id); syncPick(); });
+      const label = ph.visible ? (++no === 1 ? '1 · 메인' : String(no)) : '숨김';
+      fig.append(img, el('span', 'absolute top-1 left-1 px-1.5 rounded bg-night/60 text-white tabular', label));
+      const pick = el('input', 'absolute top-2 right-2 w-5 h-5 accent-sky'); pick.type = 'checkbox'; pick.dataset.pick = '';
+      pick.addEventListener('change', () => { pick.checked ? picked.add(ph.id) : picked.delete(ph.id); syncPick(); });
+      fig.append(pick);
+      const info = el('p', 'flex justify-between gap-2');
+      info.append(el('span', ph.worldcup ? 'text-sky' : 'text-ink/35', ph.worldcup ? '월드컵' : '월드컵 제외'));
+      if (i > 0) { const top = el('button', 'text-sky', '맨 앞으로'); top.type = 'button'; top.addEventListener('click', () => { grid.prepend(li); saveOrder(); }); info.append(top); }
+      li.append(fig, info); grid.append(li);
     });
+    syncPick();
   }
   async function saveOrder() {
     const ids = [...grid.children].map(li => +li.dataset.id);

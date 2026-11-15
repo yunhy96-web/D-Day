@@ -102,6 +102,11 @@ CREATE TABLE IF NOT EXISTS photo (
   created_at  TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- 하객 화면에서 숨긴 사진(행이 있으면 숨김). photo 에 컬럼 추가 대신 별도 테이블 — schema.sql 은 매 기동 실행이라 ALTER 를 못 씀
+CREATE TABLE IF NOT EXISTS photo_hidden (
+  photo_id INTEGER PRIMARY KEY
+);
+
 -- 설계 §15-7. guestbook_id NULL = 아직 글에 안 붙은 업로드
 CREATE TABLE IF NOT EXISTS guestbook_photo (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,

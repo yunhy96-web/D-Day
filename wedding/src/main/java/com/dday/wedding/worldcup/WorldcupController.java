@@ -40,7 +40,7 @@ public class WorldcupController {
     @GetMapping("/api/ranking")
     public Map<String, Object> ranking() {
         List<Map<String, Object>> top = jdbc.query(
-                "SELECT winner_id AS id, COUNT(*) AS wins FROM pick WHERE round=5 GROUP BY winner_id ORDER BY wins DESC, id LIMIT 3",
+                "SELECT winner_id AS id, COUNT(*) AS wins FROM pick WHERE round=5 AND CAST(winner_id AS INTEGER) NOT IN (SELECT photo_id FROM photo_hidden) GROUP BY winner_id ORDER BY wins DESC, id LIMIT 3",
                 (rs, i) -> Map.of("id", rs.getString("id"), "wins", rs.getLong("wins"), "url", String.valueOf(photos.thumb(rs.getString("id")))));
         Long participants = jdbc.queryForObject("SELECT COUNT(DISTINCT session_id) FROM pick WHERE round=5", Long.class);
         return Map.of("participants", participants, "top", top);
