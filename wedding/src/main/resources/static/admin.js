@@ -93,8 +93,33 @@
     picked.clear(); loadPhotos();
   });
 
+  // ---- 크게 보기
+  const pv = $('[data-ph-viewer]'), pvImg = $('[data-pv-img]'), pvPick = $('[data-pv-pick]');
+  let photoList = [], pvIdx = 0;
+  function showPv(i) {
+    if (!photoList.length) return pv.close();
+    pvIdx = (i + photoList.length) % photoList.length;
+    const ph = photoList[pvIdx];
+    pvImg.src = ph.view;
+    $('[data-pv-info]').textContent = `${pvIdx + 1} / ${photoList.length} · ${ph.visible ? '노출 중' : '숨김'} · ${ph.worldcup ? '월드컵' : '월드컵 제외'}`;
+    pvPick.checked = picked.has(ph.id);
+    document.querySelectorAll('[data-pv-visible]').forEach(b => b.classList.toggle('font-semibold', String(ph.visible) === b.dataset.pvVisible));
+    // 다음 사진 미리 받기
+    const next = photoList[(pvIdx + 1) % photoList.length]; if (next) new Image().src = next.view;
+  }
+  document.querySelectorAll('[data-pv-step]').forEach(b => b.addEventListener('click', () => showPv(pvIdx + +b.dataset.pvStep)));
+  $('[data-pv-close]').addEventListener('click', () => pv.close());
+  pv.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') showPv(pvIdx - 1); if (e.key === 'ArrowRight') showPv(pvIdx + 1); });
+  pvPick.addEventListener('change', () => { const id = photoList[pvIdx].id; pvPick.checked ? picked.add(id) : picked.delete(id); syncPick(); });
+  document.querySelectorAll('[data-pv-visible]').forEach(b => b.addEventListener('click', async () => {
+    const id = photoList[pvIdx].id;
+    await guard(await json('/admin/api/photos/bulk', 'PUT', { ids: [id], visible: b.dataset.pvVisible === 'true' }));
+    await loadPhotos(); showPv(photoList.findIndex(p => p.id === id));
+  }));
+
   async function loadPhotos() {
     const list = await (await guard(await fetch('/admin/api/photos'))).json();
+    photoList = list;
     const shown = list.filter(p => p.visible), wc = shown.filter(p => p.worldcup).length;
     $('[data-photo-stat]').textContent = `총 ${list.length}장 · 노출 ${shown.length}장 · 숨김 ${list.length - shown.length}장 · 월드컵 후보 ${wc}장` + (wc < 32 ? ` (32강은 32장 필요, 지금은 ${2 ** Math.floor(Math.log2(Math.max(1, wc)))}강)` : ' (랜덤 32장)');
     [...picked].forEach(id => { if (!list.some(p => p.id === id)) picked.delete(id); });
@@ -104,7 +129,8 @@
       const li = el('li', 'space-y-1 text-[12px]'); li.dataset.id = ph.id;
       const fig = el('div', 'relative cursor-grab');
       const img = el('img', 'w-full aspect-square object-cover rounded-lg ring-sky' + (ph.visible ? '' : ' opacity-35 grayscale')); img.src = ph.thumb; img.alt = '';
-      img.addEventListener('click', () => { picked.has(ph.id) ? picked.delete(ph.id) : picked.add(ph.id); syncPick(); });
+      img.classList.add('cursor-zoom-in');
+      img.addEventListener('click', () => { showPv(i); pv.showModal(); });
       const label = ph.visible ? (++no === 1 ? '1 · 메인' : String(no)) : '숨김';
       fig.append(img, el('span', 'absolute top-1 left-1 px-1.5 rounded bg-night/60 text-white tabular', label));
       const pick = el('input', 'absolute top-2 right-2 w-5 h-5 accent-sky'); pick.type = 'checkbox'; pick.dataset.pick = '';
