@@ -99,9 +99,9 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.name', 'th', 'ลา
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.search', 'ko', '라붐웨딩홀 광주 서구');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.search', 'en', '라붐웨딩홀 광주 서구');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.search', 'th', '라붐웨딩홀 광주 서구');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'ko', '2층 베일리홀');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'en', 'Bailey Hall, 2F');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'th', 'เบลีย์ฮอลล์ ชั้น 2');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'ko', '3층 베일리홀');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'en', 'Bailey Hall, 3F');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'th', 'เบลีย์ฮอลล์ ชั้น 3');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.summary', 'ko', '광주 서구 · 상무지구 (김대중컨벤션센터 옆)');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.summary', 'en', 'Sangmu, Seo-gu, Gwangju · next to Kimdaejung Convention Center');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.summary', 'th', 'เขตซอ เมืองควังจู · ย่านซังมู (ข้างศูนย์ประชุมคิมแดจุง)');
