@@ -57,8 +57,8 @@ wedding:
   base-url: ${WEDDING_BASE_URL:}
   date-time: 2027-03-27T14:30:00+09:00
   dating-start: 2025-05-04                  # 타임라인 시작(설계 §15-3)
-  lat: 35.20805                             # 카카오 로컬 API 검색 결과 (드메르웨딩홀, 임방울대로 549)
-  lng: 126.82179
+  lat: 35.1484691                           # 네이버 플레이스 31320030 (라붐웨딩홀, 상무누리로 59)
+  lng: 126.8379712
   kakao-js-key: ${KAKAO_JS_KEY:}
   turnstile-site-key: ${TURNSTILE_SITE_KEY:}
   turnstile-secret: ${TURNSTILE_SECRET:}
@@ -72,8 +72,8 @@ wedding:
     secret-key: ${NCLOUD_SECRET_KEY:}
   admin-pw-hash: ${ADMIN_PW_HASH:}          # 비어 있으면 어드민 로그인 불가
   address:
-    ko: 광주광역시 광산구 임방울대로 549, CN타워 2층
-    en: CN Tower 2F, 549 Imbangul-daero, Gwangsan-gu, Gwangju, Korea
-    th: CN Tower ชั้น 2, 549 ถนนอิมบังอุล เขตควังซาน เมืองควังจู ประเทศเกาหลี
+    ko: 광주광역시 서구 상무누리로 59, 라붐웨딩홀
+    en: La Boum Wedding Hall, 59 Sangmunuri-ro, Seo-gu, Gwangju, Korea
+    th: ลา บูม เวดดิ้งฮอลล์ 59 ถนนซังมูนูรี เขตซอ เมืองควังจู ประเทศเกาหลี
   account:                                  # 신부측은 해외계좌라 생략. 키를 추가하면 화면에 자동 노출
     groom: { holder: 윤희영, bank: 신한은행, number: 110-423-730255 }

@@ -71,6 +71,12 @@ CREATE TABLE IF NOT EXISTS quiz_attempt (
   created_at   TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- 퀴즈 순위용 닉네임(선택 입력). quiz_attempt 에 컬럼 추가 대신 별도 테이블 — schema.sql 은 매 기동 실행이라 ALTER 를 못 씀
+CREATE TABLE IF NOT EXISTS quiz_nickname (
+  attempt_id TEXT PRIMARY KEY,
+  nickname   TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS timeline (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
   month      TEXT NOT NULL,

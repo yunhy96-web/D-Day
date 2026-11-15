@@ -8,7 +8,8 @@
   <!-- 난이도 고르기: 채움 버튼 없이 큰 글자 목록 -->
   <section data-step="intro" class="pt-6">
     <p class="text-[15px] leading-8 whitespace-pre-line" data-i18n="quiz.intro" th:text="${t['quiz.intro']}">intro</p>
-    <ul class="mt-8">
+    <input name="nickname" maxlength="12" autocomplete="nickname" class="field mt-6" data-i18n-ph="quiz.nickname" th:placeholder="${t['quiz.nickname']}">
+    <ul class="mt-4">
       <li th:each="lv : ${ {'easy','normal','hard'} }" class="border-b border-ink/10 last:border-0">
         <button type="button" th:attr="data-level=${lv}" class="w-full py-5">
           <span class="serif block text-[22px]" th:attr="data-i18n='quiz.level.'+${lv}" th:text="${t['quiz.level.'+lv]}">level</span>
@@ -31,6 +32,11 @@
     <p class="serif text-[19px] mt-1" data-i18n="quiz.result_title" th:text="${t['quiz.result_title']}">score</p>
     <p class="serif text-[44px] mt-4 tabular" data-score></p>
     <p class="mt-2 text-[15px]" data-comment></p>
+    <p class="mt-4 text-[15px] text-sky tabular" data-rank></p>
+    <div data-board-wrap class="hidden mt-10 text-left">
+      <p class="text-[12px] text-ink/45 mb-2" data-board-title></p>
+      <ol data-board class="text-[14px]"></ol>
+    </div>
     <ol data-results class="mt-10 text-left"></ol>
     <button type="button" data-retry class="mt-10 px-8 py-3 rounded-full bg-sky text-white text-[15px]" data-i18n="quiz.retry" th:text="${t['quiz.retry']}">retry</button>
   </section>

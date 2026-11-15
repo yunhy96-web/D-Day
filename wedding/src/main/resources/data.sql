@@ -93,18 +93,18 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('date.passed', 'th', 'ข�
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.title', 'ko', '장소');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.title', 'en', 'Venue');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.title', 'th', 'สถานที่');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.name', 'ko', '드메르 웨딩홀');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.name', 'en', 'De Mer Wedding Hall');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.name', 'th', 'เดอ แมร์ เวดดิ้งฮอลล์');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.search', 'ko', '드메르웨딩홀 광주 광산구');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.search', 'en', '드메르웨딩홀 광주 광산구');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.search', 'th', '드메르웨딩홀 광주 광산구');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'ko', '2층 베일리홀');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'en', 'Bailey Hall, 2F');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'th', 'เบลีย์ฮอลล์ ชั้น 2');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.summary', 'ko', '광주 광산구 · 임방울대로 (첨단·수완지구 사이)');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.summary', 'en', 'Gwangsan-gu, Gwangju · Imbangul-daero');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.summary', 'th', 'เขตควังซาน เมืองควังจู · ถนนอิมบังอุล');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.name', 'ko', '라붐 웨딩홀');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.name', 'en', 'La Boum Wedding Hall');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.name', 'th', 'ลา บูม เวดดิ้งฮอลล์');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.search', 'ko', '라붐웨딩홀 광주 서구');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.search', 'en', '라붐웨딩홀 광주 서구');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.search', 'th', '라붐웨딩홀 광주 서구');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'ko', '베일리홀');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'en', 'Bailey Hall');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.hall', 'th', 'เบลีย์ฮอลล์');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.summary', 'ko', '광주 서구 · 상무지구 (김대중컨벤션센터 옆)');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.summary', 'en', 'Sangmu, Seo-gu, Gwangju · next to Kimdaejung Convention Center');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('venue.summary', 'th', 'เขตซอ เมืองควังจู · ย่านซังมู (ข้างศูนย์ประชุมคิมแดจุง)');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.directions', 'ko', '오시는 길 보기');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.directions', 'en', 'Directions');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('btn.directions', 'th', 'ดูเส้นทาง');
@@ -117,32 +117,32 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.kakao', 'th', 'เป�
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_title', 'ko', '대중교통');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_title', 'en', 'Public transit');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_title', 'th', 'ขนส่งสาธารณะ');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_body', 'ko', 'KTX 광주송정역에서 택시 25분
-광주공항에서 택시 20분
-시내버스 노선은 확인 중');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_body', 'en', '25 min by taxi from Gwangju-Songjeong KTX Station
-20 min by taxi from Gwangju Airport
-Bus routes to be confirmed');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_body', 'th', 'แท็กซี่ 25 นาทีจากสถานี KTX ควังจู-ซงจอง
-แท็กซี่ 20 นาทีจากสนามบินควังจู
-เส้นทางรถเมล์จะแจ้งภายหลัง');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_body', 'ko', '지하철 1호선 김대중컨벤션센터역 5번 출구 도보 5분
+홀리데이인 광주호텔 오른쪽 건물
+KTX 광주송정역에서 지하철 1호선 약 15분');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_body', 'en', '5 min walk from Kimdaejung Convention Center Station (Line 1), Exit 5
+The building to the right of Holiday Inn Gwangju
+About 15 min on Line 1 from Gwangju-Songjeong KTX Station');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.transit_body', 'th', 'เดิน 5 นาทีจากสถานีรถไฟใต้ดินคิมแดจุงคอนเวนชันเซ็นเตอร์ (สาย 1) ทางออก 5
+อาคารทางขวาของโรงแรมฮอลิเดย์อินน์ ควังจู
+จากสถานี KTX ควังจู-ซงจอง นั่งรถไฟใต้ดินสาย 1 ประมาณ 15 นาที');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_title', 'ko', '주차');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_title', 'en', 'Parking');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_title', 'th', 'ที่จอดรถ');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_body', 'ko', '주차타워와 옆 부지, 약 2,000대
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_body', 'ko', '건물 주차장 이용 가능
 예식 30분 전 도착을 권합니다');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_body', 'en', 'Parking tower and adjacent lot, about 2,000 cars
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_body', 'en', 'On-site parking available
 Arriving 30 min early is recommended');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_body', 'th', 'อาคารจอดรถและลานจอดข้างเคียง ประมาณ 2,000 คัน
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.parking_body', 'th', 'มีที่จอดรถในอาคาร
 แนะนำให้มาถึงก่อนเวลา 30 นาที');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_title', 'ko', '해외에서');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_title', 'en', 'From abroad');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_title', 'th', 'จากต่างประเทศ');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_body', 'ko', '인천공항 → KTX 광주송정역 약 2시간 → 택시 25분
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_body', 'ko', '인천공항 → KTX 광주송정역 약 2시간 → 지하철 1호선 15분
 택시는 카카오T, 지도는 카카오맵 앱을 권합니다');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_body', 'en', 'Incheon Airport → KTX to Gwangju-Songjeong, about 2 h → taxi 25 min
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_body', 'en', 'Incheon Airport → KTX to Gwangju-Songjeong, about 2 h → Metro Line 1, 15 min
 Kakao T for taxis, KakaoMap for directions (Google Maps is limited in Korea)');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_body', 'th', 'สนามบินอินชอน → KTX ไปควังจู-ซงจอง ประมาณ 2 ชม. → แท็กซี่ 25 นาที
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('map.tip_body', 'th', 'สนามบินอินชอน → KTX ไปควังจู-ซงจอง ประมาณ 2 ชม. → รถไฟใต้ดินสาย 1 15 นาที
 แท็กซี่ใช้ Kakao T แผนที่ใช้ KakaoMap (Google Maps ใช้ในเกาหลีได้จำกัด)');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('gallery.title', 'ko', '사진');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('gallery.title', 'en', 'Photos');
@@ -303,9 +303,9 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('account.copy', 'th', 'ค�
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('og.title', 'ko', '윤희영 ♥ 마프랑 결혼합니다');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('og.title', 'en', 'Huiyeong Yun ♥ Maprang — We''re getting married');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('og.title', 'th', 'ยุน ฮีย็อง ♥ มะปราง เราจะแต่งงานกัน');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('og.description', 'ko', '2027년 3월 27일 토요일 오후 2시 30분, 광주 드메르 웨딩홀');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('og.description', 'en', 'Saturday, March 27, 2027 at 2:30 PM — De Mer Wedding Hall, Gwangju');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('og.description', 'th', 'วันเสาร์ที่ 27 มีนาคม 2027 เวลา 14:30 ณ เดอ แมร์ เวดดิ้งฮอลล์ ควังจู');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('og.description', 'ko', '2027년 3월 27일 토요일 오후 2시 30분, 광주 라붐 웨딩홀');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('og.description', 'en', 'Saturday, March 27, 2027 at 2:30 PM — La Boum Wedding Hall, Gwangju');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('og.description', 'th', 'วันเสาร์ที่ 27 มีนาคม 2027 เวลา 14:30 ณ ลา บูม เวดดิ้งฮอลล์ ควังจู');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('common.error', 'ko', '문제가 생겼어요. 잠시 후 다시 시도해 주세요');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('common.error', 'en', 'Something went wrong. Please try again');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('common.error', 'th', 'เกิดข้อผิดพลาด กรุณาลองใหม่');
@@ -371,6 +371,15 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.retry', 'th', 'ลอ
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.empty', 'ko', '문제를 준비하고 있습니다');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.empty', 'en', 'Questions coming soon');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.empty', 'th', 'กำลังเตรียมคำถาม');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.nickname', 'ko', '닉네임 (순위표에 표시, 선택)');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.nickname', 'en', 'Nickname (shown on leaderboard, optional)');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.nickname', 'th', 'ชื่อเล่น (แสดงในตารางอันดับ ไม่บังคับ)');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.rank', 'ko', '{1}명 중 {0}위');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.rank', 'en', 'Rank {0} of {1}');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.rank', 'th', 'อันดับ {0} จาก {1} คน');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.board', 'ko', '{0} TOP 10');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.board', 'en', '{0} TOP 10');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.board', 'th', '{0} TOP 10');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.days', 'ko', '함께한 지 {0}일');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.days', 'en', '{0} days together');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.days', 'th', 'อยู่ด้วยกันมา {0} วัน');

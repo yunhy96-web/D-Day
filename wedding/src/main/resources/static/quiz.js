@@ -4,14 +4,18 @@
   const steps = { intro: $('[data-step=intro]'), question: $('[data-step=question]'), result: $('[data-step=result]') };
   const show = k => { Object.entries(steps).forEach(([n, el]) => el.classList.toggle('hidden', n !== k)); window.scrollTo(0, 0); };
   let quiz = null, idx = 0, answers = [], level = null;
+  const nick = $('[name=nickname]');
+  try { nick.value = localStorage.getItem('quizNick') || ''; } catch {}
 
   console.log('%cHello, fellow developer 👀', 'font-size:14px;color:#4FA3E0',
     '\nNo answers in the response. Check "hint" in /api/quiz/start instead.');
 
   document.querySelectorAll('[data-level]').forEach(b => b.addEventListener('click', async () => {
     level = b.dataset.level; $('[data-msg]').textContent = '';
+    const name = nick.value.trim();
+    try { localStorage.setItem('quizNick', name); } catch {}
     try {
-      const r = await W.api('/api/quiz/start', 'POST', { sid: W.sid, level });
+      const r = await W.api('/api/quiz/start', 'POST', { sid: W.sid, level, name: name || undefined });
       if (!r.ok) { $('[data-msg]').textContent = W.t('common.error'); return; }
       quiz = await r.json();
       if (!quiz.items.length) { $('[data-msg]').textContent = W.t('quiz.empty'); return; }
@@ -56,6 +60,18 @@
     set($('[data-level-name]'), 'quiz.level.' + level);
     set($('[data-score]'), 'quiz.score', res.score, res.max);
     set($('[data-comment]'), comment);
+    set($('[data-rank]'), 'quiz.rank', res.rank, res.total);
+    // 순위표: 같은 난이도 TOP 10, 내 닉네임 강조
+    const me = nick.value.trim(), board = $('[data-board]'); board.textContent = '';
+    set($('[data-board-title]'), 'quiz.board', W.t('quiz.level.' + level));
+    (res.board || []).forEach((b, i) => {
+      const li = document.createElement('li'); li.className = 'flex gap-3 py-2 border-b border-ink/10 last:border-0' + (b.name === me ? ' text-sky font-semibold' : '');
+      const no = document.createElement('span'); no.className = 'w-6 shrink-0 tabular text-ink/45'; no.textContent = i + 1;
+      const nm = document.createElement('span'); nm.className = 'flex-1 truncate'; nm.textContent = b.name;
+      const sc = document.createElement('span'); sc.className = 'tabular'; sc.textContent = b.score;
+      li.append(no, nm, sc); board.append(li);
+    });
+    $('[data-board-wrap]').classList.toggle('hidden', !board.children.length);
     // 문제별 맞음/틀림만. 정답 보기는 알려주지 않는다
     const byId = Object.fromEntries(quiz.items.map(q => [q.id, q]));
     const ol = $('[data-results]'); ol.textContent = '';
