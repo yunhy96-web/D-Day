@@ -78,9 +78,9 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.bride_side', 'th'
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.groom_parents', 'ko', '아버지 윤보상 · 어머니 유선화 의 아들');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.groom_parents', 'en', 'Son of Yun Bo-sang & Yu Seon-hwa');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.groom_parents', 'th', 'บุตรชายของ ยุน โบซัง และ ยู ซอนฮวา');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.bride_parents', 'ko', '어머니 ○○○ 의 딸');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.bride_parents', 'en', 'Daughter of ○○○');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.bride_parents', 'th', 'บุตรสาวของ ○○○');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.bride_parents', 'ko', '아버지 솜분 새림 · 어머니 수랏 시소파 의 딸');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.bride_parents', 'en', 'Daughter of Somboon Saelim & Surat Srisopha');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('greeting.bride_parents', 'th', 'บุตรสาวของ Somboon Saelim และ Surat Srisopha');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('date.title', 'ko', '일시');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('date.title', 'en', 'When');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('date.title', 'th', 'วันและเวลา');
