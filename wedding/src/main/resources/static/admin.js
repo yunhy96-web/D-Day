@@ -212,6 +212,22 @@
       del.addEventListener('click', async () => { if (confirm('삭제할까?')) { await guard(await json('/admin/api/quiz/' + q.id, 'DELETE')); loadQuiz(); } });
       act.append(edit, del); li.append(act); ol.append(li);
     });
+    loadAttempts();
+  }
+  async function loadAttempts() {
+    const rows = await (await guard(await fetch('/admin/api/quiz/attempts'))).json();
+    const names = { easy: '덜친함', normal: '중간친함', hard: '매우친함' };
+    $('[data-att-stat]').textContent = `총 ${rows.length}회 · ` + Object.entries(names).map(([k, n]) => {
+      const r = rows.filter(a => a.level === k);
+      return `${n} ${r.length}회` + (r.length ? ` 평균 ${Math.round(r.reduce((s, a) => s + a.score / a.max, 0) / r.length * 100)}%` : '');
+    }).join(' · ');
+    const tb = $('[data-att-list]'); tb.textContent = '';
+    rows.forEach(a => {
+      const tr = el('tr', 'border-t border-ink/10');
+      tr.append(el('td', 'py-1.5 pr-3 text-ink/55 whitespace-nowrap', a.at.slice(5, 16)), el('td', 'pr-3', a.name || '(익명)'),
+        el('td', 'pr-3 whitespace-nowrap', names[a.level] || a.level), el('td', 'whitespace-nowrap', `${a.score}/${a.max}`));
+      tb.append(tr);
+    });
   }
   function fill(q) {
     qf.quizId.value = q ? q.id : ''; qf.question.value = q ? q.question : ''; qf.points.value = q ? q.points : 3; qf.hint.value = q?.hint || '';

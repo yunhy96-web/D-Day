@@ -317,8 +317,8 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.quiz.title', 'th',
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.quiz.desc', 'ko', '얼마나 친한지 알아보기');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.quiz.desc', 'en', 'How well do you know us?');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.quiz.desc', 'th', 'คุณรู้จักเราดีแค่ไหน');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.timeline.title', 'ko', '우리의 시간');
-INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.timeline.title', 'en', 'Our timeline');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.timeline.title', 'ko', '타임라인');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.timeline.title', 'en', 'Timeline');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.timeline.title', 'th', 'เส้นทางของเรา');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.timeline.desc', 'ko', '만난 날부터 오늘까지');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('content.timeline.desc', 'en', 'From the day we met');
@@ -380,6 +380,12 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.rank', 'th', 'อั�
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.board', 'ko', '{0} TOP 10');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.board', 'en', '{0} TOP 10');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.board', 'th', '{0} TOP 10');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.board_pre', 'ko', '지금까지 순위');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.board_pre', 'en', 'Leaderboard');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.board_pre', 'th', 'ตารางอันดับ');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.board_empty', 'ko', '아직 기록이 없어요. 첫 번째 주인공이 되어 보세요');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.board_empty', 'en', 'No records yet. Be the first!');
+INSERT OR IGNORE INTO label(key, lang, text) VALUES ('quiz.board_empty', 'th', 'ยังไม่มีบันทึก มาเป็นคนแรกกัน');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.days', 'ko', '함께한 지 {0}일');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.days', 'en', '{0} days together');
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.days', 'th', 'อยู่ด้วยกันมา {0} วัน');
@@ -391,7 +397,7 @@ INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.empty', 'en', 'Ph
 INSERT OR IGNORE INTO label(key, lang, text) VALUES ('timeline.empty', 'th', 'กำลังเตรียมรูปภาพ');
 
 -- 컨텐츠 허브 (설계 §4-3). enabled_yn 은 허브 노출 여부. 갤러리·오시는 길은 본문 섹션에서 진입하므로 허브엔 숨김
-INSERT OR IGNORE INTO content(key, path, sort, enabled_yn, icon, stat_sql) VALUES ('worldcup', '/c/worldcup', 1, 'Y', 'worldcup', 'SELECT COUNT(DISTINCT session_id) FROM pick WHERE round=5');
+INSERT OR IGNORE INTO content(key, path, sort, enabled_yn, icon, stat_sql) VALUES ('worldcup', '/c/worldcup', 1, 'N', 'worldcup', 'SELECT COUNT(DISTINCT session_id) FROM pick WHERE round=5');
 INSERT OR IGNORE INTO content(key, path, sort, enabled_yn, icon, stat_sql) VALUES ('quiz', '/c/quiz', 2, 'Y', 'quiz', 'SELECT COUNT(*) FROM quiz_attempt WHERE submitted_at IS NOT NULL');
 INSERT OR IGNORE INTO content(key, path, sort, enabled_yn, icon, stat_sql) VALUES ('timeline', '/c/timeline', 3, 'Y', 'timeline', NULL);
 INSERT OR IGNORE INTO content(key, path, sort, enabled_yn, icon, stat_sql) VALUES ('guestbook', '/c/guestbook', 4, 'Y', 'guestbook', 'SELECT COUNT(*) FROM guestbook WHERE deleted_yn=''N''');

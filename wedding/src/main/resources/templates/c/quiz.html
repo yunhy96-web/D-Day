@@ -18,6 +18,16 @@
       </li>
     </ul>
     <p data-msg class="mt-6 text-[14px] text-ink/60 min-h-[1rem]"></p>
+    <!-- 시작 전 순위표: 난이도별 TOP 10 -->
+    <div class="mt-8 text-left">
+      <p class="text-[12px] text-ink/45" data-i18n="quiz.board_pre" th:text="${t['quiz.board_pre']}">board</p>
+      <div class="flex gap-5 mt-2 text-[14px]">
+        <button type="button" th:each="lv : ${ {'easy','normal','hard'} }" th:attr="data-board-tab=${lv},data-i18n='quiz.level.'+${lv}"
+                class="pb-1 border-b-2 border-transparent text-ink/50" th:text="${t['quiz.level.'+lv]}">lv</button>
+      </div>
+      <ol data-pre-board class="mt-2 text-[14px]"></ol>
+      <p data-pre-empty class="hidden py-3 text-[13px] text-ink/45" data-i18n="quiz.board_empty" th:text="${t['quiz.board_empty']}">empty</p>
+    </div>
   </section>
 
   <section data-step="question" class="hidden pt-6">

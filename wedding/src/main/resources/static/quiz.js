@@ -62,15 +62,9 @@
     set($('[data-comment]'), comment);
     set($('[data-rank]'), 'quiz.rank', res.rank, res.total);
     // 순위표: 같은 난이도 TOP 10, 내 닉네임 강조
-    const me = nick.value.trim(), board = $('[data-board]'); board.textContent = '';
+    const board = $('[data-board]');
     set($('[data-board-title]'), 'quiz.board', W.t('quiz.level.' + level));
-    (res.board || []).forEach((b, i) => {
-      const li = document.createElement('li'); li.className = 'flex gap-3 py-2 border-b border-ink/10 last:border-0' + (b.name === me ? ' text-sky font-semibold' : '');
-      const no = document.createElement('span'); no.className = 'w-6 shrink-0 tabular text-ink/45'; no.textContent = i + 1;
-      const nm = document.createElement('span'); nm.className = 'flex-1 truncate'; nm.textContent = b.name;
-      const sc = document.createElement('span'); sc.className = 'tabular'; sc.textContent = b.score;
-      li.append(no, nm, sc); board.append(li);
-    });
+    renderBoard(board, res.board);
     $('[data-board-wrap]').classList.toggle('hidden', !board.children.length);
     // 문제별 맞음/틀림만. 정답 보기는 알려주지 않는다
     const byId = Object.fromEntries(quiz.items.map(q => [q.id, q]));
@@ -86,5 +80,28 @@
     show('result');
   }
 
-  $('[data-retry]').addEventListener('click', () => show('intro'));
+  function renderBoard(ol, list) {
+    const me = nick.value.trim(); ol.textContent = '';
+    (list || []).forEach((b, i) => {
+      const li = document.createElement('li'); li.className = 'flex gap-3 py-2 border-b border-ink/10 last:border-0' + (b.name === me ? ' text-sky font-semibold' : '');
+      const no = document.createElement('span'); no.className = 'w-6 shrink-0 tabular text-ink/45'; no.textContent = i + 1;
+      const nm = document.createElement('span'); nm.className = 'flex-1 truncate'; nm.textContent = b.name;
+      const sc = document.createElement('span'); sc.className = 'tabular'; sc.textContent = b.score;
+      li.append(no, nm, sc); ol.append(li);
+    });
+  }
+
+  // 시작 전 순위표. 탭 = 난이도
+  const tabs = document.querySelectorAll('[data-board-tab]');
+  async function preBoard(lv) {
+    tabs.forEach(t => { const on = t.dataset.boardTab === lv; t.classList.toggle('border-sky', on); t.classList.toggle('text-ink/50', !on); t.classList.toggle('border-transparent', !on); });
+    let list = [];
+    try { const r = await fetch('/api/quiz/board?level=' + lv); if (r.ok) list = await r.json(); } catch {}
+    renderBoard($('[data-pre-board]'), list);
+    $('[data-pre-empty]').classList.toggle('hidden', list.length > 0);
+  }
+  tabs.forEach(t => t.addEventListener('click', () => preBoard(t.dataset.boardTab)));
+  preBoard('easy');
+
+  $('[data-retry]').addEventListener('click', () => { show('intro'); preBoard(level); });
 })();

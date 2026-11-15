@@ -96,6 +96,15 @@ public class AdminController {
                         rs.getInt("answer_no"), rs.getInt("points"), rs.getString("hint")));
     }
 
+    /** 제출된 응시 기록, 최신순. 시간은 KST */
+    @GetMapping("/admin/api/quiz/attempts")
+    public List<Map<String, Object>> quizAttempts() {
+        return jdbc.queryForList("""
+                SELECT n.nickname AS name, a.level, a.score, a.max_score AS max, datetime(a.submitted_at, '+9 hours') AS at
+                FROM quiz_attempt a LEFT JOIN quiz_nickname n ON n.attempt_id = a.id
+                WHERE a.submitted_at IS NOT NULL ORDER BY a.submitted_at DESC LIMIT 1000""");
+    }
+
     @PostMapping("/admin/api/quiz")
     public Map<String, Object> createQuiz(@RequestBody Quiz q) throws JsonProcessingException {
         Quiz v = valid(q);
