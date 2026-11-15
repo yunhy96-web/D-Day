@@ -1,5 +1,5 @@
 # Pi 배포. docker-compose(v1) up -d --build
-# 외부 노출은 tut-cloudflared ingress(wedding.thaiuniontour.com → http://wedding-app:8080) 로만.
+# 외부 노출은 tut-cloudflared ingress(yunlada.com·www·wedding.thaiuniontour.com → http://wedding-app:8080) 로만. 정식 도메인 외엔 앱이 301
 services:
   app:
     build: .
