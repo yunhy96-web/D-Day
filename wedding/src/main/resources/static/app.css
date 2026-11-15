@@ -1,14 +1,22 @@
 /* 설계 §4-4: 스카이블루(mist 바탕·sky 포인트) + 홍실 + 태국 금선. Tailwind 가 못 하는 것만 여기에. */
 /* RGB triplet: Tailwind 의 bg-mist/80 같은 투명도 변형과 호환 */
 :root { --mist:244 249 254; --ink:36 52 71; --sky:79 163 224; --cloud:220 238 251; --yeonji:194 91 91; --gold:201 162 77; --marigold:232 163 61; --jasmine:255 255 255; }
-:root[data-theme="dark"] { --mist:15 27 42; --ink:230 238 247; --sky:124 192 242; --cloud:30 54 80; --yeonji:218 120 120; --gold:214 180 106; --marigold:240 178 84; --jasmine:22 38 58; }
+/* 다크: 남색·글로우 없이 따뜻한 먹색 단색. 포인트 파랑은 채도를 낮춰 번쩍이지 않게 */
+:root[data-theme="dark"] { --mist:23 22 20; --ink:236 231 222; --sky:118 152 182; --cloud:46 44 40; --yeonji:206 128 118; --gold:201 172 112; --marigold:214 160 92; --jasmine:33 32 29; }
+/* 노을: 복숭아빛 크림 바탕 + 짙은 갈색 글씨 + 테라코타 포인트 */
+:root[data-theme="sunset"] { --mist:248 237 226; --ink:74 46 40; --sky:196 104 74; --cloud:240 216 198; --yeonji:176 72 72; --gold:178 132 66; --marigold:214 132 64; --jasmine:255 248 241; }
 html { background: rgb(var(--mist)); color-scheme: light; transition: background .25s; }
 body { background:
   radial-gradient(70% 45% at 10% 5%, rgb(var(--sky) / .14), transparent 70%),
   radial-gradient(55% 40% at 95% 60%, rgb(var(--sky) / .10), transparent 70%);
   background-attachment: fixed; }
+/* 다크·노을은 글로우 없이 단색 바탕(종이 질감만) */
+:root[data-theme="dark"] body, :root[data-theme="sunset"] body { background: none; }
 :root[data-theme="dark"] { color-scheme: dark; }
-[data-theme-toggle] .moon { display:none; } :root[data-theme="dark"] [data-theme-toggle] .sun { display:none; } :root[data-theme="dark"] [data-theme-toggle] .moon { display:block; }
+/* 토글 아이콘 = 지금 테마 */
+[data-theme-toggle] svg { display:none; }
+:root:not([data-theme="dark"]):not([data-theme="sunset"]) [data-theme-toggle] .sun,
+:root[data-theme="sunset"] [data-theme-toggle] .dusk, :root[data-theme="dark"] [data-theme-toggle] .moon { display:block; }
 body { color: rgb(var(--ink)); font-family: Pretendard, "Noto Sans KR", system-ui, sans-serif; }
 :lang(th) body, body:lang(th), :lang(th) { font-family: "Noto Sans Thai", Pretendard, sans-serif; line-height: 1.8; }
 .serif { font-family: "MaruBuri", "Noto Serif Thai", serif; font-weight: 400; letter-spacing: -0.01em; }

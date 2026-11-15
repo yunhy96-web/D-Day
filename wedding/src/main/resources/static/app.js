@@ -40,9 +40,10 @@
     if (want !== lang) setLang(want); else applyLang();
   })();
 
-  // 다크모드 토글 (초기 적용은 head 인라인 스크립트)
+  // 테마 토글: 화이트 → 노을 → 다크 순환 (초기 적용은 head 인라인 스크립트)
+  const THEMES = ['light', 'sunset', 'dark'];
   document.querySelectorAll('[data-theme-toggle]').forEach(b => b.addEventListener('click', () => {
-    const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    const t = THEMES[(THEMES.indexOf(document.documentElement.dataset.theme) + 1) % THEMES.length];
     document.documentElement.dataset.theme = t; try { localStorage.theme = t; } catch {}
   }));
 
